@@ -29,6 +29,9 @@ yarn-error.log*
 .env*.local
 .env
 
+# graphify
+/graphify-out/
+
 # vercel
 .vercel
 
