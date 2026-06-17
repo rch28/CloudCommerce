@@ -183,6 +183,67 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
     mockProducts[idx].status = "archived";
     return inflateMock(mockProducts[idx]);
   }
+
+  async restore(id: string, meta: AuditMeta): Promise<ProductRecord> {
+    if (process.env.DATABASE_URL) {
+      const record = await prisma.product.update({ where: { id }, data: { deletedAt: null, status: "active" }, include: buildIncludes() });
+      await logAuditFn("updated", id, { deletedAt: null, status: "active" }, meta);
+      return record as unknown as ProductRecord;
+    }
+    const idx = mockProducts.findIndex((p) => p.id === id);
+    if (idx === -1) throw new Error("Product not found");
+    mockProducts[idx].deletedAt = null;
+    mockProducts[idx].status = "active";
+    return inflateMock(mockProducts[idx]);
+  }
+
+  async duplicate(id: string, meta: AuditMeta): Promise<ProductRecord> {
+    const original = await this.getById(id);
+    if (!original) throw new Error("Product not found");
+
+    const dupInput: ProductInput = {
+      name: `${original.name} (Copy)`,
+      slug: `${original.slug}-copy-${Date.now()}`,
+      description: original.description ?? undefined,
+      shortDescription: original.shortDescription ?? undefined,
+      seoTitle: original.seoTitle ?? undefined,
+      seoDescription: original.seoDescription ?? undefined,
+      status: "draft",
+      categoryId: original.categoryId ?? undefined,
+      storeId: original.storeId ?? undefined,
+      images: (original.images ?? []).map((img) => ({ url: img.url, alt: img.alt ?? undefined, sortOrder: img.sortOrder })),
+      variants: (original.variants ?? []).map((v) => ({
+        sku: `${v.sku}-copy`,
+        barcode: v.barcode ?? undefined,
+        price: v.price,
+        comparePrice: v.comparePrice ?? undefined,
+        costPrice: v.costPrice ?? undefined,
+        weight: v.weight ?? undefined,
+        quantity: 0,
+        isDefault: v.isDefault,
+        status: "inactive",
+      })),
+      options: (original.options ?? []).map((o) => ({
+        name: o.name,
+        sortOrder: o.sortOrder,
+        values: (o as any).values?.map((ov: any) => ({ label: ov.label, value: ov.value, sortOrder: ov.sortOrder })) ?? [],
+      })),
+    };
+
+    return this.createOne(dupInput, meta);
+  }
+
+  async bulkArchive(ids: string[], meta: AuditMeta): Promise<number> {
+    let count = 0;
+    for (const id of ids) { try { await this.archive(id, meta); count++; } catch { /* skip */ } }
+    return count;
+  }
+
+  async bulkDelete(ids: string[], meta: AuditMeta): Promise<number> {
+    let count = 0;
+    for (const id of ids) { try { await this.remove(id, meta); count++; } catch { /* skip */ } }
+    return count;
+  }
 }
 
 async function logAuditFn(action: string, entityId: string, changes: any, meta: AuditMeta) {

@@ -67,6 +67,7 @@ export const productSchema = z.object({
 export const inventorySchema = z.object({
   variantId: z.string().min(1),
   quantity: z.number().int().min(0),
+  reserved: z.number().int().min(0).default(0),
   lowStockThreshold: z.number().int().min(0).default(10),
   reorderLevel: z.number().int().min(0).default(5),
 });
@@ -75,6 +76,87 @@ export const stockAdjustSchema = z.object({
   variantId: z.string().min(1),
   change: z.number().int(),
   reason: z.string().min(1).max(500),
+});
+
+export const stockReserveSchema = z.object({
+  variantId: z.string().min(1),
+  quantity: z.number().int().min(1),
+  orderId: z.string().optional(),
+});
+
+export const stockReleaseSchema = z.object({
+  variantId: z.string().min(1),
+  quantity: z.number().int().min(1),
+  orderId: z.string().optional(),
+});
+
+export const variantGenerateSchema = z.object({
+  productId: z.string().min(1),
+  options: z.array(z.object({
+    name: z.string().min(1).max(100),
+    values: z.array(z.string().min(1)).min(1),
+  })).min(1),
+  basePrice: z.number().positive(),
+  baseSku: z.string().min(1).max(50),
+});
+
+// ── Settings ─────────────────────────────────────────
+export const storeInfoSchema = z.object({
+  name: z.string().min(1, "Store name is required").max(200),
+  logo: z.string().optional(),
+  description: z.string().max(1000).optional(),
+});
+
+export const brandingSchema = z.object({
+  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Must be a valid hex color"),
+  secondaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Must be a valid hex color"),
+});
+
+export const contactSchema = z.object({
+  contactEmail: z.string().email("Invalid email").optional().or(z.literal("")),
+  contactPhone: z.string().max(20).optional().or(z.literal("")),
+});
+
+export const addressSettingsSchema = z.object({
+  addressCountry: z.string().max(100).optional().or(z.literal("")),
+  addressState: z.string().max(100).optional().or(z.literal("")),
+  addressCity: z.string().max(100).optional().or(z.literal("")),
+  addressZip: z.string().max(20).optional().or(z.literal("")),
+});
+
+export const seoSchema = z.object({
+  metaTitle: z.string().max(70).optional().or(z.literal("")),
+  metaDescription: z.string().max(160).optional().or(z.literal("")),
+});
+
+export const domainsSchema = z.object({
+  subdomain: z.string().min(1).max(63).regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/, "Invalid subdomain"),
+  customDomain: z.string().max(253).optional().or(z.literal("")),
+});
+
+export const settingsUpdateSchema = z.object({
+  storeInfo: storeInfoSchema.optional(),
+  branding: brandingSchema.optional(),
+  contact: contactSchema.optional(),
+  address: addressSettingsSchema.optional(),
+  seo: seoSchema.optional(),
+  domains: domainsSchema.optional(),
+});
+
+export const inviteStaffSchema = z.object({
+  email: z.string().email("Invalid email"),
+  role: z.enum(["admin", "staff"]).default("staff"),
+});
+
+export const updateStaffRoleSchema = z.object({
+  staffId: z.string().min(1),
+  role: z.enum(["admin", "staff"]),
+});
+
+export const createApiKeySchema = z.object({
+  name: z.string().min(1).max(100),
+  scopes: z.array(z.string()).default(["read"]),
+  expiresInDays: z.number().int().min(1).max(365).optional(),
 });
 
 // ── Existing schemas (unchanged) ─────────────────────
@@ -132,9 +214,22 @@ export type ProductOptionInput = z.infer<typeof productOptionSchema>;
 export type ProductOptionValueInput = z.infer<typeof productOptionValueSchema>;
 export type InventoryInput = z.infer<typeof inventorySchema>;
 export type StockAdjustInput = z.infer<typeof stockAdjustSchema>;
+export type StockReserveInput = z.infer<typeof stockReserveSchema>;
+export type StockReleaseInput = z.infer<typeof stockReleaseSchema>;
+export type VariantGenerateInput = z.infer<typeof variantGenerateSchema>;
 export type CustomerInput = z.infer<typeof customerSchema>;
 export type AddressInput = z.infer<typeof addressSchema>;
 export type CartItemInput = z.infer<typeof cartItemSchema>;
 export type OrderInput = z.infer<typeof orderSchema>;
 export type SubscriptionInput = z.infer<typeof subscriptionSchema>;
 export type PaymentInput = z.infer<typeof paymentSchema>;
+export type StoreInfoInput = z.infer<typeof storeInfoSchema>;
+export type BrandingInput = z.infer<typeof brandingSchema>;
+export type ContactInput = z.infer<typeof contactSchema>;
+export type AddressSettingsInput = z.infer<typeof addressSettingsSchema>;
+export type SeoInput = z.infer<typeof seoSchema>;
+export type DomainsInput = z.infer<typeof domainsSchema>;
+export type SettingsUpdateInput = z.infer<typeof settingsUpdateSchema>;
+export type InviteStaffInput = z.infer<typeof inviteStaffSchema>;
+export type UpdateStaffRoleInput = z.infer<typeof updateStaffRoleSchema>;
+export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>;

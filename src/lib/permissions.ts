@@ -1,9 +1,9 @@
 export type Role = "owner" | "staff" | "customer";
 
-export type Permission = "create" | "read" | "update" | "delete" | "archive";
+export type Permission = "create" | "read" | "update" | "delete" | "archive" | "manage";
 
 const rolePermissions: Record<Role, Permission[]> = {
-  owner: ["create", "read", "update", "delete", "archive"],
+  owner: ["create", "read", "update", "delete", "archive", "manage"],
   staff: ["create", "read", "update"],
   customer: [],
 };
