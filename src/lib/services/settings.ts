@@ -70,7 +70,9 @@ export async function updateSettings(tenantId: string, data: Record<string, unkn
       Object.assign(updateData, domain);
     }
 
-    const store = await (prisma as any).store.update({ where: { tenantId }, data: updateData });
+    const existing = await (prisma as any).store.findFirst({ where: { tenantId } });
+    if (!existing) throw new Error("Store not found");
+    const store = await (prisma as any).store.update({ where: { id: existing.id }, data: updateData });
     await logAudit({ entityType: "settings", entityId: store.id, action: "updated", changes: updateData, userId, tenantId });
     return store as unknown as StoreRecord;
   }

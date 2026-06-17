@@ -26,17 +26,59 @@ model Tenant {
 }
 
 model Store {
-  id        String   @id @default(cuid())
-  tenantId  String
-  name      String
-  slug      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  slug        String
+  description String?
+  logo        String?
+  primaryColor   String   @default("#7C3AED")
+  secondaryColor String @default("#8B5CF6")
+  contactEmail   String?
+  contactPhone   String?
+  addressCountry String?
+  addressState   String?
+  addressCity    String?
+  addressZip     String?
+  metaTitle       String?
+  metaDescription String?
+  subdomain   String   @unique
+  customDomain String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   tenant   Tenant    @relation(fields: [tenantId], references: [id])
   products Product[]
 
   @@unique([slug, tenantId])
+}
+
+model StaffMember {
+  id        String    @id @default(cuid())
+  tenantId  String
+  email     String
+  role      String    @default("staff")
+  invitedAt DateTime  @default(now())
+  acceptedAt DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([email, tenantId])
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  key       String   @unique
+  type      String   @default("api")
+  scopes    String[]
+  lastUsedAt DateTime?
+  expiresAt DateTime?
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
 }
 
 model Category {
@@ -148,6 +190,7 @@ model Inventory {
   id                String   @id @default(cuid())
   variantId         String   @unique
   quantity          Int      @default(0)
+  reserved          Int      @default(0)
   lowStockThreshold Int      @default(10)
   reorderLevel      Int      @default(5)
   tenantId          String
@@ -158,14 +201,16 @@ model Inventory {
 }
 
 model InventoryLog {
-  id          String   @id @default(cuid())
-  variantId   String
-  change      Int
-  reason      String
-  previousQty Int
-  newQty      Int
-  userId      String?
-  createdAt   DateTime @default(now())
+  id               String   @id @default(cuid())
+  variantId        String
+  change           Int
+  reason           String
+  previousQty      Int
+  newQty           Int
+  previousReserved Int      @default(0)
+  newReserved      Int      @default(0)
+  userId           String?
+  createdAt        DateTime @default(now())
 
   variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
 }
