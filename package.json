@@ -6,9 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.4.0",
     "@radix-ui/react-accordion": "^1.2.13",
     "@radix-ui/react-alert-dialog": "^1.1.16",
     "@radix-ui/react-aspect-ratio": "^1.1.9",
@@ -58,22 +64,28 @@
     "tailwind-merge": "^3.6.0",
     "uuid": "^14.0.0",
     "vaul": "^1.1.2",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.0",
+    "@prisma/client": "^7.8.0",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.20",
     "@types/node": "^25.9.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "@vitest/coverage-v8": "^4.1.9",
     "autoprefixer": "^10.5.0",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "postcss": "^8.5.15",
+    "prisma": "^7.8.0",
     "tailwindcss": "^4.3.1",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
   },
   "ignoreScripts": [
     "sharp",
