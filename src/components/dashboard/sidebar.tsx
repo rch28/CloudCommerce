@@ -12,6 +12,7 @@ import {
   CreditCard,
   BarChart3,
   Zap,
+  Tag,
   X,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,6 +23,7 @@ type NavItem = { id: string; label: string; path: string; icon: typeof LayoutDas
 const merchantNav: NavItem[] = [
   { id: "dashboard", label: "Dashboard", path: "/merchant/dashboard", icon: LayoutDashboard },
   { id: "products", label: "Products", path: "/merchant/products", icon: Package },
+  { id: "categories", label: "Categories", path: "/merchant/categories", icon: Tag },
   { id: "orders", label: "Orders", path: "/merchant/orders", icon: ShoppingCart },
   { id: "inventory", label: "Inventory", path: "/merchant/inventory", icon: Boxes },
   { id: "customers", label: "Customers", path: "/merchant/customers", icon: Users },

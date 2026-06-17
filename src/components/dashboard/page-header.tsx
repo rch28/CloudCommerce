@@ -8,6 +8,7 @@ const labelMap: Record<string, string> = {
   merchant: "Merchant",
   dashboard: "Dashboard",
   products: "Products",
+  categories: "Categories",
   orders: "Orders",
   inventory: "Inventory",
   customers: "Customers",
