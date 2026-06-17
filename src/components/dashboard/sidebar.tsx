@@ -30,6 +30,7 @@ const merchantNav: NavItem[] = [
   { id: "storefront", label: "Storefront", path: "/merchant/storefront", icon: Store },
   { id: "analytics", label: "Analytics", path: "/merchant/analytics", icon: BarChart3 },
   { id: "billing", label: "Billing", path: "/merchant/billing", icon: CreditCard },
+  { id: "settings", label: "Settings", path: "/merchant/settings", icon: Settings },
 ];
 
 const platformNav: NavItem[] = [
