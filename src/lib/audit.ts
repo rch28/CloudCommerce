@@ -1,0 +1,30 @@
+import { prisma } from "./prisma";
+
+type EntityType = "product" | "category" | "variant" | "inventory" | "order" | "subscription" | "payment";
+type Action = "created" | "updated" | "deleted" | "archived" | "stock_adjusted" | "subscribed" | "upgraded" | "downgraded" | "canceled" | "payment_received" | "payment_refunded";
+
+interface LogInput {
+  entityType: EntityType;
+  entityId: string;
+  action: Action;
+  changes?: Record<string, unknown>;
+  userId?: string;
+  tenantId: string;
+}
+
+export async function logAudit(input: LogInput) {
+  try {
+    await prisma.auditLog.create({
+      data: {
+        entityType: input.entityType,
+        entityId: input.entityId,
+        action: input.action,
+        changes: input.changes ? JSON.stringify(input.changes) : null,
+        userId: input.userId,
+        tenantId: input.tenantId,
+      },
+    });
+  } catch {
+    // fail silently - audit should never block the primary operation
+  }
+}
