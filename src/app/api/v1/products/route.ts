@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { productRepo } from "@/lib/services/products";
+import { searchService, setMockProducts } from "@/lib/services/search";
 import { getTenantId, getUserId, requirePermission, handleError } from "@/lib/api-helpers";
 
 export async function GET(request: NextRequest) {
@@ -9,9 +10,30 @@ export async function GET(request: NextRequest) {
   try {
     const tenantId = getTenantId(request);
     const sp = request.nextUrl.searchParams;
+    const query = sp.get("search") || sp.get("q") || "";
+
+    if (query) {
+      // For mock mode, feed current products into search adapter
+      if (!process.env.DATABASE_URL && !process.env.MEILISEARCH_HOST && !process.env.ELASTICSEARCH_URL) {
+        const all = await productRepo.list(tenantId, { pageSize: 1000 });
+        setMockProducts(all.items as any);
+      }
+      const result = await searchService.searchProducts({
+        query,
+        page: Number(sp.get("page")) || 1,
+        pageSize: Number(sp.get("pageSize")) || 10,
+        filters: Object.fromEntries(
+          Array.from(sp.entries()).filter(([k]) => ["categoryId", "status"].includes(k))
+        ),
+        sort: sp.get("sort") || undefined,
+        order: (sp.get("order") as "asc" | "desc") || undefined,
+      });
+      return NextResponse.json(result);
+    }
+
     const result = await productRepo.list(tenantId, {
       search: sp.get("search") || undefined,
-      categoryId: sp.get("category") || undefined,
+      categoryId: sp.get("category") || sp.get("categoryId") || undefined,
       status: sp.get("status") || undefined,
       orderBy: sp.get("sort") || undefined,
       order: (sp.get("order") as "asc" | "desc") || undefined,

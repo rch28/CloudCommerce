@@ -30,14 +30,20 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const forbidden = requirePermission(request, "archive");
+  const forbidden = requirePermission(request, "update");
   if (forbidden) return forbidden;
 
   const { id } = await params;
   try {
     const tenantId = getTenantId(request);
     const userId = getUserId(request);
-    const product = await productRepo.archive(id, { userId, tenantId });
+    const { action } = await request.json();
+
+    let product;
+    if (action === "archive") product = await productRepo.archive(id, { userId, tenantId });
+    else if (action === "restore") product = await productRepo.restore(id, { userId, tenantId });
+    else return NextResponse.json({ error: "Invalid action. Use 'archive' or 'restore'." }, { status: 400 });
+
     return NextResponse.json(product);
   } catch (e) {
     return handleError(e);
