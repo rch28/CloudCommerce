@@ -1,34 +1,68 @@
 import { z } from "zod/v4";
 
+// ── Helpers ──────────────────────────────────────────
 const slugRe = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const slugField = z.string().min(1).max(200).regex(slugRe, "Must be a valid slug");
 
+// ── Category ─────────────────────────────────────────
 export const categorySchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
-  slug: z.string().min(1).max(100).regex(slugRe, "Must be a valid slug"),
+  slug: slugField,
   description: z.string().max(500).optional(),
   image: z.string().optional(),
   parentId: z.string().optional(),
 });
 
+// ── Product Option ───────────────────────────────────
+export const productOptionValueSchema = z.object({
+  label: z.string().min(1).max(100),
+  value: z.string().min(1).max(100),
+  sortOrder: z.number().int().min(0).default(0),
+});
+
+export const productOptionSchema = z.object({
+  name: z.string().min(1, "Option name required").max(100),
+  sortOrder: z.number().int().min(0).default(0),
+  values: z.array(productOptionValueSchema).default([]),
+});
+
+// ── Product Image ────────────────────────────────────
+export const productImageSchema = z.object({
+  url: z.string().url("Invalid image URL"),
+  alt: z.string().max(200).optional(),
+  sortOrder: z.number().int().min(0).default(0),
+});
+
+// ── Variant ─────────────────────────────────────────
 export const variantSchema = z.object({
   sku: z.string().min(1, "SKU is required").max(50),
+  barcode: z.string().max(50).optional(),
   price: z.number().positive("Price must be positive"),
   comparePrice: z.number().positive().optional(),
+  costPrice: z.number().positive().optional(),
+  weight: z.number().positive().optional(),
   quantity: z.number().int().min(0).default(0),
-  attributes: z.record(z.string(), z.string()).optional(),
   isDefault: z.boolean().default(false),
+  status: z.enum(["active", "inactive"]).default("active"),
 });
 
+// ── Product ─────────────────────────────────────────
 export const productSchema = z.object({
   name: z.string().min(1, "Name is required").max(200),
-  slug: z.string().min(1).max(200).regex(slugRe, "Must be a valid slug"),
-  description: z.string().max(5000).optional(),
-  images: z.array(z.string()).default([]),
-  categoryId: z.string().optional(),
+  slug: slugField,
+  description: z.string().max(10000).optional(),
+  shortDescription: z.string().max(500).optional(),
+  seoTitle: z.string().max(70).optional(),
+  seoDescription: z.string().max(160).optional(),
   status: z.enum(["draft", "active", "archived"]).default("draft"),
+  categoryId: z.string().optional(),
+  storeId: z.string().optional(),
+  images: z.array(productImageSchema).default([]),
   variants: z.array(variantSchema).default([]),
+  options: z.array(productOptionSchema).default([]),
 });
 
+// ── Inventory ───────────────────────────────────────
 export const inventorySchema = z.object({
   variantId: z.string().min(1),
   quantity: z.number().int().min(0),
@@ -42,6 +76,7 @@ export const stockAdjustSchema = z.object({
   reason: z.string().min(1).max(500),
 });
 
+// ── Existing schemas (unchanged) ─────────────────────
 export const customerSchema = z.object({
   email: z.string().email("Invalid email"),
   name: z.string().min(1, "Name is required").max(200),
@@ -74,7 +109,6 @@ export const orderSchema = z.object({
 });
 
 export const planSlugEnum = z.enum(["starter", "growth", "enterprise"]);
-
 export const subscriptionSchema = z.object({
   planSlug: planSlugEnum,
   trialDays: z.number().int().min(0).max(30).optional(),
@@ -88,9 +122,13 @@ export const paymentSchema = z.object({
   returnUrl: z.string().optional(),
 });
 
+// ── Type exports ────────────────────────────────────
 export type CategoryInput = z.infer<typeof categorySchema>;
 export type ProductInput = z.infer<typeof productSchema>;
 export type VariantInput = z.infer<typeof variantSchema>;
+export type ProductImageInput = z.infer<typeof productImageSchema>;
+export type ProductOptionInput = z.infer<typeof productOptionSchema>;
+export type ProductOptionValueInput = z.infer<typeof productOptionValueSchema>;
 export type InventoryInput = z.infer<typeof inventorySchema>;
 export type StockAdjustInput = z.infer<typeof stockAdjustSchema>;
 export type CustomerInput = z.infer<typeof customerSchema>;

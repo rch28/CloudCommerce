@@ -1,49 +1,72 @@
 import { prisma } from "@/lib/prisma";
+import { BaseRepository, type AuditMeta, type PaginatedResult } from "@/lib/repository";
 import { variantSchema, type VariantInput } from "@/lib/schemas";
 
-export async function listVariants(productId: string) {
-  if (process.env.DATABASE_URL) {
-    return prisma.productVariant.findMany({ where: { productId } });
-  }
-  const { products } = await import("@/data/mock");
-  const product = products.find((p) => p.id === productId);
-  if (!product) return [];
-  return [];
+interface VariantRecord {
+  id: string; productId: string; sku: string; barcode: string | null;
+  price: number; comparePrice: number | null; costPrice: number | null;
+  weight: number | null; quantity: number; isDefault: boolean;
+  status: string; deletedAt: Date | null; createdAt: Date; updatedAt: Date;
 }
 
-export async function createVariant(productId: string, data: VariantInput) {
-  const parsed = variantSchema.parse(data);
-  if (process.env.DATABASE_URL) {
-    return prisma.productVariant.create({
-      data: {
-        ...parsed,
-        comparePrice: parsed.comparePrice,
-        attributes: parsed.attributes ? JSON.stringify(parsed.attributes) : null,
-        productId,
-      },
-    });
+const mockVariants: VariantRecord[] = [];
+
+class VariantRepository extends BaseRepository<VariantRecord, VariantInput, Partial<VariantInput>> {
+  protected entityType = "variant" as const;
+  protected model = prisma.productVariant;
+
+  async listByProduct(productId: string): Promise<VariantRecord[]> {
+    if (process.env.DATABASE_URL) {
+      return prisma.productVariant.findMany({ where: { productId, deletedAt: null }, orderBy: { createdAt: "asc" } }) as unknown as VariantRecord[];
+    }
+    return mockVariants.filter((v) => v.productId === productId && !v.deletedAt);
   }
-  return { id: `var-${Date.now()}`, productId, ...parsed, attributes: parsed.attributes ? JSON.stringify(parsed.attributes) : null, createdAt: new Date(), updatedAt: new Date() };
+
+  async getById(id: string): Promise<VariantRecord | null> {
+    if (process.env.DATABASE_URL) {
+      return prisma.productVariant.findFirst({ where: { id, deletedAt: null } }) as unknown as VariantRecord | null;
+    }
+    return mockVariants.find((v) => v.id === id && !v.deletedAt) ?? null;
+  }
+
+  async createOne(productId: string, data: VariantInput, meta: AuditMeta): Promise<VariantRecord> {
+    const parsed = variantSchema.parse(data);
+    if (process.env.DATABASE_URL) {
+      const record = await prisma.productVariant.create({
+        data: { ...parsed, barcode: parsed.barcode ?? null, comparePrice: parsed.comparePrice ?? null, costPrice: parsed.costPrice ?? null, weight: parsed.weight ?? null, productId },
+      });
+      await logAudit({ entityType: "variant", entityId: record.id, action: "created", changes: parsed, userId: meta.userId, tenantId: meta.tenantId });
+      return record as unknown as VariantRecord;
+    }
+    const record: VariantRecord = { id: `var-${Date.now()}`, productId, ...parsed, barcode: parsed.barcode ?? null, comparePrice: parsed.comparePrice ?? null, costPrice: parsed.costPrice ?? null, weight: parsed.weight ?? null, deletedAt: null, createdAt: new Date(), updatedAt: new Date() };
+    mockVariants.push(record);
+    return record;
+  }
+
+  async updateOne(id: string, data: Partial<VariantInput>, meta: AuditMeta): Promise<VariantRecord> {
+    const parsed = variantSchema.partial().parse(data);
+    if (process.env.DATABASE_URL) {
+      const record = await prisma.productVariant.update({ where: { id }, data: parsed });
+      await logAudit({ entityType: "variant", entityId: id, action: "updated", changes: parsed, userId: meta.userId, tenantId: meta.tenantId });
+      return record as unknown as VariantRecord;
+    }
+    const idx = mockVariants.findIndex((v) => v.id === id);
+    if (idx === -1) throw new Error("Variant not found");
+    Object.assign(mockVariants[idx], parsed, { updatedAt: new Date() });
+    return mockVariants[idx];
+  }
+
+  async remove(id: string, meta: AuditMeta): Promise<VariantRecord> {
+    if (process.env.DATABASE_URL) {
+      const record = await prisma.productVariant.update({ where: { id }, data: { deletedAt: new Date() } });
+      await logAudit({ entityType: "variant", entityId: id, action: "deleted", changes: { softDelete: true }, userId: meta.userId, tenantId: meta.tenantId });
+      return record as unknown as VariantRecord;
+    }
+    const idx = mockVariants.findIndex((v) => v.id === id);
+    if (idx === -1) throw new Error("Variant not found");
+    mockVariants[idx].deletedAt = new Date();
+    return mockVariants[idx];
+  }
 }
 
-export async function updateVariant(id: string, data: Partial<VariantInput>) {
-  const parsed = variantSchema.partial().parse(data);
-  if (process.env.DATABASE_URL) {
-    return prisma.productVariant.update({
-      where: { id },
-      data: {
-        ...parsed,
-        comparePrice: parsed.comparePrice,
-        attributes: parsed.attributes ? JSON.stringify(parsed.attributes) : null,
-      },
-    });
-  }
-  return { id, ...parsed };
-}
-
-export async function deleteVariant(id: string) {
-  if (process.env.DATABASE_URL) {
-    return prisma.productVariant.delete({ where: { id } });
-  }
-  return { id };
-}
+export const variantRepo = new VariantRepository();
