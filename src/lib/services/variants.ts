@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { BaseRepository, type AuditMeta, type PaginatedResult } from "@/lib/repository";
 import { variantSchema, type VariantInput } from "@/lib/schemas";
+import { logAudit } from "@/lib/audit";
 
 interface VariantRecord {
   id: string; productId: string; sku: string; barcode: string | null;
@@ -13,7 +14,7 @@ const mockVariants: VariantRecord[] = [];
 
 class VariantRepository extends BaseRepository<VariantRecord, VariantInput, Partial<VariantInput>> {
   protected entityType = "variant" as const;
-  protected model = prisma.productVariant;
+  protected modelName = "productVariant";
 
   async listByProduct(productId: string): Promise<VariantRecord[]> {
     if (process.env.DATABASE_URL) {

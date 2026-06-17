@@ -1,6 +1,6 @@
 import { prisma } from "./prisma";
 
-type EntityType = "product" | "category" | "variant" | "inventory" | "order" | "subscription" | "payment";
+type EntityType = "product" | "category" | "variant" | "product_image" | "product_option" | "inventory" | "order" | "subscription" | "payment";
 type Action = "created" | "updated" | "deleted" | "archived" | "stock_adjusted" | "subscribed" | "upgraded" | "downgraded" | "canceled" | "payment_received" | "payment_refunded";
 
 interface LogInput {

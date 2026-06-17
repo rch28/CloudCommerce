@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { BaseRepository, type AuditMeta, type PaginateParams, type PaginatedResult } from "@/lib/repository";
 import { productSchema, type ProductInput } from "@/lib/schemas";
 import { generateSlug } from "@/lib/slug";
+import { logAudit } from "@/lib/audit";
 
 interface ImageRecord {
   id: string; productId: string; url: string; alt: string | null; sortOrder: number; createdAt: Date;
@@ -60,7 +61,7 @@ function inflateMock(record: ProductRecord): ProductRecord {
 
 class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Partial<ProductInput>> {
   protected entityType = "product" as const;
-  protected model = prisma.product;
+  protected modelName = "product";
 
   async list(tenantId: string, params: PaginateParams & { search?: string; categoryId?: string; status?: string } = {}): Promise<PaginatedResult<ProductRecord>> {
     if (process.env.DATABASE_URL) {
@@ -185,7 +186,6 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
 }
 
 async function logAuditFn(action: string, entityId: string, changes: any, meta: AuditMeta) {
-  const { logAudit } = await import("@/lib/audit");
   await logAudit({ entityType: "product", entityId, action: action as any, changes, userId: meta.userId, tenantId: meta.tenantId });
 }
 

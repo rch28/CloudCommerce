@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 
-type EntityType = "product" | "category" | "variant" | "product_image" | "product_option";
+type EntityType = "product" | "category" | "variant" | "product_image" | "product_option" | "inventory";
 type Action = "created" | "updated" | "deleted" | "archived";
 
 export interface AuditMeta {
@@ -24,9 +24,18 @@ export interface PaginatedResult<T> {
   totalPages: number;
 }
 
+export function getPrismaModel(name: string): any {
+  if (!process.env.DATABASE_URL) return undefined;
+  return (prisma as any)[name];
+}
+
 export abstract class BaseRepository<T, CreateInput, UpdateInput> {
   protected abstract entityType: EntityType;
-  protected abstract model: any;
+  protected abstract modelName: string;
+
+  protected get model(): any {
+    return (prisma as any)[this.modelName];
+  }
 
   async findMany(where: Record<string, unknown>, params: PaginateParams = {}): Promise<PaginatedResult<T>> {
     const page = Math.max(1, params.page || 1);
@@ -34,24 +43,24 @@ export abstract class BaseRepository<T, CreateInput, UpdateInput> {
     const skip = (page - 1) * pageSize;
 
     const [items, total] = await Promise.all([
-      (this.model as any).findMany({
+      this.model.findMany({
         where: { ...where, deletedAt: null },
         orderBy: params.orderBy ? { [params.orderBy]: params.order || "desc" } : { createdAt: "desc" },
         skip,
         take: pageSize,
       }),
-      (this.model as any).count({ where: { ...where, deletedAt: null } }),
+      this.model.count({ where: { ...where, deletedAt: null } }),
     ]);
 
     return { items: items as T[], total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
   }
 
   async findById(id: string): Promise<T | null> {
-    return (this.model as any).findFirst({ where: { id, deletedAt: null } }) as Promise<T | null>;
+    return this.model.findFirst({ where: { id, deletedAt: null } }) as Promise<T | null>;
   }
 
   async create(data: CreateInput, meta: AuditMeta): Promise<T> {
-    const record = await (this.model as any).create({ data });
+    const record = await this.model.create({ data });
     await logAudit({
       entityType: this.entityType,
       entityId: record.id,
@@ -64,8 +73,8 @@ export abstract class BaseRepository<T, CreateInput, UpdateInput> {
   }
 
   async update(id: string, data: UpdateInput, meta: AuditMeta): Promise<T> {
-    const before = await (this.model as any).findUnique({ where: { id } });
-    const after = await (this.model as any).update({ where: { id }, data });
+    const before = await this.model.findUnique({ where: { id } });
+    const after = await this.model.update({ where: { id }, data });
     await logAudit({
       entityType: this.entityType,
       entityId: id,
@@ -78,7 +87,7 @@ export abstract class BaseRepository<T, CreateInput, UpdateInput> {
   }
 
   async softDelete(id: string, meta: AuditMeta): Promise<T> {
-    const record = await (this.model as any).update({
+    const record = await this.model.update({
       where: { id },
       data: { deletedAt: new Date() },
     });
@@ -94,7 +103,7 @@ export abstract class BaseRepository<T, CreateInput, UpdateInput> {
   }
 
   async hardDelete(id: string, meta: AuditMeta): Promise<void> {
-    await (this.model as any).delete({ where: { id } });
+    await this.model.delete({ where: { id } });
     await logAudit({
       entityType: this.entityType,
       entityId: id,

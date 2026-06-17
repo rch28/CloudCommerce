@@ -11,6 +11,7 @@ export const categorySchema = z.object({
   description: z.string().max(500).optional(),
   image: z.string().optional(),
   parentId: z.string().optional(),
+  status: z.enum(["active", "inactive", "archived"]).default("active"),
 });
 
 // ── Product Option ───────────────────────────────────
