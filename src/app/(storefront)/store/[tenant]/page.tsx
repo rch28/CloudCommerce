@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { ArrowRight, Zap, Shield, Truck } from "lucide-react";
-import { listProducts } from "@/lib/services/products";
+import { productRepo } from "@/lib/services/products";
 import ProductCard from "@/components/storefront/product-card";
 
 export default async function StoreHomePage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const productsResult = await listProducts(tenant);
-  const products = Array.isArray(productsResult) ? productsResult : productsResult.items;
+  const result = await productRepo.list(tenant, { status: "active", pageSize: 50 });
+  const products = result.items;
 
   return (
     <div>
@@ -64,7 +64,7 @@ export default async function StoreHomePage({ params }: { params: Promise<{ tena
               name={p.name}
               slug={p.slug}
               price={p.variants?.[0]?.price ?? 0}
-              image={p.images?.[0] ?? ""}
+              image={p.images?.[0]?.url ?? ""}
               stock={p.variants?.[0]?.quantity ?? 0}
               sold={p.sold ?? 0}
               tenant={tenant}

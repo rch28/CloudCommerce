@@ -1,5 +1,5 @@
-import { listProducts } from "@/lib/services/products";
-import { listCategories } from "@/lib/services/categories";
+import { productRepo } from "@/lib/services/products";
+import { categoryRepo } from "@/lib/services/categories";
 import ProductCard from "@/components/storefront/product-card";
 
 export const dynamic = "force-dynamic";
@@ -12,11 +12,13 @@ export default async function ProductsPage({
 }) {
   const { tenant } = await params;
   const sp = await searchParams;
-  const productsResult = await listProducts(tenant);
-  const products = Array.isArray(productsResult) ? productsResult : productsResult.items;
-  const categories = await listCategories(tenant);
 
-  let filtered = [...products].filter((p: any) => !p.archivedAt);
+  const productsResult = await productRepo.list(tenant, { status: "active", pageSize: 100 });
+  const products = productsResult.items;
+  const catResult = await categoryRepo.list(tenant);
+  const categories = catResult.items;
+
+  let filtered = [...products];
 
   if (sp.search) {
     const q = sp.search.toLowerCase();
@@ -93,7 +95,7 @@ export default async function ProductsPage({
               name={p.name}
               slug={p.slug}
               price={p.variants?.[0]?.price ?? 0}
-              image={p.images?.[0] ?? ""}
+              image={p.images?.[0]?.url ?? ""}
               stock={p.variants?.[0]?.quantity ?? 0}
               sold={p.sold ?? 0}
               tenant={tenant}

@@ -29,6 +29,27 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const forbidden = requirePermission(request, "update");
+  if (forbidden) return forbidden;
+
+  const { id } = await params;
+  try {
+    const tenantId = getTenantId(request);
+    const userId = getUserId(request);
+    const { action } = await request.json();
+
+    let category;
+    if (action === "archive") category = await categoryRepo.archive(id, { userId, tenantId });
+    else if (action === "restore") category = await categoryRepo.restore(id, { userId, tenantId });
+    else return NextResponse.json({ error: "Invalid action. Use 'archive' or 'restore'." }, { status: 400 });
+
+    return NextResponse.json(category);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const forbidden = requirePermission(request, "delete");
   if (forbidden) return forbidden;
