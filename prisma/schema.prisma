@@ -1,0 +1,367 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  subdomain String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stores       Store[]
+  products     Product[]
+  categories   Category[]
+  inventories  Inventory[]
+  auditLogs    AuditLog[]
+  orders       Order[]
+  customers    Customer[]
+  carts        Cart[]
+  subscription Subscription?
+  payments     Payment[]
+}
+
+model Store {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  slug      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  products Product[]
+
+  @@unique([slug, tenantId])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String
+  description String?
+  image       String?
+  parentId    String?
+  tenantId    String
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  parent   Category? @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  @@unique([slug, tenantId])
+}
+
+model Product {
+  id               String    @id @default(cuid())
+  tenantId         String
+  storeId          String?
+  categoryId       String?
+  name             String
+  slug             String
+  description      String?
+  shortDescription String?
+  seoTitle         String?
+  seoDescription   String?
+  status           String    @default("draft")
+  createdById      String?
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  tenant   Tenant          @relation(fields: [tenantId], references: [id])
+  store    Store?           @relation(fields: [storeId], references: [id])
+  category Category?        @relation(fields: [categoryId], references: [id])
+  images   ProductImage[]
+  variants ProductVariant[]
+  options  ProductOption[]
+
+  @@unique([slug, tenantId])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model ProductVariant {
+  id           String   @id @default(cuid())
+  productId    String
+  sku          String   @unique
+  barcode      String?
+  price        Decimal
+  comparePrice Decimal?
+  costPrice    Decimal?
+  weight       Decimal?
+  quantity     Int      @default(0)
+  isDefault    Boolean  @default(false)
+  status       String   @default("active")
+  deletedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  product         Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
+  optionValues    ProductOptionValue[]
+  inventory       Inventory?
+  inventoryLogs   InventoryLog[]
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+}
+
+model ProductOption {
+  id        String   @id @default(cuid())
+  productId String
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  product Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  values  ProductOptionValue[]
+}
+
+model ProductOptionValue {
+  id       String @id @default(cuid())
+  optionId String
+  variantId String?
+  label    String
+  value    String
+  sortOrder Int   @default(0)
+
+  option  ProductOption   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+}
+
+model Inventory {
+  id                String   @id @default(cuid())
+  variantId         String   @unique
+  quantity          Int      @default(0)
+  lowStockThreshold Int      @default(10)
+  reorderLevel      Int      @default(5)
+  tenantId          String
+  updatedAt         DateTime @updatedAt
+
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  tenant  Tenant         @relation(fields: [tenantId], references: [id])
+}
+
+model InventoryLog {
+  id          String   @id @default(cuid())
+  variantId   String
+  change      Int
+  reason      String
+  previousQty Int
+  newQty      Int
+  userId      String?
+  createdAt   DateTime @default(now())
+
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  action     String
+  changes    String?
+  userId     String?
+  tenantId   String
+  createdAt  DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  email     String
+  name      String
+  phone     String?
+  tenantId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  addresses Address[]
+  carts     Cart[]
+  orders    Order[]
+
+  @@unique([email, tenantId])
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  customerId String
+  label      String   @default("Home")
+  line1      String
+  line2      String?
+  city       String
+  state      String
+  zip        String
+  country    String   @default("US")
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model Cart {
+  id         String   @id @default(cuid())
+  customerId String?
+  sessionId  String?
+  tenantId   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  customer Customer? @relation(fields: [customerId], references: [id])
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  items    CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  variantId String
+  quantity  Int      @default(1)
+  price     Decimal
+  createdAt DateTime @default(now())
+
+  cart    Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant ProductVariant  @relation(fields: [variantId], references: [id])
+}
+
+model Order {
+  id         String   @id @default(cuid())
+  number     String   @unique
+  customerId String?
+  tenantId   String
+  status     String   @default("pending")
+  subtotal   Decimal  @default(0)
+  shipping   Decimal  @default(0)
+  tax        Decimal  @default(0)
+  total      Decimal  @default(0)
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  customer Customer? @relation(fields: [customerId], references: [id])
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  items    OrderItem[]
+  address  OrderAddress?
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  variantId   String
+  productName String
+  sku         String
+  price       Decimal
+  quantity    Int
+  image       String?
+  createdAt   DateTime @default(now())
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+}
+
+model OrderAddress {
+  id      String @id @default(cuid())
+  orderId String @unique
+  label   String
+  line1   String
+  line2   String?
+  city    String
+  state   String
+  zip     String
+  country String @default("US")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Plan {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  price       Decimal
+  features    String[]
+  maxProducts Int?
+  maxStaff    Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id                String    @id @default(cuid())
+  tenantId          String    @unique
+  planId            String
+  status            String    @default("active")
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  canceledAt        DateTime?
+  trialEndsAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  plan     Plan      @relation(fields: [planId], references: [id])
+  payments Payment[]
+}
+
+model Payment {
+  id                String   @id @default(cuid())
+  subscriptionId    String?
+  tenantId          String
+  amount            Decimal
+  currency          String   @default("usd")
+  status            String   @default("pending")
+  provider          String
+  providerPaymentId String?  @unique
+  invoiceUrl        String?
+  description       String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+}
+
+model WebhookEvent {
+  id          String    @id @default(cuid())
+  provider    String
+  eventType   String
+  rawBody     String
+  status      String    @default("pending")
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(5)
+  nextRetryAt DateTime?
+  processedAt DateTime?
+  error       String?
+  createdAt   DateTime  @default(now())
+
+  logs WebhookLog[]
+}
+
+model WebhookLog {
+  id        String   @id @default(cuid())
+  webhookId String
+  level     String   @default("info")
+  message   String
+  createdAt DateTime @default(now())
+
+  webhook WebhookEvent @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+}
