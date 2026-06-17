@@ -4,9 +4,9 @@ import { cookies } from "next/headers";
 export async function GET() {
   const session = (await cookies()).get("session");
 
-  // if (!session) {
-  //   return NextResponse.json({ loggedIn: false, user: null });
-  // }
+  if (!session) {
+    return NextResponse.json({ loggedIn: false, user: null });
+  }
 
   return NextResponse.json({
     loggedIn: true,
