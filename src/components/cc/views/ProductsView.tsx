@@ -1,109 +1,211 @@
 "use client";
-import { useState } from "react";
-import { Plus, Search, Pencil } from "lucide-react";
+import { useState, useCallback } from "react";
+import { Plus, Pencil, Archive, Trash2, Package } from "lucide-react";
 import Badge from "../Badge";
-import { products as allProducts } from "@/data/mock";
+import { products as allProducts, type Product } from "@/data/mock";
+import DataTable from "@/components/dashboard/data-table";
+import ProductForm from "@/components/dashboard/product-form";
+
 
 export default function ProductsView() {
+  const [products, setProducts] = useState<Product[]>([...allProducts]);
   const [cat, setCat] = useState("All");
   const [search, setSearch] = useState("");
-  const cats = ["All", "Audio", "Wearables"];
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<Product | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  const filtered = allProducts.filter(
+  const cats = ["All", "Audio", "Wearables", "Accessories"];
+
+  const filtered = products.filter(
     (p) =>
       (cat === "All" || p.category === cat) &&
       p.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleSave = useCallback((data: { name: string; description?: string; status: string; categoryId?: string; variants: { sku: string; price: number; quantity: number }[] }) => {
+    if (editing) {
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === editing.id
+            ? { ...p, name: data.name, status: data.status as Product["status"], price: data.variants[0]?.price ?? p.price, stock: data.variants[0]?.quantity ?? p.stock }
+            : p
+        )
+      );
+    } else {
+      const newProduct: Product = {
+        id: `P-${Date.now()}`,
+        name: data.name,
+        category: data.categoryId || "",
+        price: data.variants[0]?.price || 0,
+        stock: data.variants[0]?.quantity || 0,
+        image: "",
+        status: data.status as Product["status"],
+        sold: 0,
+        variants: data.variants.map((v) => v.sku),
+      };
+      setProducts((prev) => [newProduct, ...prev]);
+    }
+    setFormOpen(false);
+    setEditing(null);
+  }, [editing]);
+
+  const handleArchive = useCallback((id: string) => {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, status: "archived" as Product["status"] } : p))
+    );
+  }, []);
+
+  const handleDelete = useCallback((id: string) => {
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+    setConfirmDelete(null);
+  }, []);
+
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          {cats.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCat(c)}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                cat === c
-                  ? "bg-violet-600 text-white"
-                  : "border border-slate-800 bg-slate-900 text-slate-400 hover:text-white"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-        <div className="relative sm:hidden">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search products..."
-            className="w-full rounded-lg border border-slate-800 bg-slate-900 py-2 pl-9 pr-3 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-600"
-          />
-        </div>
-        <button className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-violet-900/30 hover:opacity-90">
-          <Plus size={16} /> Add Product
-        </button>
-      </div>
-
-      <div className="hidden sm:relative sm:block sm:mb-4 sm:max-w-xs">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search products..."
-          className="w-full rounded-lg border border-slate-800 bg-slate-900 py-2 pl-9 pr-3 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-600"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filtered.map((p) => (
-          <div
-            key={p.id}
-            className="group overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 transition-all hover:-translate-y-1 hover:border-violet-700/50"
+      <DataTable
+        columns={[
+          {
+            key: "name",
+            label: "Product",
+            sortable: true,
+            render: (item: Record<string, unknown>) => {
+              const p = item as unknown as Product;
+              return (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-[#1E293B]">
+                    {p.image ? (
+                      <img src={p.image} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <Package size={16} className="text-muted-foreground" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium text-[#F8FAFC]">{p.name}</p>
+                    <p className="text-xs text-muted-foreground">{p.category} · {p.variants.length} variants</p>
+                  </div>
+                </div>
+              );
+            },
+          },
+          {
+            key: "price",
+            label: "Price",
+            sortable: true,
+            render: (item: Record<string, unknown>) => {
+              const p = item as unknown as Product;
+              return <span className="font-medium text-[#F8FAFC]">${p.price.toFixed(2)}</span>;
+            },
+          },
+          {
+            key: "stock",
+            label: "Stock",
+            sortable: true,
+            render: (item: Record<string, unknown>) => {
+              const p = item as unknown as Product;
+              return (
+                <span className={`font-medium ${p.stock === 0 ? "text-rose-400" : p.stock < 15 ? "text-amber-400" : "text-emerald-400"}`}>
+                  {p.stock === 0 ? "Out of stock" : p.stock}
+                </span>
+              );
+            },
+          },
+          {
+            key: "sold",
+            label: "Sold",
+            sortable: true,
+            render: (item: Record<string, unknown>) => {
+              const p = item as unknown as Product;
+              return <span className="text-muted-foreground">{p.sold.toLocaleString()}</span>;
+            },
+          },
+          {
+            key: "status",
+            label: "Status",
+            render: (item: Record<string, unknown>) => {
+              const p = item as unknown as Product;
+              return <Badge status={p.status} />;
+            },
+          },
+          {
+            key: "actions",
+            label: "",
+            render: (item: Record<string, unknown>) => {
+              const p = item as unknown as Product;
+              return (
+                <div className="flex items-center justify-end gap-1">
+                  <button
+                    onClick={() => { setEditing(p); setFormOpen(true); }}
+                    className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC]"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                  {p.status !== "archived" && (
+                    <button
+                      onClick={() => handleArchive(p.id)}
+                      className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-amber-400"
+                    >
+                      <Archive size={14} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setConfirmDelete(p.id)}
+                    className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-rose-400"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              );
+            },
+          },
+        ]}
+        data={filtered as unknown as Record<string, unknown>[]}
+        searchable
+        searchKeys={["name", "category"]}
+        filterable
+        filters={cats.map((c) => ({ label: c, value: c }))}
+        activeFilter={cat}
+        onFilterChange={(v) => { setCat(v); setSearch(""); }}
+        emptyTitle="No products yet"
+        emptyDescription="Create your first product to start selling."
+        actions={
+          <button
+            onClick={() => { setEditing(null); setFormOpen(true); }}
+            className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6]"
           >
-            <div className="relative aspect-square overflow-hidden bg-slate-950">
-              <img
-                src={p.image}
-                alt={p.name}
-                className="h-full w-full object-cover transition-transform group-hover:scale-105"
-              />
-              <div className="absolute right-2 top-2">
-                <Badge status={p.status} />
-              </div>
-              <button className="absolute right-2 bottom-2 rounded-lg bg-slate-900/80 p-2 text-white opacity-0 backdrop-blur transition-opacity group-hover:opacity-100">
-                <Pencil size={14} />
+            <Plus size={16} /> Add Product
+          </button>
+        }
+      />
+
+      <ProductForm
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        product={editing || undefined}
+        onSave={handleSave}
+      />
+
+      {/* Delete confirmation */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-2xl">
+            <h3 className="text-lg font-semibold text-[#F8FAFC]">Delete Product</h3>
+            <p className="mt-2 text-sm text-muted-foreground">Are you sure? This action cannot be undone.</p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(confirmDelete)}
+                className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-500"
+              >
+                Delete
               </button>
             </div>
-            <div className="p-4">
-              <p className="text-xs text-violet-400">{p.category}</p>
-              <h4 className="mt-0.5 truncate font-medium text-white">{p.name}</h4>
-              <div className="mt-3 flex items-center justify-between">
-                <span className="text-lg font-bold text-white">${p.price.toFixed(2)}</span>
-                <span
-                  className={`text-xs font-medium ${
-                    p.stock === 0 ? "text-rose-400" : p.stock < 15 ? "text-amber-400" : "text-emerald-400"
-                  }`}
-                >
-                  {p.stock === 0 ? "Out of stock" : `${p.stock} in stock`}
-                </span>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-1">
-                {p.variants.map((v) => (
-                  <span key={v} className="rounded border border-slate-800 px-1.5 py-0.5 text-[10px] text-slate-400">
-                    {v}
-                  </span>
-                ))}
-              </div>
-            </div>
           </div>
-        ))}
-      </div>
-      {filtered.length === 0 && (
-        <div className="flex flex-col items-center py-16 text-slate-500">
-          <Search size={32} className="mb-2" />
-          No products found.
         </div>
       )}
     </div>

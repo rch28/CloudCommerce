@@ -1,31 +1,95 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { logger } from "@/lib/logger";
 
-const protectedPaths = ["/admin", "/merchant"];
-const authPaths = ["/"];
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.stripe.com https://*.sentry.io",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "img-src 'self' data: blob: https://*.cloudfront.net https://*.stripe.com",
+  "font-src 'self' https://fonts.gstatic.com",
+  "connect-src 'self' https://*.stripe.com https://*.sentry.io https://famous.ai",
+  "frame-src 'self' https://*.stripe.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+
+const SECURE_HEADERS: Record<string, string> = {
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "X-XSS-Protection": "1; mode=block",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+};
+
+const PUBLIC_PATHS = [
+  "/_next/",
+  "/api/webhooks/",
+  "/favicon.ico",
+  "/images/",
+  "/fonts/",
+];
+
+function isPublic(pathname: string): boolean {
+  return PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+}
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const session = request.cookies.get("session");
-  const isLoggedIn = true;
-  const host = request.headers.get("host") || "";
-  const subdomain = host.split(".")[0];
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-tenant-subdomain", subdomain);
+  const requestId = crypto.randomUUID?.() || `${Date.now()}`;
+  const start = Date.now();
 
-  if (isLoggedIn && authPaths.includes(pathname)) {
-    return NextResponse.redirect(new URL("/admin", request.url));
+  const response = NextResponse.next();
+
+  response.headers.set("x-request-id", requestId);
+
+  // CSP
+  response.headers.set("Content-Security-Policy", CSP);
+
+  // Security headers
+  for (const [key, value] of Object.entries(SECURE_HEADERS)) {
+    response.headers.set(key, value);
   }
 
-  if (!isLoggedIn && protectedPaths.some((p) => pathname.startsWith(p))) {
-    return NextResponse.redirect(new URL("/", request.url));
+  // Rate limiting on API routes
+  if (pathname.startsWith("/api/") && !pathname.startsWith("/api/webhooks/")) {
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const key = `api:${ip}:${pathname}`;
+    const { allowed, remaining, reset } = rateLimit(key, { maxRequests: 100, windowMs: 60_000 });
+
+    response.headers.set("x-ratelimit-remaining", String(remaining));
+    response.headers.set("x-ratelimit-reset", String(reset));
+
+    if (!allowed) {
+      logger.warn("Rate limit exceeded", { requestId, metadata: { path: pathname, ip } });
+      return new NextResponse(JSON.stringify({ error: "Too many requests" }), {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": String(Math.ceil(reset - Date.now() / 1000)),
+        },
+      });
+    }
   }
 
-  return NextResponse.next({ request: { headers: requestHeaders } });
+  // Request logging (sample non-public paths)
+  if (!isPublic(pathname)) {
+    const duration = Date.now() - start;
+    logger.info(`${request.method} ${pathname}`, {
+      requestId,
+      durationMs: duration,
+      metadata: { method: request.method, path: pathname },
+    });
+  }
+
+  return response;
 }
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.svg).*)",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };

@@ -114,3 +114,91 @@ export const categoryData = [
   { name: "Wearables", value: 31, color: "#06b6d4" },
   { name: "Accessories", value: 15, color: "#22c55e" },
 ];
+
+export const orderChartData = [
+  { day: "Mon", orders: 42 },
+  { day: "Tue", orders: 58 },
+  { day: "Wed", orders: 35 },
+  { day: "Thu", orders: 67 },
+  { day: "Fri", orders: 81 },
+  { day: "Sat", orders: 29 },
+  { day: "Sun", orders: 23 },
+];
+
+export interface MerchantGrowth {
+  month: string;
+  merchants: number;
+  active: number;
+}
+
+export const merchantGrowthData: MerchantGrowth[] = [
+  { month: "Jan", merchants: 120, active: 98 },
+  { month: "Feb", merchants: 142, active: 115 },
+  { month: "Mar", merchants: 158, active: 132 },
+  { month: "Apr", merchants: 178, active: 149 },
+  { month: "May", merchants: 196, active: 165 },
+  { month: "Jun", merchants: 214, active: 182 },
+];
+
+export interface Activity {
+  id: string;
+  type: "merchant_joined" | "store_launched" | "payment_received" | "plan_upgraded" | "alert";
+  message: string;
+  time: string;
+  user?: string;
+}
+
+export const activityData: Activity[] = [
+  { id: "A-1", type: "merchant_joined", message: "New merchant registered", time: "2 min ago", user: "Luna Fashion" },
+  { id: "A-2", type: "store_launched", message: "Store launched", time: "15 min ago", user: "ByteCraft" },
+  { id: "A-3", type: "payment_received", message: "Payment of $1,240 received", time: "1 hour ago", user: "SoundWave Co." },
+  { id: "A-4", type: "plan_upgraded", message: "Upgraded to Scale plan", time: "2 hours ago", user: "Pixel Studio" },
+  { id: "A-5", type: "alert", message: "Inventory low alert", time: "3 hours ago", user: "GreenLeaf Goods" },
+  { id: "A-6", type: "merchant_joined", message: "New merchant registered", time: "5 hours ago", user: "ArtisanCraft" },
+  { id: "A-7", type: "payment_received", message: "Payment of $3,450 received", time: "6 hours ago", user: "TimeKeepers" },
+  { id: "A-8", type: "store_launched", message: "Store launched", time: "8 hours ago", user: "Coastal Living" },
+];
+
+export interface DashboardMetrics {
+  totalMerchants: number;
+  activeStores: number;
+  platformRevenue: number;
+  ordersToday: number;
+  merchantChange: number;
+  storeChange: number;
+  revenueChange: number;
+  ordersChange: number;
+}
+
+export const adminMetrics: DashboardMetrics = {
+  totalMerchants: 214,
+  activeStores: 182,
+  platformRevenue: 584200,
+  ordersToday: 847,
+  merchantChange: 12.5,
+  storeChange: 8.3,
+  revenueChange: 21.5,
+  ordersChange: 14.2,
+};
+
+export interface MerchantMetrics {
+  revenue: number;
+  orders: number;
+  products: number;
+  inventory: number;
+  revenueChange: number;
+  ordersChange: number;
+  productsChange: number;
+  inventoryChange: number;
+}
+
+export const merchantMetrics: MerchantMetrics = {
+  revenue: 84120,
+  orders: 1510,
+  products: 142,
+  inventory: 127,
+  revenueChange: 16.2,
+  ordersChange: 12.8,
+  productsChange: 4.1,
+  inventoryChange: -2.3,
+};

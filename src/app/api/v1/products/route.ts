@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listProducts, createProduct } from "@/lib/services/products";
-import { logAudit } from "@/lib/audit";
+import { productRepo } from "@/lib/services/products";
 import { getTenantId, getUserId, requirePermission, handleError } from "@/lib/api-helpers";
 
 export async function GET(request: NextRequest) {
@@ -10,11 +9,11 @@ export async function GET(request: NextRequest) {
   try {
     const tenantId = getTenantId(request);
     const sp = request.nextUrl.searchParams;
-    const result = await listProducts(tenantId, {
+    const result = await productRepo.list(tenantId, {
       search: sp.get("search") || undefined,
-      category: sp.get("category") || undefined,
+      categoryId: sp.get("category") || undefined,
       status: sp.get("status") || undefined,
-      sort: sp.get("sort") || undefined,
+      orderBy: sp.get("sort") || undefined,
       order: (sp.get("order") as "asc" | "desc") || undefined,
       page: Number(sp.get("page")) || 1,
       pageSize: Number(sp.get("pageSize")) || 10,
@@ -33,8 +32,7 @@ export async function POST(request: NextRequest) {
     const tenantId = getTenantId(request);
     const userId = getUserId(request);
     const body = await request.json();
-    const product = await createProduct(body, tenantId, userId);
-    await logAudit({ entityType: "product", entityId: product.id, action: "created", userId, tenantId });
+    const product = await productRepo.createOne(body, { userId, tenantId });
     return NextResponse.json(product, { status: 201 });
   } catch (e) {
     return handleError(e);
