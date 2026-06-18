@@ -2,25 +2,131 @@
 import React, { useState } from "react";
 import CheckoutForm from "@/components/storefront/checkout-form";
 import Link from "next/link";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Package } from "lucide-react";
+
+interface OrderItem {
+  id: string;
+  productName: string;
+  sku: string;
+  price: number;
+  quantity: number;
+  image: string | null;
+}
+
+interface OrderAddress {
+  label: string;
+  line1: string;
+  line2: string | null;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+}
+
+interface OrderData {
+  id: string;
+  number: string;
+  status: string;
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
+  notes: string | null;
+  createdAt: string;
+  items: OrderItem[];
+  address: OrderAddress | null;
+}
 
 export default function CheckoutPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = React.use(params);
-  const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const [order, setOrder] = useState<OrderData | null>(null);
   const base = `/store/${tenant}`;
 
-  if (orderNumber) {
+  if (order) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
-        <CheckCircle size={64} className="mx-auto text-emerald-500 mb-6" />
-        <h1 className="text-3xl font-bold text-[#F8FAFC]">Order Placed!</h1>
-        <p className="mt-3 text-muted-foreground">Your order <span className="font-mono text-[#F8FAFC]">#{orderNumber}</span> has been placed successfully.</p>
-        <p className="mt-1 text-sm text-muted-foreground">We'll send you a confirmation email shortly.</p>
+      <div className="mx-auto max-w-2xl px-4 py-12">
+        <div className="text-center mb-8">
+          <CheckCircle size={64} className="mx-auto text-emerald-500 mb-4" />
+          <h1 className="text-3xl font-bold text-[#F8FAFC]">Order Placed!</h1>
+          <p className="mt-2 text-muted-foreground">
+            Your order <span className="font-mono text-[#F8FAFC]">#{order.number}</span> has been placed successfully.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-xl border border-border bg-card p-4">
+            <h3 className="mb-3 text-sm font-medium text-[#F8FAFC]">Items ({order.items.length})</h3>
+            <div className="divide-y divide-border">
+              {order.items.map((item) => (
+                <div key={item.id} className="flex items-center gap-3 py-2 text-sm">
+                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#18181B]">
+                    {item.image ? (
+                      <img src={item.image} alt={item.productName} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-muted-foreground">
+                        <Package size={16} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-[#F8FAFC]">{item.productName}</p>
+                    <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[#F8FAFC]">${(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">x{item.quantity}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-4">
+            <h3 className="mb-3 text-sm font-medium text-[#F8FAFC]">Order Summary</h3>
+            <div className="space-y-1.5 text-sm">
+              <div className="flex justify-between text-muted-foreground">
+                <span>Subtotal</span>
+                <span>${order.subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Shipping</span>
+                <span>{order.shipping === 0 ? "Free" : `$${order.shipping.toFixed(2)}`}</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Tax (8%)</span>
+                <span>${order.tax.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-[#F8FAFC]">
+                <span>Total</span>
+                <span>${order.total.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          {order.address && (
+            <div className="rounded-xl border border-border bg-card p-4">
+              <h3 className="mb-3 text-sm font-medium text-[#F8FAFC]">Shipping Address</h3>
+              <div className="text-sm text-muted-foreground space-y-0.5">
+                <p className="font-medium text-[#F8FAFC]">{order.address.label}</p>
+                <p>{order.address.line1}</p>
+                {order.address.line2 && <p>{order.address.line2}</p>}
+                <p>{order.address.city}, {order.address.state} {order.address.zip}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="mt-8 flex flex-wrap justify-center gap-4">
-          <Link href={`${base}/account/orders`} className="rounded-lg bg-[#7C3AED] px-6 py-3 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors">
+          <Link
+            href={`${base}/account/orders`}
+            className="rounded-lg bg-[#7C3AED] px-6 py-3 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors"
+          >
             View Orders
           </Link>
-          <Link href={`${base}/products`} className="rounded-lg border border-border px-6 py-3 text-sm font-medium text-[#F8FAFC] hover:bg-card transition-colors">
+          <Link
+            href={`${base}/products`}
+            className="rounded-lg border border-border px-6 py-3 text-sm font-medium text-[#F8FAFC] hover:bg-card transition-colors"
+          >
             Continue Shopping
           </Link>
         </div>
@@ -31,7 +137,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ tenant: str
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <h1 className="text-2xl font-bold text-[#F8FAFC] mb-8">Checkout</h1>
-      <CheckoutForm tenant={tenant} onSuccess={(num) => setOrderNumber(num)} />
+      <CheckoutForm tenant={tenant} onSuccess={(ord) => setOrder(ord as OrderData)} />
     </div>
   );
 }

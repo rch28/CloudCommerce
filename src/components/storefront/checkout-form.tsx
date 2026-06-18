@@ -1,36 +1,160 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
-import { Loader2, CreditCard } from "lucide-react";
+import {
+  Loader2,
+  CreditCard,
+  MapPin,
+  CheckCircle,
+  Plus,
+  ChevronRight,
+} from "lucide-react";
 import Link from "next/link";
+
+interface SavedAddress {
+  id: string;
+  label: string;
+  line1: string;
+  line2: string | null;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+  isDefault: boolean;
+}
+
+interface AddressForm {
+  label: string;
+  line1: string;
+  city: string;
+  state: string;
+  zip: string;
+  line2: string;
+  country: string;
+}
 
 interface CheckoutFormProps {
   tenant: string;
-  onSuccess: (orderNumber: string) => void;
+  onSuccess: (order: unknown) => void;
 }
 
-export default function CheckoutForm({ tenant, onSuccess }: CheckoutFormProps) {
-  const { items, clearCart, pricing } = useCart();
-  const [step, setStep] = useState<"info" | "confirm" | "done">("info");
-  const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", line1: "", city: "", state: "", zip: "", notes: "" });
+const emptyAddress: AddressForm = {
+  label: "Home",
+  line1: "",
+  line2: "",
+  city: "",
+  state: "",
+  zip: "",
+  country: "US",
+};
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (step === "info") {
-      setStep("confirm");
-      return;
+export default function CheckoutForm({ tenant, onSuccess }: CheckoutFormProps) {
+  const { items, clearCart, pricing, isAuthenticated } = useCart();
+  const [step, setStep] = useState<"address" | "review">("address");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+  const [showNewAddress, setShowNewAddress] = useState(false);
+  const [address, setAddress] = useState<AddressForm>(emptyAddress);
+  const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetch("/api/v1/account/addresses")
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data: SavedAddress[]) => {
+          setSavedAddresses(data);
+          const defaultAddr = data.find((a) => a.isDefault) ?? data[0];
+          if (defaultAddr) setSelectedAddressId(defaultAddr.id);
+        })
+        .catch(() => {});
     }
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    const orderNum = `DEMO-${String(Math.floor(10000 + Math.random() * 90000))}`;
-    clearCart();
-    setStep("done");
-    setLoading(false);
-    onSuccess(orderNum);
+  }, [isAuthenticated]);
+
+  function getSelectedAddress(): Omit<SavedAddress, "id" | "isDefault"> | null {
+    if (isAuthenticated && selectedAddressId && !showNewAddress) {
+      const addr = savedAddresses.find((a) => a.id === selectedAddressId);
+      if (addr) {
+        return {
+          label: addr.label,
+          line1: addr.line1,
+          line2: addr.line2,
+          city: addr.city,
+          state: addr.state,
+          zip: addr.zip,
+          country: addr.country,
+        };
+      }
+    }
+    if (showNewAddress || !isAuthenticated) {
+      if (!address.line1 || !address.city || !address.state || !address.zip) return null;
+      return {
+        label: address.label,
+        line1: address.line1,
+        line2: address.line2 || null,
+        city: address.city,
+        state: address.state,
+        zip: address.zip,
+        country: address.country,
+      };
+    }
+    return null;
   }
 
-  if (items.length === 0 && step !== "done") {
+  function canContinueToReview(): boolean {
+    if (isAuthenticated && !showNewAddress) return selectedAddressId !== "";
+    const addr = address;
+    return addr.line1 !== "" && addr.city !== "" && addr.state !== "" && addr.zip !== "";
+  }
+
+  async function handlePlaceOrder() {
+    setLoading(true);
+    setError("");
+
+    const selectedAddr = getSelectedAddress();
+
+    const body: Record<string, unknown> = {
+      tenantId: tenant,
+      notes: notes || undefined,
+    };
+
+    if (isAuthenticated && selectedAddressId && !showNewAddress) {
+      body.addressId = selectedAddressId;
+    } else if (selectedAddr) {
+      body.address = selectedAddr;
+    } else {
+      setError("Please provide a shipping address");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/v1/checkout", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Failed to place order");
+        setLoading(false);
+        return;
+      }
+
+      clearCart();
+      onSuccess(data.order);
+    } catch {
+      setError("Network error. Please try again.");
+      setLoading(false);
+    }
+  }
+
+  if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <CreditCard size={48} className="text-muted-foreground mb-4" />
@@ -42,97 +166,265 @@ export default function CheckoutForm({ tenant, onSuccess }: CheckoutFormProps) {
     );
   }
 
-  if (step === "done") return null;
+  if (step === "address") {
+    return (
+      <div className="mx-auto max-w-2xl space-y-6">
+        <div className="rounded-xl border border-border bg-card p-6">
+          <h2 className="text-lg font-semibold text-[#F8FAFC] mb-4 flex items-center gap-2">
+            <MapPin size={18} className="text-[#7C3AED]" />
+            Shipping Address
+          </h2>
+
+          {isAuthenticated && savedAddresses.length > 0 && !showNewAddress && (
+            <div className="space-y-3">
+              {savedAddresses.map((addr) => (
+                <button
+                  key={addr.id}
+                  type="button"
+                  onClick={() => setSelectedAddressId(addr.id)}
+                  className={`w-full rounded-lg border p-4 text-left transition-colors ${
+                    selectedAddressId === addr.id
+                      ? "border-[#7C3AED] bg-[#7C3AED]/5"
+                      : "border-border hover:border-muted-foreground/50"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 ${
+                      selectedAddressId === addr.id
+                        ? "border-[#7C3AED] bg-[#7C3AED]"
+                        : "border-muted-foreground"
+                    }`}>
+                      {selectedAddressId === addr.id && (
+                        <CheckCircle size={14} className="text-white" />
+                      )}
+                    </div>
+                    <div className="text-sm">
+                      <p className="font-medium text-[#F8FAFC]">{addr.label}</p>
+                      <p className="text-muted-foreground">{addr.line1}</p>
+                      {addr.line2 && <p className="text-muted-foreground">{addr.line2}</p>}
+                      <p className="text-muted-foreground">{addr.city}, {addr.state} {addr.zip}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => { setShowNewAddress(true); setSelectedAddressId(""); }}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground hover:text-[#F8FAFC] hover:border-muted-foreground/50 transition-colors"
+              >
+                <Plus size={16} /> Add a new address
+              </button>
+            </div>
+          )}
+
+          {(showNewAddress || !isAuthenticated || savedAddresses.length === 0) && (
+            <div className="space-y-4">
+              {isAuthenticated && savedAddresses.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowNewAddress(false)}
+                  className="text-sm text-[#7C3AED] hover:text-[#8B5CF6] transition-colors"
+                >
+                  &larr; Select saved address
+                </button>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1 block text-xs text-muted-foreground">Label</label>
+                  <input
+                    value={address.label}
+                    onChange={(e) => setAddress({ ...address, label: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+                    placeholder="Home"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-muted-foreground">Address Line 1</label>
+                <input
+                  required
+                  value={address.line1}
+                  onChange={(e) => setAddress({ ...address, line1: e.target.value })}
+                  className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+                  placeholder="123 Main St"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-muted-foreground">Address Line 2 (optional)</label>
+                <input
+                  value={address.line2}
+                  onChange={(e) => setAddress({ ...address, line2: e.target.value })}
+                  className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+                  placeholder="Apt 4B"
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="mb-1 block text-xs text-muted-foreground">City</label>
+                  <input
+                    required
+                    value={address.city}
+                    onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+                    placeholder="Portland"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-muted-foreground">State</label>
+                  <input
+                    required
+                    value={address.state}
+                    onChange={(e) => setAddress({ ...address, state: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+                    placeholder="OR"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-muted-foreground">ZIP</label>
+                  <input
+                    required
+                    value={address.zip}
+                    onChange={(e) => setAddress({ ...address, zip: e.target.value })}
+                    className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+                    placeholder="97201"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            type="button"
+            disabled={!canContinueToReview()}
+            onClick={() => setStep("review")}
+            className="flex items-center gap-2 rounded-lg bg-[#7C3AED] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Continue to Review
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const selectedAddr = getSelectedAddress();
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-8">
-      {step === "info" && (
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h2 className="text-lg font-semibold text-[#F8FAFC] mb-4">Shipping Information</h2>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="mb-1 block text-xs text-muted-foreground">Full Name</label>
-                <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]" />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs text-muted-foreground">Email</label>
-                <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]" />
-              </div>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-muted-foreground">Phone (optional)</label>
-              <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-muted-foreground">Address Line 1</label>
-              <input required value={form.line1} onChange={(e) => setForm({ ...form, line1: e.target.value })} className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]" />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="mb-1 block text-xs text-muted-foreground">City</label>
-                <input required value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]" />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs text-muted-foreground">State</label>
-                <input required value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]" />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs text-muted-foreground">ZIP</label>
-                <input required value={form.zip} onChange={(e) => setForm({ ...form, zip: e.target.value })} className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]" />
-              </div>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-muted-foreground">Order Notes (optional)</label>
-              <textarea rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED] resize-none" />
-            </div>
-          </div>
-          <div className="mt-6 border-t border-border pt-4">
-            <div className="space-y-1 text-sm">
+    <div className="mx-auto max-w-2xl space-y-6">
+      <div className="rounded-xl border border-border bg-card p-6">
+        <h2 className="text-lg font-semibold text-[#F8FAFC] mb-4">Review Order</h2>
+
+        <div className="space-y-4">
+          <div>
+            <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Items ({items.length})</h3>
+            <div className="divide-y divide-border rounded-lg border border-border">
               {items.map((item) => (
-                <div key={item.variantId} className="flex justify-between text-muted-foreground">
-                  <span>{item.productName} x{item.quantity}</span>
-                  <span>${(item.price * item.quantity).toFixed(2)}</span>
+                <div key={item.variantId} className="flex items-center gap-3 p-3 text-sm">
+                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#18181B]">
+                    {item.image ? (
+                      <img src={item.image} alt={item.productName} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-muted-foreground">
+                        <CreditCard size={14} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-[#F8FAFC]">{item.productName}</p>
+                    <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[#F8FAFC]">${(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">{item.quantity} × ${item.price.toFixed(2)}</p>
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="mt-3 space-y-1 border-t border-border pt-3 text-sm">
-              <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>${pricing.subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span>{pricing.shipping === 0 ? "Free" : `$${pricing.shipping.toFixed(2)}`}</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>Tax (8%)</span><span>${pricing.tax.toFixed(2)}</span></div>
-              <div className="flex justify-between font-semibold text-[#F8FAFC] pt-1"><span>Total</span><span>${pricing.total.toFixed(2)}</span></div>
+          </div>
+
+          {selectedAddr && (
+            <div>
+              <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Shipping Address</h3>
+              <div className="rounded-lg border border-border bg-[#09090B] p-3 text-sm">
+                <p className="font-medium text-[#F8FAFC]">{selectedAddr.label}</p>
+                <p className="text-muted-foreground">{selectedAddr.line1}</p>
+                {selectedAddr.line2 && <p className="text-muted-foreground">{selectedAddr.line2}</p>}
+                <p className="text-muted-foreground">{selectedAddr.city}, {selectedAddr.state} {selectedAddr.zip}</p>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Order Notes (optional)</h3>
+            <textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED] resize-none"
+              placeholder="Any special instructions?"
+            />
+          </div>
+
+          <div className="border-t border-border pt-4">
+            <div className="space-y-1.5 text-sm">
+              <div className="flex justify-between text-muted-foreground">
+                <span>Subtotal</span>
+                <span>${pricing.subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Shipping</span>
+                <span>{pricing.shipping === 0 ? "Free" : `$${pricing.shipping.toFixed(2)}`}</span>
+              </div>
+              {pricing.discounts > 0 && (
+                <div className="flex justify-between text-emerald-400">
+                  <span>Discount</span>
+                  <span>-${pricing.discounts.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-muted-foreground">
+                <span>Tax (8%)</span>
+                <span>${pricing.tax.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-[#F8FAFC]">
+                <span>Total</span>
+                <span>${pricing.total.toFixed(2)}</span>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
-      {step === "confirm" && (
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h2 className="text-lg font-semibold text-[#F8FAFC] mb-4">Confirm Order</h2>
-          <div className="space-y-3 text-sm">
-            <div><span className="text-muted-foreground">Name:</span> <span className="text-[#F8FAFC]">{form.name}</span></div>
-            <div><span className="text-muted-foreground">Email:</span> <span className="text-[#F8FAFC]">{form.email}</span></div>
-            <div><span className="text-muted-foreground">Address:</span> <span className="text-[#F8FAFC]">{form.line1}, {form.city}, {form.state} {form.zip}</span></div>
-            <div><span className="text-muted-foreground">Items:</span> <span className="text-[#F8FAFC]">{items.length} item(s)</span></div>
-            <div className="border-t border-border pt-3 text-lg font-bold text-[#F8FAFC]">Total: ${pricing.total.toFixed(2)}</div>
-          </div>
+      {error && (
+        <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-400">
+          {error}
         </div>
       )}
 
       <div className="flex gap-3">
-        {step === "confirm" && (
-          <button type="button" onClick={() => setStep("info")} className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-[#F8FAFC] hover:bg-card transition-colors">
-            Back
-          </button>
-        )}
         <button
-          type="submit"
+          type="button"
+          onClick={() => setStep("address")}
           disabled={loading}
+          className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-[#F8FAFC] hover:bg-card transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Back
+        </button>
+        <button
+          type="button"
+          disabled={loading}
+          onClick={handlePlaceOrder}
           className="flex-1 rounded-lg bg-[#7C3AED] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading ? <Loader2 size={16} className="mx-auto animate-spin" /> : step === "info" ? "Continue to Review" : "Place Order"}
+          {loading ? (
+            <Loader2 size={16} className="mx-auto animate-spin" />
+          ) : (
+            `Place Order — $${pricing.total.toFixed(2)}`
+          )}
         </button>
       </div>
-    </form>
+    </div>
   );
 }

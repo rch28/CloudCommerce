@@ -219,6 +219,15 @@ export const subscriptionSchema = z.object({
   trialDays: z.number().int().min(0).max(30).optional(),
 });
 
+export const checkoutSchema = z.object({
+  addressId: z.string().optional(),
+  address: addressSchema.optional(),
+  notes: z.string().max(1000).optional(),
+}).refine(
+  (data) => data.addressId || data.address,
+  { message: "Either addressId or address is required" },
+);
+
 export const paymentSchema = z.object({
   amount: z.number().positive(),
   currency: z.string().default("usd"),
@@ -243,6 +252,7 @@ export type CustomerInput = z.infer<typeof customerSchema>;
 export type AddressInput = z.infer<typeof addressSchema>;
 export type CartItemInput = z.infer<typeof cartItemSchema>;
 export type OrderInput = z.infer<typeof orderSchema>;
+export type CheckoutInput = z.infer<typeof checkoutSchema>;
 export type SubscriptionInput = z.infer<typeof subscriptionSchema>;
 export type PaymentInput = z.infer<typeof paymentSchema>;
 export type StoreInfoInput = z.infer<typeof storeInfoSchema>;

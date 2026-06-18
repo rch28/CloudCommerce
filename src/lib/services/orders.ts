@@ -1,6 +1,224 @@
 import { prisma } from "@/lib/prisma";
-import { orderSchema, addressSchema, type OrderInput } from "@/lib/schemas";
+import { orderSchema, type OrderInput } from "@/lib/schemas";
 import { logAudit } from "@/lib/audit";
+
+interface OrderAddressData {
+  label: string;
+  line1: string;
+  line2: string | null;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+}
+
+export interface CheckoutParams {
+  customerId: string | null;
+  sessionId: string | null;
+  tenantId: string;
+  addressId?: string;
+  address?: Omit<OrderAddressData, "id" | "orderId">;
+  notes?: string;
+}
+
+interface OrderResult {
+  id: string;
+  number: string;
+  customerId: string | null;
+  tenantId: string;
+  status: string;
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
+  notes: string | null;
+  createdAt: Date;
+  items: Array<{
+    id: string;
+    variantId: string;
+    productName: string;
+    sku: string;
+    price: number;
+    quantity: number;
+    image: string | null;
+  }>;
+  address: OrderAddressData | null;
+}
+
+async function generateOrderNumber(): Promise<string> {
+  const lastOrder = await prisma.order.findFirst({
+    where: { number: { startsWith: "CC-" } },
+    orderBy: { number: "desc" },
+    select: { number: true },
+  });
+  const lastNum = lastOrder ? parseInt(lastOrder.number.slice(3), 10) : 0;
+  return `CC-${String(lastNum + 1).padStart(5, "0")}`;
+}
+
+export async function checkout(params: CheckoutParams): Promise<OrderResult> {
+  const { customerId, sessionId, tenantId, addressId, address: inlineAddress, notes } = params;
+
+  return prisma.$transaction(async (tx) => {
+    const cart = await tx.cart.findFirst({
+      where: customerId
+        ? { customerId, tenantId }
+        : { sessionId, tenantId },
+      include: {
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: {
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                    images: { select: { url: true }, take: 1 },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!cart || cart.items.length === 0) {
+      throw new Error("Cart is empty");
+    }
+
+    for (const item of cart.items) {
+      const variant = item.variant;
+      if (!variant) throw new Error(`Variant ${item.variantId} not found`);
+      if (variant.status !== "active") {
+        throw new Error(`${variant.product?.name ?? "Product"} is no longer available`);
+      }
+      if (variant.quantity < item.quantity) {
+        throw new Error(
+          `Insufficient stock for ${variant.product?.name ?? "product"}: ${variant.quantity} available, ${item.quantity} requested`,
+        );
+      }
+    }
+
+    let resolvedAddress: OrderAddressData;
+
+    if (addressId) {
+      const savedAddress = await tx.address.findUnique({ where: { id: addressId } });
+      if (!savedAddress) throw new Error("Address not found");
+      resolvedAddress = {
+        label: savedAddress.label,
+        line1: savedAddress.line1,
+        line2: savedAddress.line2,
+        city: savedAddress.city,
+        state: savedAddress.state,
+        zip: savedAddress.zip,
+        country: savedAddress.country,
+      };
+    } else if (inlineAddress) {
+      resolvedAddress = {
+        label: inlineAddress.label,
+        line1: inlineAddress.line1,
+        line2: inlineAddress.line2 ?? null,
+        city: inlineAddress.city,
+        state: inlineAddress.state,
+        zip: inlineAddress.zip,
+        country: inlineAddress.country,
+      };
+    } else {
+      throw new Error("Shipping address is required");
+    }
+
+    const orderNumber = await generateOrderNumber();
+    const subtotal = cart.items.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
+    const shipping = subtotal >= 100 ? 0 : 10;
+    const tax = Math.round(subtotal * 0.08 * 100) / 100;
+    const total = Math.round((subtotal + shipping + tax) * 100) / 100;
+
+    const order = await tx.order.create({
+      data: {
+        number: orderNumber,
+        customerId,
+        tenantId,
+        status: "confirmed",
+        subtotal,
+        shipping,
+        tax,
+        total,
+        notes: notes ?? null,
+        items: {
+          create: cart.items.map((item) => ({
+            variantId: item.variantId,
+            productName: item.variant?.product?.name ?? "",
+            sku: item.variant?.sku ?? "",
+            price: Number(item.price),
+            quantity: item.quantity,
+            image: item.variant?.product?.images?.[0]?.url ?? null,
+          })),
+        },
+        address: { create: resolvedAddress },
+      },
+      include: { items: true, address: true },
+    });
+
+    for (const item of cart.items) {
+      const result = await tx.$queryRawUnsafe<Array<{ quantity: number }>>(
+        `UPDATE "ProductVariant" SET quantity = quantity - $1 WHERE id = $2 AND quantity >= $1 RETURNING quantity`,
+        item.quantity,
+        item.variantId,
+      );
+      if (result.length === 0) {
+        throw new Error(
+          `Stock depleted for ${item.variant?.product?.name ?? "product"} during checkout`,
+        );
+      }
+    }
+
+    await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+    await tx.cart.delete({ where: { id: cart.id } });
+
+    await logAudit({
+      entityType: "order",
+      entityId: order.id,
+      action: "created",
+      changes: { number: orderNumber, total, items: cart.items.length },
+      tenantId,
+    }).catch(() => {});
+
+    return {
+      id: order.id,
+      number: order.number,
+      customerId: order.customerId,
+      tenantId: order.tenantId,
+      status: order.status,
+      subtotal: Number(order.subtotal),
+      shipping: Number(order.shipping),
+      tax: Number(order.tax),
+      total: Number(order.total),
+      notes: order.notes,
+      createdAt: order.createdAt,
+      items: order.items.map((i) => ({
+        id: i.id,
+        variantId: i.variantId,
+        productName: i.productName,
+        sku: i.sku,
+        price: Number(i.price),
+        quantity: i.quantity,
+        image: i.image,
+      })),
+      address: order.address
+        ? {
+            label: order.address.label,
+            line1: order.address.line1,
+            line2: order.address.line2,
+            city: order.address.city,
+            state: order.address.state,
+            zip: order.address.zip,
+            country: order.address.country,
+          }
+        : null,
+    };
+  });
+}
 
 let orderCounter = 1000;
 const mockOrders: Array<{
@@ -36,8 +254,8 @@ export async function createOrder(data: OrderInput, tenantId: string) {
     const orderNumber = `CC-${String(++orderCounter).padStart(5, "0")}`;
     const subtotal = parsed.items.reduce((s, i) => s + i.price * i.quantity, 0);
     const shipping = subtotal > 100 ? 0 : 10;
-    const tax = subtotal * 0.08;
-    const total = subtotal + shipping + tax;
+    const tax = Math.round(subtotal * 0.08 * 100) / 100;
+    const total = Math.round((subtotal + shipping + tax) * 100) / 100;
 
     const addressData = parsed.addressId
       ? undefined
@@ -77,8 +295,8 @@ export async function createOrder(data: OrderInput, tenantId: string) {
   const orderNumber = `CC-${String(++orderCounter).padStart(5, "0")}`;
   const subtotal = parsed.items.reduce((s, i) => s + i.price * i.quantity, 0);
   const shipping = subtotal > 100 ? 0 : 10;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
+  const tax = Math.round(subtotal * 0.08 * 100) / 100;
+  const total = Math.round((subtotal + shipping + tax) * 100) / 100;
 
   const addrData = parsed.address ? { id: `oa-${Date.now()}`, orderId: `ord-${Date.now()}`, label: parsed.address.label || "Home", line1: parsed.address.line1, line2: parsed.address.line2 ?? null, city: parsed.address.city, state: parsed.address.state, zip: parsed.address.zip, country: parsed.address.country || "US" } : null;
 
