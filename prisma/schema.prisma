@@ -34,6 +34,8 @@ model Store {
   logo        String?
   primaryColor   String   @default("#7C3AED")
   secondaryColor String @default("#8B5CF6")
+  headingFont    String   @default("Inter")
+  bodyFont       String   @default("Inter")
   contactEmail   String?
   contactPhone   String?
   addressCountry String?

@@ -63,12 +63,34 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
   protected entityType = "product" as const;
   protected modelName = "product";
 
-  async list(tenantId: string, params: PaginateParams & { search?: string; categoryId?: string; status?: string } = {}): Promise<PaginatedResult<ProductRecord>> {
+  async list(tenantId: string, params: PaginateParams & { search?: string; categoryId?: string; status?: string; sort?: string; minPrice?: number; maxPrice?: number } = {}): Promise<PaginatedResult<ProductRecord>> {
     if (process.env.DATABASE_URL) {
       const where: Record<string, unknown> = { tenantId, deletedAt: null };
       if (params.search) where.name = { contains: params.search };
       if (params.categoryId) where.categoryId = params.categoryId;
       if (params.status) where.status = params.status;
+      if (params.minPrice !== undefined || params.maxPrice !== undefined) {
+        const priceFilter: Record<string, unknown> = {};
+        if (params.minPrice !== undefined) priceFilter.gte = params.minPrice;
+        if (params.maxPrice !== undefined) priceFilter.lte = params.maxPrice;
+        (where as any).variants = { some: { price: priceFilter } };
+      }
+
+      const sortMap: Record<string, { field: string; dir: "asc" | "desc" }> = {
+        name: { field: "name", dir: "asc" },
+        newest: { field: "createdAt", dir: "desc" },
+        price_asc: { field: "createdAt", dir: "asc" },
+        price_desc: { field: "createdAt", dir: "desc" },
+      };
+
+      let orderBy: Record<string, "asc" | "desc"> = { createdAt: "desc" };
+      if (params.sort && sortMap[params.sort]) {
+        const s = sortMap[params.sort];
+        orderBy = { [s.field]: s.dir };
+      } else if (params.orderBy) {
+        orderBy = { [params.orderBy]: params.order || "desc" };
+      }
+
       const page = Math.max(1, params.page || 1);
       const pageSize = Math.min(100, Math.max(1, params.pageSize || 20));
       const skip = (page - 1) * pageSize;
@@ -76,7 +98,7 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
         prisma.product.findMany({
           where,
           include: buildIncludes(),
-          orderBy: params.orderBy ? { [params.orderBy]: params.order || "desc" } : { createdAt: "desc" },
+          orderBy,
           skip, take: pageSize,
         }),
         prisma.product.count({ where }),
@@ -87,6 +109,12 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
     if (params.search) items = items.filter((p) => p.name.toLowerCase().includes(params.search!.toLowerCase()));
     if (params.categoryId) items = items.filter((p) => p.categoryId === params.categoryId);
     if (params.status) items = items.filter((p) => p.status === params.status);
+    if (params.minPrice !== undefined) items = items.filter((p) => (p.variants?.[0]?.price ?? 0) >= params.minPrice!);
+    if (params.maxPrice !== undefined) items = items.filter((p) => (p.variants?.[0]?.price ?? 0) <= params.maxPrice!);
+    if (params.sort === "name") items.sort((a, b) => a.name.localeCompare(b.name));
+    else if (params.sort === "newest") items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    else if (params.sort === "price_asc") items.sort((a, b) => (a.variants?.[0]?.price ?? 0) - (b.variants?.[0]?.price ?? 0));
+    else if (params.sort === "price_desc") items.sort((a, b) => (b.variants?.[0]?.price ?? 0) - (a.variants?.[0]?.price ?? 0));
     const total = items.length;
     const page = params.page || 1;
     const pageSize = params.pageSize || 20;

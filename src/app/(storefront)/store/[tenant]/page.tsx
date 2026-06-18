@@ -1,26 +1,40 @@
 import Link from "next/link";
 import { ArrowRight, Zap, Shield, Truck } from "lucide-react";
 import { productRepo } from "@/lib/services/products";
+import { getSettingsBySlug } from "@/lib/services/settings";
+import { STOREFRONT_REVALIDATE } from "@/lib/storefront";
 import ProductCard from "@/components/storefront/product-card";
+
+export const revalidate = STOREFRONT_REVALIDATE;
+
+export function generateStaticParams() {
+  return [];
+}
 
 export default async function StoreHomePage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const result = await productRepo.list(tenant, { status: "active", pageSize: 50 });
+  const [result, store] = await Promise.all([
+    productRepo.list(tenant, { status: "active", pageSize: 50 }),
+    getSettingsBySlug(tenant).catch(() => null),
+  ]);
   const products = result.items;
+  const brandColor = store?.primaryColor || "#7C3AED";
+  const hoverColor = store?.secondaryColor || "#8B5CF6";
+  const name = store?.name || tenant.charAt(0).toUpperCase() + tenant.slice(1);
 
   return (
     <div>
       <section className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#7C3AED]/20 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-br" style={{ background: `linear-gradient(135deg, ${brandColor}33, transparent)` }} />
         <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:py-32">
           <h1 className="max-w-2xl text-4xl font-bold tracking-tight text-[#F8FAFC] sm:text-5xl lg:text-6xl">
-            Welcome to <span className="text-[#7C3AED]">{tenant.charAt(0).toUpperCase() + tenant.slice(1)}</span>
+            Welcome to <span style={{ color: brandColor }}>{name}</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
             Discover our curated collection of premium products. Quality you can trust, prices you will love.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
-            <Link href={`/store/${tenant}/products`} className="inline-flex items-center gap-2 rounded-xl bg-[#7C3AED] px-6 py-3 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors">
+            <Link href={`/store/${tenant}/products`} className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-medium text-white transition-colors" style={{ backgroundColor: brandColor }}>
               Shop Now <ArrowRight size={16} />
             </Link>
           </div>
@@ -36,8 +50,8 @@ export default async function StoreHomePage({ params }: { params: Promise<{ tena
               { icon: Truck, title: "Easy Returns", desc: "30-day return policy, no questions asked" },
             ].map((feat) => (
               <div key={feat.title} className="flex items-start gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#7C3AED]/20">
-                  <feat.icon size={20} className="text-[#7C3AED]" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: `${brandColor}33` }}>
+                  <feat.icon size={20} style={{ color: brandColor }} />
                 </div>
                 <div>
                   <h3 className="font-medium text-[#F8FAFC]">{feat.title}</h3>
@@ -52,7 +66,7 @@ export default async function StoreHomePage({ params }: { params: Promise<{ tena
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-[#F8FAFC]">Featured Products</h2>
-          <Link href={`/store/${tenant}/products`} className="text-sm font-medium text-[#7C3AED] hover:text-[#8B5CF6] transition-colors">
+          <Link href={`/store/${tenant}/products`} className="text-sm font-medium transition-colors" style={{ color: brandColor }}>
             View all &rarr;
           </Link>
         </div>

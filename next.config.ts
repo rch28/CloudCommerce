@@ -37,7 +37,10 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24, // 24 hours
     remotePatterns: [
       { protocol: "https", hostname: "d64gsuwffb70l.cloudfront.net" },
+      { protocol: "https", hostname: "**.cloudfront.net" },
       { protocol: "https", hostname: "**.stripe.com" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "plus.unsplash.com" },
     ],
   },
 

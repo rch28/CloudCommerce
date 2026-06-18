@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 import { ShoppingCart, Check, Minus, Plus, Star, Truck, Shield } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
@@ -14,7 +15,13 @@ interface ProductData {
   variants: Variant[];
 }
 
-export default function ProductDetailClient({ tenant, product }: { tenant: string; product: ProductData }) {
+const inventoryStatus = (available: number) => {
+  if (available <= 0) return { label: "Out of Stock", color: "text-rose-400" };
+  if (available <= 5) return { label: `Low Stock — Only ${available} left`, color: "text-amber-400" };
+  return { label: "In Stock", color: "text-emerald-400" };
+};
+
+export default function ProductDetailClient({ tenant, product, inventoryMap }: { tenant: string; product: ProductData; inventoryMap: Record<string, { quantity: number; reserved: number }> }) {
   const { addItem } = useCart();
   const [selectedVariant, setSelectedVariant] = useState<Variant>(product.variants[0] || null);
   const [quantity, setQuantity] = useState(1);
@@ -33,7 +40,10 @@ export default function ProductDetailClient({ tenant, product }: { tenant: strin
     );
   }
 
-  const outOfStock = selectedVariant.quantity <= 0;
+  const inv = inventoryMap[selectedVariant.id];
+  const available = inv ? inv.quantity - inv.reserved : selectedVariant.quantity;
+  const status = inventoryStatus(available);
+  const outOfStock = available <= 0;
   const images = product.images?.length ? product.images : ["", "", ""];
 
   function handleAdd() {
@@ -60,11 +70,20 @@ export default function ProductDetailClient({ tenant, product }: { tenant: strin
         <span className="text-[#F8FAFC]">{product.name}</span>
       </nav>
 
+      <p className={`mb-2 text-xs font-medium ${status.color}`}>{status.label}</p>
+
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="space-y-3">
-          <div className="overflow-hidden rounded-xl bg-[#18181B]">
+          <div className="relative aspect-square overflow-hidden rounded-xl bg-[#18181B]">
             {images[selectedImage] ? (
-              <img src={images[selectedImage]} alt={product.name} className="h-full w-full object-cover" />
+              <Image
+                src={images[selectedImage]}
+                alt={product.name}
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+                priority
+              />
             ) : (
               <div className="flex aspect-square items-center justify-center text-muted-foreground text-sm">No image</div>
             )}
@@ -72,8 +91,12 @@ export default function ProductDetailClient({ tenant, product }: { tenant: strin
           {images.length > 1 && (
             <div className="flex gap-2">
               {images.map((img, i) => (
-                <button key={i} onClick={() => setSelectedImage(i)} className={`h-16 w-16 overflow-hidden rounded-lg border bg-[#18181B] ${i === selectedImage ? "border-[#7C3AED]" : "border-border"}`}>
-                  {img ? <img src={img} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-[10px] text-muted-foreground">N/A</div>}
+                <button key={i} onClick={() => setSelectedImage(i)} className={`relative h-16 w-16 overflow-hidden rounded-lg border bg-[#18181B] ${i === selectedImage ? "border-[#7C3AED]" : "border-border"}`}>
+                  {img ? (
+                    <Image src={img} alt="" fill sizes="64px" className="object-cover" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-[10px] text-muted-foreground">N/A</div>
+                  )}
                 </button>
               ))}
             </div>
@@ -99,17 +122,22 @@ export default function ProductDetailClient({ tenant, product }: { tenant: strin
             <div className="mt-6">
               <p className="mb-2 text-sm text-muted-foreground">Variant: <span className="text-[#F8FAFC]">{selectedVariant.name}</span></p>
               <div className="flex flex-wrap gap-2">
-                {product.variants.map((v) => (
-                  <button key={v.id} onClick={() => { setSelectedVariant(v); setQuantity(1); }}
-                    className={`rounded-lg border px-4 py-2 text-sm transition-colors ${
-                      selectedVariant.id === v.id
-                        ? "border-[#7C3AED] bg-[#7C3AED]/20 text-[#7C3AED]"
-                        : "border-border text-muted-foreground hover:border-[#7C3AED]/50 hover:text-[#F8FAFC]"
-                    }`}
-                  >
-                    {v.name} — ${v.price.toFixed(2)}
-                  </button>
-                ))}
+                {product.variants.map((v) => {
+                  const vInv = inventoryMap[v.id];
+                  const vAvail = vInv ? vInv.quantity - vInv.reserved : v.quantity;
+                  return (
+                    <button key={v.id} onClick={() => { setSelectedVariant(v); setQuantity(1); }}
+                      disabled={vAvail <= 0}
+                      className={`rounded-lg border px-4 py-2 text-sm transition-colors ${
+                        selectedVariant.id === v.id
+                          ? "border-[#7C3AED] bg-[#7C3AED]/20 text-[#7C3AED]"
+                          : "border-border text-muted-foreground hover:border-[#7C3AED]/50 hover:text-[#F8FAFC]"
+                      } disabled:cursor-not-allowed disabled:opacity-30`}
+                    >
+                      {v.name} — ${v.price.toFixed(2)}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

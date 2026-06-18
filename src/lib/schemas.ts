@@ -124,6 +124,11 @@ export const addressSettingsSchema = z.object({
   addressZip: z.string().max(20).optional().or(z.literal("")),
 });
 
+export const typographySchema = z.object({
+  headingFont: z.string().max(100).optional(),
+  bodyFont: z.string().max(100).optional(),
+});
+
 export const seoSchema = z.object({
   metaTitle: z.string().max(70).optional().or(z.literal("")),
   metaDescription: z.string().max(160).optional().or(z.literal("")),
@@ -140,6 +145,7 @@ export const settingsUpdateSchema = z.object({
   contact: contactSchema.optional(),
   address: addressSettingsSchema.optional(),
   seo: seoSchema.optional(),
+  typography: typographySchema.optional(),
   domains: domainsSchema.optional(),
 });
 

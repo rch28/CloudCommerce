@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { Search, ShoppingCart, Menu, Zap, X } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
@@ -7,9 +8,11 @@ import { useCart } from "@/contexts/CartContext";
 interface StoreHeaderProps {
   tenant: string;
   storeName: string;
+  logo?: string | null;
+  primaryColor?: string | null;
 }
 
-export default function StoreHeader({ tenant, storeName }: StoreHeaderProps) {
+export default function StoreHeader({ tenant, storeName, logo, primaryColor }: StoreHeaderProps) {
   const { itemCount } = useCart();
   const [searchOpen, setSearchOpen] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -19,6 +22,7 @@ export default function StoreHeader({ tenant, storeName }: StoreHeaderProps) {
   const nav = [
     { label: "Home", href: base },
     { label: "Products", href: `${base}/products` },
+    { label: "Categories", href: `${base}/categories` },
   ];
 
   return (
@@ -29,9 +33,13 @@ export default function StoreHeader({ tenant, storeName }: StoreHeaderProps) {
         </button>
 
         <Link href={base} className="flex items-center gap-2.5 shrink-0">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#7C3AED]">
-            <Zap size={16} className="text-white" fill="white" />
-          </div>
+          {logo ? (
+            <Image src={logo} alt={storeName} width={32} height={32} className="h-8 w-8 rounded-lg object-cover" />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: primaryColor || "#7C3AED" }}>
+              <Zap size={16} className="text-white" fill="white" />
+            </div>
+          )}
           <span className="text-sm font-bold text-[#F8FAFC]">{storeName}</span>
         </Link>
 
@@ -48,7 +56,7 @@ export default function StoreHeader({ tenant, storeName }: StoreHeaderProps) {
           <input
             value={searchOpen}
             onChange={(e) => setSearchOpen(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && searchOpen.trim()) window.location.href = `${base}/products?search=${encodeURIComponent(searchOpen.trim())}`; }}
+            onKeyDown={(e) => { if (e.key === "Enter" && searchOpen.trim()) window.location.href = `${base}/search?q=${encodeURIComponent(searchOpen.trim())}`; }}
             placeholder="Search products..."
             className="w-full rounded-lg border border-border bg-card py-2 pl-9 pr-3 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
           />
@@ -74,7 +82,7 @@ export default function StoreHeader({ tenant, storeName }: StoreHeaderProps) {
             <input
               value={searchOpen}
               onChange={(e) => setSearchOpen(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && searchOpen.trim()) window.location.href = `${base}/products?search=${encodeURIComponent(searchOpen.trim())}`; }}
+              onKeyDown={(e) => { if (e.key === "Enter" && searchOpen.trim()) window.location.href = `${base}/search?q=${encodeURIComponent(searchOpen.trim())}`; }}
               placeholder="Search..."
               className="w-full rounded-lg border border-border bg-card py-2 pl-9 pr-3 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
             />
