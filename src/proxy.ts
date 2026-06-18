@@ -43,7 +43,7 @@ function isProtected(pathname: string): boolean {
   return PROTECTED_PATHS.some((p) => pathname.startsWith(`/${p}`));
 }
 
-const AUTH_SKIP_PATHS = ["/auth/login", "/auth/register", "/api/auth/"];
+const AUTH_SKIP_PATHS = ["/auth/login", "/auth/register", "/api/auth/", "/api/v1/auth/customer/", "/api/v1/account/"];
 
 function shouldSkipAuth(pathname: string): boolean {
   return AUTH_SKIP_PATHS.some((p) => pathname.startsWith(p));
