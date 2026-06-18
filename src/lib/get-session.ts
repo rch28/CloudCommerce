@@ -6,6 +6,7 @@ export interface SessionUser {
   email: string;
   name: string;
   role: string;
+  tenantId: string | null;
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {
@@ -15,7 +16,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
     const session = await prisma.session.findUnique({
       where: { token },
-      include: { user: { select: { id: true, email: true, name: true, role: true } } },
+      include: { user: { select: { id: true, email: true, name: true, role: true, tenantId: true } } },
     });
 
     if (!session || session.expiresAt < new Date()) {

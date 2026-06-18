@@ -183,6 +183,22 @@ export const addressSchema = z.object({
   isDefault: z.boolean().default(false),
 });
 
+export const customerRegisterSchema = z.object({
+  name: z.string().min(1, "Name is required").max(200),
+  email: z.string().email("Invalid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+export const profileUpdateSchema = z.object({
+  name: z.string().min(1, "Name is required").max(200),
+  phone: z.string().max(20).optional(),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email"),
+  password: z.string().min(1, "Password is required"),
+});
+
 export const cartItemSchema = z.object({
   variantId: z.string().min(1),
   quantity: z.number().int().min(1),
@@ -239,3 +255,6 @@ export type SettingsUpdateInput = z.infer<typeof settingsUpdateSchema>;
 export type InviteStaffInput = z.infer<typeof inviteStaffSchema>;
 export type UpdateStaffRoleInput = z.infer<typeof updateStaffRoleSchema>;
 export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>;
+export type CustomerRegisterInput = z.infer<typeof customerRegisterSchema>;
+export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
