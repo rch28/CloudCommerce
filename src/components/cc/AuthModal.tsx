@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import { X, Zap, Check, ArrowRight, ArrowLeft, Building2, ShoppingBag } from "lucide-react";
-import { useAuth, Plan, Role } from "@/contexts/AuthContext";
+import { X, Zap, Check, ArrowRight, ArrowLeft, ShoppingBag, ShieldCheck } from "lucide-react";
+import { useAuth, type Plan, type Role } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 const PLANS: { name: Plan; price: number; feats: string[] }[] = [
   { name: "Starter", price: 29, feats: ["100 products", "Basic analytics"] },
@@ -9,14 +10,23 @@ const PLANS: { name: Plan; price: number; feats: string[] }[] = [
   { name: "Scale", price: 199, feats: ["Unlimited products", "Priority support", "API access"] },
 ];
 
+const ROLES: { id: Role; label: string; desc: string; icon: typeof ShoppingBag }[] = [
+  { id: "merchant", label: "Merchant", desc: "Manage your store and products", icon: ShoppingBag },
+  { id: "admin", label: "Admin", desc: "Platform administration", icon: ShieldCheck },
+];
+
 export default function AuthModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { signIn, signUp } = useAuth();
+  const router = useRouter();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [step, setStep] = useState(1);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [role, setRole] = useState<Role>("merchant");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [storeName, setStoreName] = useState("");
   const [subdomain, setSubdomain] = useState("");
@@ -24,24 +34,40 @@ export default function AuthModal({ open, onClose }: { open: boolean; onClose: (
 
   if (!open) return null;
 
-  const reset = () => { setStep(1); setMode("signin"); };
+  const reset = () => { setStep(1); setMode("signin"); setError(""); };
   const close = () => { reset(); onClose(); };
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    signIn(email, role);
-    close();
+    if (!email || !password) return;
+    setError("");
+    setLoading(true);
+    try {
+      await signIn(email, password);
+      close();
+      router.push(role === "admin" ? "/admin" : "/merchant");
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const finishSignup = () => {
-    const name = email.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) || "Merchant";
-    if (role === "admin") {
-      signUp({ name, email, role: "admin", storeName: "Platform HQ", subdomain: "platform", plan: "Scale" });
-    } else {
-      signUp({ name, email, role: "merchant", storeName: storeName || "My Store", subdomain: subdomain || "mystore", plan });
+  const handleSignUp = async () => {
+    if (!email || !password || !name) return;
+    setError("");
+    setLoading(true);
+    try {
+      await signUp({ email, password, name, role });
+      close();
+      router.push(role === "admin" ? "/admin" : "/merchant");
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
-    close();
   };
 
   return (
@@ -58,119 +84,138 @@ export default function AuthModal({ open, onClose }: { open: boolean; onClose: (
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-lg shadow-violet-900/40">
             <Zap size={22} className="text-white" fill="white" />
           </div>
-          <h2 className="mt-3 text-xl font-bold text-white">
-            {mode === "signin" ? "Welcome back" : step === 1 ? "Create your account" : "Set up your store"}
-          </h2>
-          <p className="text-sm text-slate-400">
-            {mode === "signin" ? "Sign in to CloudCommerce" : step === 1 ? "Start selling in minutes" : `Step ${step - 1} of 2`}
-          </p>
-        </div>
 
-        {mode === "signin" && (
-          <form onSubmit={handleSignIn} className="space-y-3 px-7 py-6">
-            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" className="w-full rounded-lg border border-slate-800 bg-slate-900 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-600" />
-            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" className="w-full rounded-lg border border-slate-800 bg-slate-900 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-600" />
+          {mode === "signin" ? (
+            <>
+              <h2 className="mt-3 text-xl font-bold text-white">Welcome back</h2>
+              <p className="mt-1 text-sm text-slate-400">Sign in to your account</p>
 
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <button type="button" onClick={() => setRole("merchant")} className={`flex items-center justify-center gap-2 rounded-lg border py-2.5 text-sm font-medium ${role === "merchant" ? "border-violet-600 bg-violet-600/15 text-white" : "border-slate-800 text-slate-400"}`}>
-                <ShoppingBag size={15} /> Merchant
-              </button>
-              <button type="button" onClick={() => setRole("admin")} className={`flex items-center justify-center gap-2 rounded-lg border py-2.5 text-sm font-medium ${role === "admin" ? "border-violet-600 bg-violet-600/15 text-white" : "border-slate-800 text-slate-400"}`}>
-                <Building2 size={15} /> Platform Admin
-              </button>
-            </div>
-
-            <button type="submit" className="mt-2 w-full rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90">
-              Sign in
-            </button>
-            <p className="text-center text-sm text-slate-400">
-              No account?{" "}
-              <button type="button" onClick={() => { setMode("signup"); setStep(1); }} className="font-medium text-violet-400 hover:underline">
-                Sign up
-              </button>
-            </p>
-          </form>
-        )}
-
-        {mode === "signup" && step === 1 && (
-          <div className="space-y-3 px-7 py-6">
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" className="w-full rounded-lg border border-slate-800 bg-slate-900 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-600" />
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create password" className="w-full rounded-lg border border-slate-800 bg-slate-900 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-600" />
-
-            <p className="pt-1 text-xs text-slate-500">Account type</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => setRole("merchant")} className={`flex items-center justify-center gap-2 rounded-lg border py-2.5 text-sm font-medium ${role === "merchant" ? "border-violet-600 bg-violet-600/15 text-white" : "border-slate-800 text-slate-400"}`}>
-                <ShoppingBag size={15} /> Merchant
-              </button>
-              <button type="button" onClick={() => setRole("admin")} className={`flex items-center justify-center gap-2 rounded-lg border py-2.5 text-sm font-medium ${role === "admin" ? "border-violet-600 bg-violet-600/15 text-white" : "border-slate-800 text-slate-400"}`}>
-                <Building2 size={15} /> Platform Admin
-              </button>
-            </div>
-
-            <button
-              type="button"
-              disabled={!email}
-              onClick={() => (role === "admin" ? finishSignup() : setStep(2))}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
-            >
-              {role === "admin" ? "Create admin account" : "Continue"} <ArrowRight size={16} />
-            </button>
-            <p className="text-center text-sm text-slate-400">
-              Have an account?{" "}
-              <button type="button" onClick={() => setMode("signin")} className="font-medium text-violet-400 hover:underline">Sign in</button>
-            </p>
-          </div>
-        )}
-
-        {mode === "signup" && step === 2 && (
-          <div className="space-y-3 px-7 py-6">
-            <div>
-              <label className="text-xs text-slate-500">Store name</label>
-              <input value={storeName} onChange={(e) => { setStoreName(e.target.value); if (!subdomain) setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, "")); }} placeholder="Acme Goods" className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-600" />
-            </div>
-            <div>
-              <label className="text-xs text-slate-500">Subdomain</label>
-              <div className="mt-1 flex overflow-hidden rounded-lg border border-slate-800">
-                <input value={subdomain} onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))} placeholder="acme" className="flex-1 bg-slate-900 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none" />
-                <span className="bg-slate-800 px-3 py-2.5 text-xs text-slate-400">.cloudcommerce.com</span>
-              </div>
-            </div>
-            <button type="button" onClick={() => setStep(3)} disabled={!storeName || !subdomain} className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40">
-              Choose a plan <ArrowRight size={16} />
-            </button>
-            <button type="button" onClick={() => setStep(1)} className="flex w-full items-center justify-center gap-1.5 text-sm text-slate-400 hover:text-white">
-              <ArrowLeft size={14} /> Back
-            </button>
-          </div>
-        )}
-
-        {mode === "signup" && step === 3 && (
-          <div className="space-y-3 px-7 py-6">
-            {PLANS.map((p) => (
-              <button
-                key={p.name}
-                type="button"
-                onClick={() => setPlan(p.name)}
-                className={`flex w-full items-center justify-between rounded-xl border p-4 text-left ${plan === p.name ? "border-violet-600 bg-violet-600/10" : "border-slate-800"}`}
-              >
+              <form onSubmit={handleSignIn} className="mt-6 w-full space-y-4">
                 <div>
-                  <p className="font-semibold text-white">{p.name}</p>
-                  <p className="text-xs text-slate-400">{p.feats.join(" · ")}</p>
+                  <label className="text-sm text-slate-400">Email</label>
+                  <input
+                    type="email" value={email} required
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-500"
+                    placeholder="you@example.com"
+                  />
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-white">${p.price}<span className="text-xs font-normal text-slate-400">/mo</span></p>
-                  {plan === p.name && <Check size={16} className="ml-auto mt-1 text-violet-400" />}
+                <div>
+                  <label className="text-sm text-slate-400">Password</label>
+                  <input
+                    type="password" value={password} required
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-500"
+                    placeholder="Enter your password"
+                  />
                 </div>
-              </button>
-            ))}
-            <button type="button" onClick={finishSignup} className="mt-2 w-full rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90">
-              Launch my store
-            </button>
-            <button type="button" onClick={() => setStep(2)} className="flex w-full items-center justify-center gap-1.5 text-sm text-slate-400 hover:text-white">
-              <ArrowLeft size={14} /> Back
-            </button>
-          </div>
-        )}
+
+                {error && <p className="text-sm text-rose-400">{error}</p>}
+
+                <button
+                  type="submit" disabled={loading}
+                  className="w-full rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
+                >
+                  {loading ? "Signing in..." : "Sign in"}
+                </button>
+              </form>
+
+              <p className="mt-4 text-sm text-slate-400">
+                No account?{" "}
+                <button onClick={() => { setMode("signup"); setStep(1); setError(""); }} className="font-medium text-violet-400 hover:underline">
+                  Create one
+                </button>
+              </p>
+            </>
+          ) : step === 1 ? (
+            <>
+              <h2 className="mt-3 text-xl font-bold text-white">Create account</h2>
+              <p className="mt-1 text-sm text-slate-400">Choose your account type</p>
+
+              <div className="mt-6 w-full space-y-3">
+                {ROLES.map((r) => {
+                  const Icon = r.icon;
+                  return (
+                    <button
+                      key={r.id}
+                      onClick={() => { setRole(r.id); setStep(2); }}
+                      className={`flex w-full items-center gap-4 rounded-xl border p-4 text-left transition-colors ${
+                        role === r.id
+                          ? "border-violet-600 bg-violet-600/10"
+                          : "border-slate-800 bg-slate-900 hover:border-violet-600/50"
+                      }`}
+                    >
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-600/20">
+                        <Icon size={20} className="text-violet-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-white">{r.label}</p>
+                        <p className="text-sm text-slate-400">{r.desc}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <p className="mt-4 text-sm text-slate-400">
+                Already have an account?{" "}
+                <button onClick={() => setMode("signin")} className="font-medium text-violet-400 hover:underline">Sign in</button>
+              </p>
+            </>
+          ) : step === 2 ? (
+            <>
+              <h2 className="mt-3 text-xl font-bold text-white">Account details</h2>
+              <p className="mt-1 text-sm text-slate-400">Fill in your information</p>
+
+              <div className="mt-6 w-full space-y-4">
+                <div>
+                  <label className="text-sm text-slate-400">Full name</label>
+                  <input
+                    type="text" value={name} required
+                    onChange={(e) => setName(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-500"
+                    placeholder="John Doe"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-slate-400">Email</label>
+                  <input
+                    type="email" value={email} required
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-500"
+                    placeholder="you@example.com"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-slate-400">Password</label>
+                  <input
+                    type="password" value={password} required minLength={6}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-500"
+                    placeholder="At least 6 characters"
+                  />
+                </div>
+
+                {error && <p className="text-sm text-rose-400">{error}</p>}
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setStep(1)}
+                    className="rounded-lg border border-slate-800 px-4 py-2.5 text-sm text-slate-400 hover:text-white"
+                  >
+                    <ArrowLeft size={16} className="inline" /> Back
+                  </button>
+                  <button
+                    onClick={handleSignUp} disabled={loading || !name || !email || !password}
+                    className="flex-1 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
+                  >
+                    {loading ? "Creating..." : `Create ${role} account`}
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : null}
+        </div>
       </div>
     </div>
   );

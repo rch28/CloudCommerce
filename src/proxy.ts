@@ -33,14 +33,25 @@ const PUBLIC_PATHS = [
   "/fonts/",
 ];
 
+const PROTECTED_PATHS = ["/merchant", "/admin", "/account"];
+
 function isPublic(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+}
+
+function isProtected(pathname: string): boolean {
+  return PROTECTED_PATHS.some((p) => pathname.startsWith(`/${p}`));
+}
+
+const AUTH_SKIP_PATHS = ["/auth/login", "/auth/register", "/api/auth/"];
+
+function shouldSkipAuth(pathname: string): boolean {
+  return AUTH_SKIP_PATHS.some((p) => pathname.startsWith(p));
 }
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const requestId = crypto.randomUUID?.() || `${Date.now()}`;
-  const start = Date.now();
 
   const response = NextResponse.next();
 
@@ -52,6 +63,16 @@ export function proxy(request: NextRequest) {
   // Security headers
   for (const [key, value] of Object.entries(SECURE_HEADERS)) {
     response.headers.set(key, value);
+  }
+
+  // Auth check for protected routes
+  if (!shouldSkipAuth(pathname) && isProtected(pathname)) {
+    const token = request.cookies.get("cc_session_token")?.value;
+    if (!token) {
+      const loginUrl = new URL("/auth/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   // Rate limiting on API routes
@@ -76,20 +97,12 @@ export function proxy(request: NextRequest) {
   }
 
   // Request logging (sample non-public paths)
-  if (!isPublic(pathname)) {
-    const duration = Date.now() - start;
+  if (!isPublic(pathname) && !pathname.startsWith("/_next/")) {
     logger.info(`${request.method} ${pathname}`, {
       requestId,
-      durationMs: duration,
       metadata: { method: request.method, path: pathname },
     });
   }
 
   return response;
 }
-
-export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
-  ],
-};

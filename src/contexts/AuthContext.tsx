@@ -4,74 +4,107 @@ import {
   useContext,
   useEffect,
   useState,
-  ReactNode,
+  useCallback,
+  type ReactNode,
 } from "react";
 
 export type Role = "merchant" | "admin";
 export type Plan = "Starter" | "Growth" | "Scale";
 
 export interface Session {
+  id: string;
   name: string;
   email: string;
   role: Role;
-  storeName: string;
-  subdomain: string;
-  plan: Plan;
+  storeName?: string;
+  subdomain?: string;
+  plan?: Plan;
 }
 
 interface AuthContextType {
   session: Session | null;
-  signIn: (email: string, role: Role) => void;
-  signUp: (data: Session) => void;
-  signOut: () => void;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (data: { email: string; password: string; name: string; role: Role }) => Promise<void>;
+  signOut: () => Promise<void>;
   setRole: (role: Role) => void;
+  refresh: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const STORAGE_KEY = "cc_session";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchSession = useCallback(async () => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setSession(JSON.parse(raw));
+      const res = await fetch("/api/auth/me");
+      const data = await res.json();
+      if (data.loggedIn && data.user) {
+        setSession({
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role,
+        });
+      } else {
+        setSession(null);
+      }
     } catch {
-      /* ignore corrupt session */
+      setSession(null);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  const persist = (s: Session | null) => {
-    setSession(s);
-    if (s) localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
-    else localStorage.removeItem(STORAGE_KEY);
-  };
+  useEffect(() => {
+    fetchSession();
+  }, [fetchSession]);
 
-  const signIn = (email: string, role: Role) => {
-    const name =
-      email
-        .split("@")[0]
-        .replace(/[._]/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase()) || "Merchant";
-    persist({
-      name,
-      email,
-      role,
-      storeName: role === "admin" ? "Platform HQ" : "SoundWave Co.",
-      subdomain: role === "admin" ? "platform" : "soundwave",
-      plan: "Scale",
+  const signIn = useCallback(async (email: string, password: string) => {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
     });
-  };
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Login failed");
+    setSession({
+      id: data.user.id,
+      name: data.user.name,
+      email: data.user.email,
+      role: data.user.role,
+    });
+  }, []);
 
-  const signUp = (data: Session) => persist(data);
-  const signOut = () => persist(null);
-  const setRole = (role: Role) => {
-    if (session) persist({ ...session, role });
-  };
+  const signUp = useCallback(async (data: { email: string; password: string; name: string; role: Role }) => {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || "Registration failed");
+    setSession({
+      id: result.user.id,
+      name: result.user.name,
+      email: result.user.email,
+      role: result.user.role,
+    });
+  }, []);
+
+  const signOut = useCallback(async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setSession(null);
+  }, []);
+
+  const setRole = useCallback((role: Role) => {
+    setSession((prev) => prev ? { ...prev, role } : null);
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ session, signIn, signUp, signOut, setRole }}>
+    <AuthContext.Provider value={{ session, loading, signIn, signUp, signOut, setRole, refresh: fetchSession }}>
       {children}
     </AuthContext.Provider>
   );
