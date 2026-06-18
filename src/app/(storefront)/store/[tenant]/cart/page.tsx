@@ -6,9 +6,7 @@ import { useCart } from "@/contexts/CartContext";
 
 export default function CartPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = React.use(params);
-  const { items, updateQuantity, removeItem, subtotal, itemCount } = useCart();
-  const shipping = subtotal > 100 ? 0 : 10;
-  const total = subtotal + shipping;
+  const { items, updateQuantity, removeItem, subtotal, itemCount, pricing } = useCart();
   const base = `/store/${tenant}`;
 
   if (items.length === 0) {
@@ -55,9 +53,10 @@ export default function CartPage({ params }: { params: Promise<{ tenant: string 
         <div className="rounded-xl border border-border bg-card p-6 h-fit">
           <h2 className="text-lg font-semibold text-[#F8FAFC] mb-4">Order Summary</h2>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-            <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span></div>
-            <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-[#F8FAFC]"><span>Total</span><span>${total.toFixed(2)}</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>${pricing.subtotal.toFixed(2)}</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span>{pricing.shipping === 0 ? "Free" : `$${pricing.shipping.toFixed(2)}`}</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>Tax</span><span>${pricing.tax.toFixed(2)}</span></div>
+            <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-[#F8FAFC]"><span>Total</span><span>${pricing.total.toFixed(2)}</span></div>
           </div>
           <Link href={`${base}/checkout`} className="mt-6 flex w-full items-center justify-center rounded-lg bg-[#7C3AED] px-4 py-3 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors">
             Proceed to Checkout

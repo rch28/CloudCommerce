@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Zap } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
 
 export default function CustomerLoginPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = React.use(params);
@@ -13,6 +14,7 @@ export default function CustomerLoginPage({ params }: { params: Promise<{ tenant
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { mergeAfterLogin } = useCart();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,6 +32,7 @@ export default function CustomerLoginPage({ params }: { params: Promise<{ tenant
         setError(data.error || "Login failed");
         return;
       }
+      await mergeAfterLogin();
       router.push(redirect || `/store/${tenant}/account`);
       router.refresh();
     } catch {

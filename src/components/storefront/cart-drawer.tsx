@@ -10,7 +10,7 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ open, onClose, tenant }: CartDrawerProps) {
-  const { items, updateQuantity, removeItem, subtotal, itemCount } = useCart();
+  const { items, updateQuantity, removeItem, subtotal, itemCount, pricing } = useCart();
   const base = `/store/${tenant}`;
 
   return (
@@ -73,9 +73,19 @@ export default function CartDrawer({ open, onClose, tenant }: CartDrawerProps) {
 
         {items.length > 0 && (
           <div className="border-t border-border px-4 py-4">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-semibold text-[#F8FAFC]">${subtotal.toFixed(2)}</span>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span className="font-semibold text-[#F8FAFC]">${pricing.subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Shipping</span>
+                <span>{pricing.shipping === 0 ? "Free" : `$${pricing.shipping.toFixed(2)}`}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Tax</span>
+                <span>${pricing.tax.toFixed(2)}</span>
+              </div>
             </div>
             <Link href={`${base}/checkout`} onClick={onClose} className="mt-3 flex w-full items-center justify-center rounded-lg bg-[#7C3AED] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors">
               Checkout

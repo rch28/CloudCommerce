@@ -10,14 +10,10 @@ interface CheckoutFormProps {
 }
 
 export default function CheckoutForm({ tenant, onSuccess }: CheckoutFormProps) {
-  const { items, subtotal, clearCart } = useCart();
+  const { items, clearCart, pricing } = useCart();
   const [step, setStep] = useState<"info" | "confirm" | "done">("info");
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", line1: "", city: "", state: "", zip: "", notes: "" });
-
-  const shipping = subtotal > 100 ? 0 : 10;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -101,10 +97,10 @@ export default function CheckoutForm({ tenant, onSuccess }: CheckoutFormProps) {
               ))}
             </div>
             <div className="mt-3 space-y-1 border-t border-border pt-3 text-sm">
-              <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>Tax (8%)</span><span>${tax.toFixed(2)}</span></div>
-              <div className="flex justify-between font-semibold text-[#F8FAFC] pt-1"><span>Total</span><span>${total.toFixed(2)}</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>${pricing.subtotal.toFixed(2)}</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span>{pricing.shipping === 0 ? "Free" : `$${pricing.shipping.toFixed(2)}`}</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>Tax (8%)</span><span>${pricing.tax.toFixed(2)}</span></div>
+              <div className="flex justify-between font-semibold text-[#F8FAFC] pt-1"><span>Total</span><span>${pricing.total.toFixed(2)}</span></div>
             </div>
           </div>
         </div>
@@ -118,7 +114,7 @@ export default function CheckoutForm({ tenant, onSuccess }: CheckoutFormProps) {
             <div><span className="text-muted-foreground">Email:</span> <span className="text-[#F8FAFC]">{form.email}</span></div>
             <div><span className="text-muted-foreground">Address:</span> <span className="text-[#F8FAFC]">{form.line1}, {form.city}, {form.state} {form.zip}</span></div>
             <div><span className="text-muted-foreground">Items:</span> <span className="text-[#F8FAFC]">{items.length} item(s)</span></div>
-            <div className="border-t border-border pt-3 text-lg font-bold text-[#F8FAFC]">Total: ${total.toFixed(2)}</div>
+            <div className="border-t border-border pt-3 text-lg font-bold text-[#F8FAFC]">Total: ${pricing.total.toFixed(2)}</div>
           </div>
         </div>
       )}

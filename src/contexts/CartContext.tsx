@@ -1,5 +1,14 @@
 "use client";
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  type ReactNode,
+} from "react";
+import { calculatePricing, type PricingResult } from "@/lib/services/pricing";
 
 export interface CartItem {
   variantId: string;
@@ -14,62 +23,287 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (item: CartItem) => void;
-  updateQuantity: (variantId: string, quantity: number) => void;
-  removeItem: (variantId: string) => void;
-  clearCart: () => void;
+  addItem: (item: CartItem) => Promise<void>;
+  updateQuantity: (variantId: string, quantity: number) => Promise<void>;
+  removeItem: (variantId: string) => Promise<void>;
+  clearCart: () => Promise<void>;
   itemCount: number;
   subtotal: number;
+  pricing: PricingResult;
+  loading: boolean;
+  isAuthenticated: boolean;
+  mergeAfterLogin: () => Promise<void>;
 }
 
-const STORAGE_KEY = "cc_storefront_cart";
+const GUEST_STORAGE_KEY = "cc_storefront_cart";
+const SESSION_COOKIE = "cc_cart_session";
 
 const CartContext = createContext<CartContextType | null>(null);
 
+function generateId(): string {
+  return crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  return match ? match[1] : null;
+}
+
+function setCookie(name: string, value: string, days = 365) {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${value}; path=/; expires=${expires}; SameSite=Lax`;
+}
+
+function loadGuestCart(): CartItem[] {
+  try {
+    const saved = localStorage.getItem(GUEST_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveGuestCart(items: CartItem[]) {
+  localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(items));
+}
+
+function ensureSessionCookie(): string {
+  let sid = getCookie(SESSION_COOKIE);
+  if (!sid) {
+    sid = generateId();
+    setCookie(SESSION_COOKIE, sid);
+  }
+  return sid;
+}
+
+function getTenantFromPath(): string | null {
+  if (typeof window === "undefined") return null;
+  const match = window.location.pathname.match(/\/store\/([^/]+)/);
+  return match ? match[1] : null;
+}
+
+function cartItemsToPricing(items: CartItem[]) {
+  return calculatePricing(items.map((i) => ({ price: i.price, quantity: i.quantity })));
+}
+
+async function fetchWithCookies(url: string, options?: RequestInit) {
+  return fetch(url, {
+    ...options,
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+  });
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const initialLoadDone = useRef(false);
+
+  const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
+  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const pricing = cartItemsToPricing(items);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) setItems(JSON.parse(saved));
-    } catch { /* ignore */ }
+    if (initialLoadDone.current) return;
+    initialLoadDone.current = true;
+
+    async function init() {
+      try {
+        const res = await fetchWithCookies("/api/v1/account/profile");
+        if (res.ok) {
+          setIsAuthenticated(true);
+          const tenantId = getTenantFromPath();
+          if (tenantId) {
+            const cartRes = await fetchWithCookies(`/api/v1/cart?tenantId=${tenantId}`);
+            if (cartRes.ok) {
+              const data = await cartRes.json();
+              if (data.items?.length) {
+                setItems(data.items);
+                setLoading(false);
+                return;
+              }
+            }
+            const guestItems = loadGuestCart();
+            if (guestItems.length > 0) {
+              await mergeGuestItems(guestItems, tenantId);
+              return;
+            }
+          }
+          setItems([]);
+          setLoading(false);
+          return;
+        }
+      } catch {}
+
+      setIsAuthenticated(false);
+      ensureSessionCookie();
+      setItems(loadGuestCart());
+      setLoading(false);
+    }
+
+    init();
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }, [items]);
+    if (!loading && !isAuthenticated) {
+      saveGuestCart(items);
+    }
+  }, [items, loading, isAuthenticated]);
 
-  const addItem = useCallback((item: CartItem) => {
+  async function mergeGuestItems(guestItems: CartItem[], tenantId: string) {
+    try {
+      for (const item of guestItems) {
+        await fetchWithCookies("/api/v1/cart", {
+          method: "POST",
+          body: JSON.stringify({
+            tenantId,
+            variantId: item.variantId,
+            quantity: item.quantity,
+            price: item.price,
+          }),
+        });
+      }
+      localStorage.removeItem(GUEST_STORAGE_KEY);
+
+      const cartRes = await fetchWithCookies(`/api/v1/cart?tenantId=${tenantId}`);
+      if (cartRes.ok) {
+        const data = await cartRes.json();
+        setItems(data.items || []);
+      }
+    } catch {
+      setItems(guestItems);
+    }
+    setLoading(false);
+  }
+
+  const addItem = useCallback(async (item: CartItem) => {
+    if (isAuthenticated) {
+      const tenantId = getTenantFromPath();
+      if (!tenantId) return;
+      try {
+        const res = await fetchWithCookies("/api/v1/cart", {
+          method: "POST",
+          body: JSON.stringify({
+            tenantId,
+            variantId: item.variantId,
+            quantity: item.quantity,
+            price: item.price,
+          }),
+        });
+        if (res.ok) {
+          const cartRes = await fetchWithCookies(`/api/v1/cart?tenantId=${tenantId}`);
+          if (cartRes.ok) {
+            const data = await cartRes.json();
+            setItems(data.items || []);
+          }
+        }
+      } catch {}
+      return;
+    }
+
     setItems((prev) => {
       const existing = prev.find((i) => i.variantId === item.variantId);
       if (existing) {
         return prev.map((i) =>
-          i.variantId === item.variantId ? { ...i, quantity: i.quantity + item.quantity } : i
+          i.variantId === item.variantId
+            ? { ...i, quantity: i.quantity + item.quantity }
+            : i,
         );
       }
       return [...prev, item];
     });
-  }, []);
+  }, [isAuthenticated]);
 
-  const updateQuantity = useCallback((variantId: string, quantity: number) => {
-    setItems((prev) => {
-      if (quantity <= 0) return prev.filter((i) => i.variantId !== variantId);
-      return prev.map((i) => (i.variantId === variantId ? { ...i, quantity } : i));
-    });
-  }, []);
+  const updateQuantity = useCallback(async (variantId: string, quantity: number) => {
+    if (quantity < 1) {
+      await removeItem(variantId);
+      return;
+    }
 
-  const removeItem = useCallback((variantId: string) => {
+    if (isAuthenticated) {
+      const tenantId = getTenantFromPath();
+      if (!tenantId) return;
+      try {
+        const res = await fetchWithCookies(`/api/v1/cart/items/${variantId}`, {
+          method: "PATCH",
+          body: JSON.stringify({ quantity, tenantId }),
+        });
+        if (res.ok) {
+          const cartRes = await fetchWithCookies(`/api/v1/cart?tenantId=${tenantId}`);
+          if (cartRes.ok) {
+            const data = await cartRes.json();
+            setItems(data.items || []);
+          }
+        }
+      } catch {}
+      return;
+    }
+
+    setItems((prev) =>
+      prev.map((i) => (i.variantId === variantId ? { ...i, quantity } : i)),
+    );
+  }, [isAuthenticated]);
+
+  const removeItem = useCallback(async (variantId: string) => {
+    if (isAuthenticated) {
+      const tenantId = getTenantFromPath();
+      if (!tenantId) return;
+      try {
+        await fetchWithCookies(`/api/v1/cart/items/${variantId}?tenantId=${tenantId}`, {
+          method: "DELETE",
+        });
+        const cartRes = await fetchWithCookies(`/api/v1/cart?tenantId=${tenantId}`);
+        if (cartRes.ok) {
+          const data = await cartRes.json();
+          setItems(data.items || []);
+        }
+      } catch {}
+      return;
+    }
+
     setItems((prev) => prev.filter((i) => i.variantId !== variantId));
+  }, [isAuthenticated]);
+
+  const clearCart = useCallback(async () => {
+    if (isAuthenticated) {
+      const tenantId = getTenantFromPath();
+      if (!tenantId) return;
+      try {
+        await fetchWithCookies(`/api/v1/cart?tenantId=${tenantId}`, { method: "DELETE" });
+      } catch {}
+    }
+    setItems([]);
+  }, [isAuthenticated]);
+
+  const mergeAfterLogin = useCallback(async () => {
+    const guestItems = loadGuestCart();
+    if (guestItems.length === 0) return;
+
+    const tenantId = getTenantFromPath();
+    if (!tenantId) return;
+
+    setIsAuthenticated(true);
+    await mergeGuestItems(guestItems, tenantId);
   }, []);
-
-  const clearCart = useCallback(() => setItems([]), []);
-
-  const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, addItem, updateQuantity, removeItem, clearCart, itemCount, subtotal }}>
+    <CartContext.Provider
+      value={{
+        items,
+        addItem,
+        updateQuantity,
+        removeItem,
+        clearCart,
+        itemCount,
+        subtotal,
+        pricing,
+        loading,
+        isAuthenticated,
+        mergeAfterLogin,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
