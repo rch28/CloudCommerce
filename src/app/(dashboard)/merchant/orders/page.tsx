@@ -1,3 +1,209 @@
 "use client";
-import OrdersView from "@/components/cc/views/OrdersView";
-export default function Page() { return <OrdersView />; }
+import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
+import PageHeader from "@/components/dashboard/page-header";
+import Badge from "@/components/cc/Badge";
+import { Search, ChevronLeft, ChevronRight, Loader2, ArrowUpDown } from "lucide-react";
+
+const STATUS_FILTERS = [
+  { label: "All", value: "all" },
+  { label: "Pending", value: "pending" },
+  { label: "Confirmed", value: "confirmed" },
+  { label: "Paid", value: "paid" },
+  { label: "Shipped", value: "shipped" },
+  { label: "Delivered", value: "delivered" },
+  { label: "Cancelled", value: "cancelled" },
+  { label: "Refunded", value: "refunded" },
+];
+
+const LIMIT = 20;
+
+interface OrderRow {
+  id: string;
+  number: string;
+  status: string;
+  customerName: string;
+  customerEmail: string;
+  itemCount: number;
+  total: number;
+  createdAt: string;
+}
+
+export default function MerchantOrdersPage() {
+  const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const totalPages = Math.ceil(total / LIMIT);
+
+  const fetchOrders = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        tenantId: "t-1",
+        page: String(page),
+        limit: String(LIMIT),
+        status: statusFilter,
+      });
+      if (search) params.set("search", search);
+
+      const res = await fetch(`/api/v1/orders?${params}`);
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      setOrders(data.orders ?? []);
+      setTotal(data.total ?? 0);
+    } catch {
+      setOrders([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, statusFilter, search]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchOrders();
+  }, [fetchOrders]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPage(1);
+  }, [statusFilter, search]);
+
+  return (
+    <div className="space-y-6">
+      <PageHeader title="Orders" description="Manage and track customer orders" />
+
+      <div className="flex flex-wrap items-center gap-2">
+        {STATUS_FILTERS.map((f) => (
+          <button
+            key={f.value}
+            onClick={() => setStatusFilter(f.value)}
+            className={`rounded-lg px-3.5 py-1.5 text-sm font-medium capitalize transition-all ${
+              statusFilter === f.value
+                ? "bg-[#7C3AED] text-white"
+                : "border border-border bg-card text-muted-foreground hover:text-[#F8FAFC]"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="relative max-w-sm">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by order #, customer name or email..."
+          className="w-full rounded-lg border border-border bg-card py-2 pl-9 pr-3 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+        />
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-24">
+          <Loader2 size={24} className="animate-spin text-muted-foreground" />
+        </div>
+      ) : orders.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-24">
+          <p className="text-muted-foreground">No orders found</p>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
+                <tr>
+                  <th className="px-5 py-3.5 font-medium">Order</th>
+                  <th className="px-5 py-3.5 font-medium">Customer</th>
+                  <th className="px-5 py-3.5 font-medium">Items</th>
+                  <th className="px-5 py-3.5 font-medium">Date</th>
+                  <th className="px-5 py-3.5 font-medium">Status</th>
+                  <th className="px-5 py-3.5 text-right font-medium">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {orders.map((o) => (
+                  <tr
+                    key={o.id}
+                    className="transition-colors hover:bg-[#1E293B] cursor-pointer"
+                    onClick={() => window.location.href = `/merchant/orders/${o.id}`}
+                  >
+                    <td className="px-5 py-4 font-mono text-sm font-medium text-[#7C3AED]">
+                      #{o.number}
+                    </td>
+                    <td className="px-5 py-4">
+                      <p className="font-medium text-[#F8FAFC]">{o.customerName || "Guest"}</p>
+                      {o.customerEmail && (
+                        <p className="text-xs text-muted-foreground">{o.customerEmail}</p>
+                      )}
+                    </td>
+                    <td className="px-5 py-4 text-muted-foreground">{o.itemCount}</td>
+                    <td className="px-5 py-4 text-muted-foreground text-xs">
+                      {new Date(o.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="px-5 py-4">
+                      <Badge status={o.status} />
+                    </td>
+                    <td className="px-5 py-4 text-right font-semibold text-[#F8FAFC]">
+                      ${o.total.toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-border px-5 py-3 text-sm text-muted-foreground">
+              <span>
+                Page {page} of {totalPages} ({total} total)
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => p - 1)}
+                  className="rounded-lg p-1.5 transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC] disabled:opacity-40"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                  const start = Math.max(1, Math.min(page - 3, totalPages - 6));
+                  const p = start + i;
+                  if (p > totalPages) return null;
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`min-w-[28px] rounded-lg px-2 py-1 text-sm font-medium transition-colors ${
+                        p === page
+                          ? "bg-[#7C3AED] text-white"
+                          : "hover:bg-[#1E293B] hover:text-[#F8FAFC]"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+                <button
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => p + 1)}
+                  className="rounded-lg p-1.5 transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC] disabled:opacity-40"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

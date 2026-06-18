@@ -1,6 +1,7 @@
 export type EmailEvent =
   | { type: "order_confirmation"; to: string; orderNumber: string; customerName: string; total: number }
   | { type: "order_shipped"; to: string; orderNumber: string; customerName: string }
+  | { type: "order_delivered"; to: string; orderNumber: string; customerName: string }
   | { type: "password_reset"; to: string; resetLink: string };
 
 export interface EmailProvider {
@@ -15,6 +16,9 @@ class ConsoleEmailProvider implements EmailProvider {
         break;
       case "order_shipped":
         console.log(`[EMAIL] Shipping update to ${event.to}: Order #${event.orderNumber} has been shipped`);
+        break;
+      case "order_delivered":
+        console.log(`[EMAIL] Delivery update to ${event.to}: Order #${event.orderNumber} has been delivered`);
         break;
       case "password_reset":
         console.log(`[EMAIL] Password reset to ${event.to}: ${event.resetLink}`);

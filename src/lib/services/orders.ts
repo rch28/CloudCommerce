@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { orderSchema, type OrderInput } from "@/lib/schemas";
 import { logAudit } from "@/lib/audit";
+import { isValidTransition } from "@/data/order-status";
+import { sendEmail } from "@/lib/email";
 
 interface OrderAddressData {
   label: string;
@@ -324,4 +326,232 @@ export async function updateOrderStatus(id: string, status: string, tenantId: st
   if (idx === -1) throw new Error("Order not found");
   mockOrders[idx].status = status;
   return mockOrders[idx];
+}
+
+export async function listMerchantOrders(
+  tenantId: string,
+  opts: { search?: string; status?: string; page?: number; limit?: number; customerId?: string },
+) {
+  const { search = "", status = "all", page = 1, limit = 20, customerId } = opts;
+  const skip = (page - 1) * limit;
+
+  const where: Record<string, unknown> = { tenantId };
+  if (customerId) where.customerId = customerId;
+  if (status && status !== "all") where.status = status;
+
+  if (search) {
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where: {
+          ...where,
+          OR: [
+            { number: { contains: search, mode: "insensitive" } },
+            { customer: { name: { contains: search, mode: "insensitive" } } },
+            { customer: { email: { contains: search, mode: "insensitive" } } },
+          ],
+        },
+        include: {
+          customer: { select: { name: true, email: true } },
+          _count: { select: { items: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.order.count({
+        where: {
+          ...where,
+          OR: [
+            { number: { contains: search, mode: "insensitive" } },
+            { customer: { name: { contains: search, mode: "insensitive" } } },
+            { customer: { email: { contains: search, mode: "insensitive" } } },
+          ],
+        },
+      }),
+    ]);
+
+    return {
+      orders: orders.map(({ _count, ...o }) => ({
+        id: o.id,
+        number: o.number,
+        status: o.status,
+        customerName: o.customer?.name ?? "",
+        customerEmail: o.customer?.email ?? "",
+        itemCount: _count.items,
+        total: Number(o.total),
+        createdAt: o.createdAt,
+      })),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      include: {
+        customer: { select: { name: true, email: true } },
+        _count: { select: { items: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.order.count({ where }),
+  ]);
+
+  return {
+    orders: orders.map(({ _count, ...o }) => ({
+      id: o.id,
+      number: o.number,
+      status: o.status,
+      customerName: o.customer?.name ?? "",
+      customerEmail: o.customer?.email ?? "",
+      itemCount: _count.items,
+      total: Number(o.total),
+      createdAt: o.createdAt,
+    })),
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
+}
+
+export async function getOrderDetail(id: string, tenantId: string) {
+  const order = await prisma.order.findFirst({
+    where: { id, tenantId },
+    include: {
+      customer: { select: { id: true, name: true, email: true, phone: true } },
+      items: {
+        include: {
+          variant: { select: { sku: true, price: true, quantity: true } },
+        },
+      },
+      address: true,
+    },
+  });
+
+  if (!order) return null;
+
+  const timeline = await prisma.auditLog.findMany({
+    where: { entityType: "order", entityId: id },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+
+  return {
+    id: order.id,
+    number: order.number,
+    status: order.status,
+    subtotal: Number(order.subtotal),
+    shipping: Number(order.shipping),
+    tax: Number(order.tax),
+    total: Number(order.total),
+    notes: order.notes,
+    stripeSessionId: order.stripeSessionId,
+    paymentIntentId: order.paymentIntentId,
+    chargeId: order.chargeId,
+    createdAt: order.createdAt,
+    updatedAt: order.updatedAt,
+    customer: order.customer,
+    items: order.items.map((i) => ({
+      id: i.id,
+      variantId: i.variantId,
+      productName: i.productName,
+      sku: i.sku,
+      price: Number(i.price),
+      quantity: i.quantity,
+      image: i.image,
+    })),
+    address: order.address
+      ? {
+          label: order.address.label,
+          line1: order.address.line1,
+          line2: order.address.line2,
+          city: order.address.city,
+          state: order.address.state,
+          zip: order.address.zip,
+          country: order.address.country,
+        }
+      : null,
+    timeline: timeline.map((t) => ({
+      id: t.id,
+      action: t.action,
+      changes: t.changes ? JSON.parse(t.changes) : null,
+      createdAt: t.createdAt,
+    })),
+  };
+}
+
+export async function updateOrderStatusValidated(id: string, newStatus: string, tenantId: string, userId?: string) {
+  const order = await prisma.order.findFirst({ where: { id, tenantId } });
+  if (!order) throw new Error("Order not found");
+
+  if (!isValidTransition(order.status, newStatus)) {
+    throw new Error(`Cannot transition from "${order.status}" to "${newStatus}"`);
+  }
+
+  const updated = await prisma.order.update({
+    where: { id },
+    data: { status: newStatus },
+    include: { customer: { select: { name: true, email: true } }, items: true },
+  });
+
+  await logAudit({
+    entityType: "order",
+    entityId: id,
+    action: "updated",
+    changes: { from: order.status, to: newStatus },
+    userId,
+    tenantId,
+  });
+
+  if (newStatus === "shipped" && updated.customer?.email) {
+    sendEmail({
+      type: "order_shipped",
+      to: updated.customer.email,
+      orderNumber: updated.number,
+      customerName: updated.customer.name,
+    }).catch(() => {});
+  }
+
+  if (newStatus === "delivered" && updated.customer?.email) {
+    sendEmail({
+      type: "order_delivered",
+      to: updated.customer.email,
+      orderNumber: updated.number,
+      customerName: updated.customer.name,
+    }).catch(() => {});
+  }
+
+  return updated;
+}
+
+export async function resendConfirmationEmail(orderId: string, tenantId: string) {
+  const order = await prisma.order.findFirst({
+    where: { id: orderId, tenantId },
+    include: { customer: { select: { name: true, email: true } } },
+  });
+
+  if (!order) throw new Error("Order not found");
+  if (!order.customer?.email) throw new Error("Customer has no email address");
+
+  await sendEmail({
+    type: "order_confirmation",
+    to: order.customer.email,
+    orderNumber: order.number,
+    customerName: order.customer.name,
+    total: Number(order.total),
+  });
+
+  await logAudit({
+    entityType: "order",
+    entityId: orderId,
+    action: "updated",
+    changes: { emailResent: true },
+    tenantId,
+  });
 }
