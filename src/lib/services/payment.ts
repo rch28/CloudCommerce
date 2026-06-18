@@ -1,0 +1,189 @@
+import Stripe from "stripe";
+import { prisma } from "@/lib/prisma";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "");
+
+export interface StripeSessionResult {
+  sessionId: string;
+  stripeUrl: string;
+}
+
+export async function createCheckoutSession(
+  orderId: string,
+  tenantId: string,
+  origin: string,
+): Promise<StripeSessionResult> {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { items: true, address: true },
+  });
+
+  if (!order) throw new Error("Order not found");
+  if (order.stripeSessionId) {
+    throw new Error("Order already has a Stripe session");
+  }
+
+  const baseUrl = origin.replace(/\/$/, "");
+  const tenantSlug = (await prisma.tenant.findUnique({ where: { id: tenantId }, select: { subdomain: true } }))?.subdomain ?? "";
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    customer_email: order.customerId
+      ? (
+          await prisma.customer.findUnique({
+            where: { id: order.customerId },
+            select: { email: true },
+          })
+        )?.email ?? undefined
+      : undefined,
+    metadata: {
+      orderId: order.id,
+      orderNumber: order.number,
+      tenantId,
+    },
+    payment_intent_data: {
+      metadata: {
+        orderId: order.id,
+        orderNumber: order.number,
+      },
+    },
+    line_items: order.items.map((item) => ({
+      price_data: {
+        currency: "usd",
+        product_data: {
+          name: item.productName,
+          description: `SKU: ${item.sku}`,
+          images: item.image ? [item.image] : [],
+        },
+        unit_amount: Math.round(Number(item.price) * 100),
+      },
+      quantity: item.quantity,
+    })),
+    ...(Number(order.shipping) > 0
+      ? {
+          shipping_options: [
+            {
+              shipping_rate_data: {
+                type: "fixed_amount",
+                fixed_amount: { amount: Math.round(Number(order.shipping) * 100), currency: "usd" },
+                display_name: "Standard Shipping",
+                delivery_estimate: {
+                  minimum: { unit: "business_day", value: 5 },
+                  maximum: { unit: "business_day", value: 10 },
+                },
+              },
+            },
+          ],
+        }
+      : {
+          shipping_options: [
+            {
+              shipping_rate_data: {
+                type: "fixed_amount",
+                fixed_amount: { amount: 0, currency: "usd" },
+                display_name: "Free Shipping",
+                delivery_estimate: {
+                  minimum: { unit: "business_day", value: 5 },
+                  maximum: { unit: "business_day", value: 10 },
+                },
+              },
+            },
+          ],
+        }),
+    success_url: `${baseUrl}/store/${tenantSlug}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${baseUrl}/store/${tenantSlug}/checkout`,
+  });
+
+  await prisma.order.update({
+    where: { id: orderId },
+    data: { stripeSessionId: session.id },
+  });
+
+  return { sessionId: session.id, stripeUrl: session.url ?? "" };
+}
+
+export function verifyWebhook(rawBody: string, signature: string): Stripe.Event {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET ?? "";
+  if (!secret) {
+    throw new Error("STRIPE_WEBHOOK_SECRET is not configured");
+  }
+  return stripe.webhooks.constructEvent(rawBody, signature, secret);
+}
+
+export async function refundPayment(
+  paymentIntentId: string,
+  amount?: number,
+): Promise<Stripe.Refund> {
+  return stripe.refunds.create({
+    payment_intent: paymentIntentId,
+    ...(amount !== undefined ? { amount: Math.round(amount * 100) } : {}),
+  });
+}
+
+export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+  const orderId = session.metadata?.orderId;
+  if (!orderId) return;
+
+  await prisma.order.update({
+    where: { id: orderId },
+    data: {
+      status: "paid",
+      paymentIntentId: session.payment_intent?.toString() ?? null,
+    },
+  });
+}
+
+export async function handlePaymentIntentSucceeded(intent: Stripe.PaymentIntent) {
+  const orderId = intent.metadata?.orderId;
+  if (!orderId) return;
+
+  await prisma.order.update({
+    where: { id: orderId },
+    data: {
+      status: "paid",
+      paymentIntentId: intent.id,
+      chargeId: intent.latest_charge?.toString() ?? null,
+    },
+  });
+}
+
+export async function handlePaymentIntentFailed(intent: Stripe.PaymentIntent) {
+  const orderId = intent.metadata?.orderId;
+  if (!orderId) return;
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { items: true },
+  });
+  if (!order) return;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.order.update({
+      where: { id: orderId },
+      data: { status: "cancelled" },
+    });
+
+    for (const item of order.items) {
+      await tx.$queryRawUnsafe(
+        `UPDATE "ProductVariant" SET quantity = quantity + $1 WHERE id = $2`,
+        item.quantity,
+        item.variantId,
+      );
+    }
+  });
+}
+
+export async function handleChargeRefunded(charge: Stripe.Charge) {
+  const paymentIntentId = charge.payment_intent?.toString();
+  if (!paymentIntentId) return;
+
+  const order = await prisma.order.findFirst({
+    where: { paymentIntentId },
+  });
+  if (!order) return;
+
+  await prisma.order.update({
+    where: { id: order.id },
+    data: { status: "refunded" },
+  });
+}

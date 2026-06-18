@@ -35,7 +35,6 @@ interface AddressForm {
 
 interface CheckoutFormProps {
   tenant: string;
-  onSuccess: (order: unknown) => void;
 }
 
 const emptyAddress: AddressForm = {
@@ -48,8 +47,8 @@ const emptyAddress: AddressForm = {
   country: "US",
 };
 
-export default function CheckoutForm({ tenant, onSuccess }: CheckoutFormProps) {
-  const { items, clearCart, pricing, isAuthenticated } = useCart();
+export default function CheckoutForm({ tenant }: CheckoutFormProps) {
+  const { items, pricing, isAuthenticated } = useCart();
   const [step, setStep] = useState<"address" | "review">("address");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -131,7 +130,7 @@ export default function CheckoutForm({ tenant, onSuccess }: CheckoutFormProps) {
     }
 
     try {
-      const res = await fetch("/api/v1/checkout", {
+      const res = await fetch("/api/v1/checkout/stripe-session", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -146,8 +145,7 @@ export default function CheckoutForm({ tenant, onSuccess }: CheckoutFormProps) {
         return;
       }
 
-      clearCart();
-      onSuccess(data.order);
+      window.location.href = data.stripeUrl;
     } catch {
       setError("Network error. Please try again.");
       setLoading(false);
