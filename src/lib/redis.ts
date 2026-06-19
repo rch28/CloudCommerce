@@ -1,43 +1,30 @@
-// lib/redis.ts
-import { Redis } from 'redis';
+import { createClient } from "redis";
+import type { RedisClientType } from "redis";
 
-// Environment configuration
 const REDIS_URL = process.env.REDIS_URL;
 const UPSTASH_REST_URL = process.env.UPSTASH_REST_URL;
 const UPSTASH_REST_TOKEN = process.env.UPSTASH_REST_TOKEN;
 const REDIS_CLOUD_URL = process.env.REDIS_CLOUD_URL;
 const REDIS_CLOUD_PASSWORD = process.env.REDIS_CLOUD_PASSWORD;
 
-// Choose connection string based on priority
-let redisClient: Redis | undefined;
-
-if (UPSTASH_REST_URL && UPSTASH_REST_TOKEN) {
-  redisClient = new Redis({
-    url: UPSTASH_REST_URL,
-    password: UPSTASH_REST_TOKEN,
-  });
-} else if (REDIS_CLOUD_URL && REDIS_CLOUD_PASSWORD) {
-  redisClient = new Redis({
-    url: REDIS_CLOUD_URL,
-    password: REDIS_CLOUD_PASSWORD,
-  });
-} else if (REDIS_URL) {
-  redisClient = new Redis({
-    url: REDIS_URL,
-  });
+function getRedisUrl(): string {
+  if (UPSTASH_REST_URL && UPSTASH_REST_TOKEN) return UPSTASH_REST_URL;
+  if (REDIS_CLOUD_URL && REDIS_CLOUD_PASSWORD) return REDIS_CLOUD_URL;
+  if (REDIS_URL) return REDIS_URL;
+  return "redis://localhost:6379";
 }
 
-// Fallback: if no client created, try to connect to default local Redis
-if (!redisClient) {
-  redisClient = new Redis({ url: 'redis://localhost:6379' });
+let redisClient: RedisClientType | undefined;
+
+try {
+  redisClient = createClient({ url: getRedisUrl() });
+  await redisClient.connect();
+} catch (err) {
+  console.error("[Redis] Connection failed:", err);
+  redisClient = undefined;
 }
 
-// Ensure connection is established
-(async () => {
-  if (redisClient) {
-    await redisClient.connect().catch(console.error);
-  }
-})();
+export { redisClient };
 
 // ---------------------------------------------------------------------------
 // Key Management
@@ -54,12 +41,12 @@ if (!redisClient) {
 export function makeCacheKey(
   namespace: string,
   key: string,
-  tenantId?: string
+  tenantId?: string,
 ): string {
   const parts = [namespace];
   if (tenantId) parts.push(`tenant:${tenantId}`);
   parts.push(key);
-  return parts.join(':');
+  return parts.join(":");
 }
 
 // ---------------------------------------------------------------------------
@@ -73,7 +60,7 @@ export class CacheService {
   // Default TTL values (in seconds) – production‑safe defaults
   static readonly PRODUCT_TTL = 60 * 60 * 24; // 1 day
   static readonly CATEGORY_TTL = 60 * 60 * 24; // 1 day
-  static readonly STOREFRONT_TTL = 60 * 60;   // 1 hour
+  static readonly STOREFRONT_TTL = 60 * 60; // 1 hour
   static readonly SETTINGS_TTL = 60 * 60 * 24; // 1 day
 
   /**
@@ -83,7 +70,12 @@ export class CacheService {
    * @param tenantId Optional tenant identifier
    * @param ttl Override TTL in seconds (optional)
    */
-  static async get<T>(namespace: string, identifier: string, tenantId?: string, ttl?: number): Promise<T | null> {
+  static async get<T>(
+    namespace: string,
+    identifier: string,
+    tenantId?: string,
+    ttl?: number,
+  ): Promise<T | null> {
     const key = makeCacheKey(namespace, identifier, tenantId);
     const client = redisClient!;
     const raw = await client.get(key);
@@ -103,8 +95,8 @@ export class CacheService {
     identifier: string,
     value: T,
     tenantId?: string,
-    ttl?: number
-  ): Promise<'OK'> {
+    ttl?: number,
+  ): Promise<"OK"> {
     const key = makeCacheKey(namespace, identifier, tenantId);
     const client = redisClient!;
     const json = JSON.stringify(value);
@@ -121,7 +113,11 @@ export class CacheService {
   /**
    * Delete a key from cache.
    */
-  static async del(namespace: string, identifier: string, tenantId?: string): Promise<'OK'> {
+  static async del(
+    namespace: string,
+    identifier: string,
+    tenantId?: string,
+  ): Promise<"OK"> {
     const key = makeCacheKey(namespace, identifier, tenantId);
     const client = redisClient!;
     return client.del(key);
@@ -130,7 +126,12 @@ export class CacheService {
   /**
    * Explicitly set TTL on an existing key.
    */
-  static async expire(namespace: string, identifier: string, tenantId?: string, ttl: number): Promise<number> {
+  static async expire(
+    namespace: string,
+    identifier: string,
+    tenantId?: string,
+    ttl: number,
+  ): Promise<number> {
     const key = makeCacheKey(namespace, identifier, tenantId);
     const client = redisClient!;
     return client.expire(key, ttl);
@@ -139,7 +140,11 @@ export class CacheService {
   /**
    * Invalidate (delete) a cache entry.
    */
-  static async invalidate(namespace: string, identifier: string, tenantId?: string): Promise<'OK'> {
+  static async invalidate(
+    namespace: string,
+    identifier: string,
+    tenantId?: string,
+  ): Promise<"OK"> {
     return this.del(namespace, identifier, tenantId);
   }
 }
@@ -156,28 +161,34 @@ export const productCache = {
    * Retrieve a product by ID.
    */
   async get(id: string, tenantId?: string): Promise<any | null> {
-    return CacheService.get('product', id, tenantId, CacheService.PRODUCT_TTL);
+    return CacheService.get("product", id, tenantId, CacheService.PRODUCT_TTL);
   },
 
   /**
    * Store a product.
    */
-  async set(product: any, tenantId?: string): Promise<'OK'> {
-    return CacheService.set('product', product.id, product, tenantId, CacheService.PRODUCT_TTL);
+  async set(product: any, tenantId?: string): Promise<"OK"> {
+    return CacheService.set(
+      "product",
+      product.id,
+      product,
+      tenantId,
+      CacheService.PRODUCT_TTL,
+    );
   },
 
   /**
    * Remove a product from cache.
    */
-  async del(id: string, tenantId?: string): Promise<'OK'> {
-    return CacheService.del('product', id, tenantId);
+  async del(id: string, tenantId?: string): Promise<"OK"> {
+    return CacheService.del("product", id, tenantId);
   },
 
   /**
    * Invalidate product cache – can be called after create/update/delete.
    */
-  async invalidate(id: string, tenantId?: string): Promise<'OK'> {
-    return CacheService.invalidate('product', id, tenantId);
+  async invalidate(id: string, tenantId?: string): Promise<"OK"> {
+    return CacheService.invalidate("product", id, tenantId);
   },
 };
 
@@ -186,19 +197,30 @@ export const productCache = {
  */
 export const categoryCache = {
   async get(id: string, tenantId?: string): Promise<any | null> {
-    return CacheService.get('category', id, tenantId, CacheService.CATEGORY_TTL);
+    return CacheService.get(
+      "category",
+      id,
+      tenantId,
+      CacheService.CATEGORY_TTL,
+    );
   },
 
-  async set(category: any, tenantId?: string): Promise<'OK'> {
-    return CacheService.set('category', category.id, category, tenantId, CacheService.CATEGORY_TTL);
+  async set(category: any, tenantId?: string): Promise<"OK"> {
+    return CacheService.set(
+      "category",
+      category.id,
+      category,
+      tenantId,
+      CacheService.CATEGORY_TTL,
+    );
   },
 
-  async del(id: string, tenantId?: string): Promise<'OK'> {
-    return CacheService.del('category', id, tenantId);
+  async del(id: string, tenantId?: string): Promise<"OK"> {
+    return CacheService.del("category", id, tenantId);
   },
 
-  async invalidate(id: string, tenantId?: string): Promise<'OK'> {
-    return CacheService.invalidate('category', id, tenantId);
+  async invalidate(id: string, tenantId?: string): Promise<"OK"> {
+    return CacheService.invalidate("category", id, tenantId);
   },
 };
 
@@ -208,19 +230,34 @@ export const categoryCache = {
 export const storefrontCache = {
   async get(tenantId: string): Promise<any | null> {
     // Example key: storefront:tenant:<id>
-    return CacheService.get('storefront', `tenant:${tenantId}`, tenantId, CacheService.STOREFRONT_TTL);
+    return CacheService.get(
+      "storefront",
+      `tenant:${tenantId}`,
+      tenantId,
+      CacheService.STOREFRONT_TTL,
+    );
   },
 
-  async set(data: any, tenantId: string): Promise<'OK'> {
-    return CacheService.set('storefront', `tenant:${tenantId}`, data, tenantId, CacheService.STOREFRONT_TTL);
+  async set(data: any, tenantId: string): Promise<"OK"> {
+    return CacheService.set(
+      "storefront",
+      `tenant:${tenantId}`,
+      data,
+      tenantId,
+      CacheService.STOREFRONT_TTL,
+    );
   },
 
-  async del(tenantId: string): Promise<'OK'> {
-    return CacheService.del('storefront', `tenant:${tenantId}`, tenantId);
+  async del(tenantId: string): Promise<"OK"> {
+    return CacheService.del("storefront", `tenant:${tenantId}`, tenantId);
   },
 
-  async invalidate(tenantId: string): Promise<'OK'> {
-    return CacheService.invalidate('storefront', `tenant:${tenantId}`, tenantId);
+  async invalidate(tenantId: string): Promise<"OK"> {
+    return CacheService.invalidate(
+      "storefront",
+      `tenant:${tenantId}`,
+      tenantId,
+    );
   },
 };
 
@@ -229,19 +266,30 @@ export const storefrontCache = {
  */
 export const settingsCache = {
   async get(tenantId: string): Promise<any | null> {
-    return CacheService.get('settings', `tenant:${tenantId}`, tenantId, CacheService.SETTINGS_TTL);
+    return CacheService.get(
+      "settings",
+      `tenant:${tenantId}`,
+      tenantId,
+      CacheService.SETTINGS_TTL,
+    );
   },
 
-  async set(data: any, tenantId: string): Promise<'OK'> {
-    return CacheService.set('settings', `tenant:${tenantId}`, data, tenantId, CacheService.SETTINGS_TTL);
+  async set(data: any, tenantId: string): Promise<"OK"> {
+    return CacheService.set(
+      "settings",
+      `tenant:${tenantId}`,
+      data,
+      tenantId,
+      CacheService.SETTINGS_TTL,
+    );
   },
 
-  async del(tenantId: string): Promise<'OK'> {
-    return CacheService.del('settings', `tenant:${tenantId}`, tenantId);
+  async del(tenantId: string): Promise<"OK"> {
+    return CacheService.del("settings", `tenant:${tenantId}`, tenantId);
   },
 
-  async invalidate(tenantId: string): Promise<'OK'> {
-    return CacheService.invalidate('settings', `tenant:${tenantId}`, tenantId);
+  async invalidate(tenantId: string): Promise<"OK"> {
+    return CacheService.invalidate("settings", `tenant:${tenantId}`, tenantId);
   },
 };
 

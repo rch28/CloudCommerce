@@ -15,8 +15,8 @@ import {
 import StatsCard from "@/components/dashboard/stats-card";
 import ChartCard from "@/components/dashboard/chart-card";
 import ErrorState from "@/components/dashboard/error-state";
-import Badge from "@/components/cc/Badge";
-import { revenueData, orderChartData, orders, merchantMetrics } from "@/data/mock";
+import LiveOrdersFeed from "@/components/dashboard/merchant/live-orders-feed";
+import { revenueData, orderChartData, merchantMetrics } from "@/data/mock";
 
 export default function MerchantDashboardView() {
   const [error, setError] = useState(false);
@@ -105,30 +105,7 @@ export default function MerchantDashboardView() {
         </ChartCard>
       </div>
 
-      <ChartCard title="Recent Orders">
-        <div className="space-y-1">
-          {orders.slice(0, 5).map((o) => (
-            <div
-              key={o.id}
-              className="flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors hover:bg-[#1E293B]"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#7C3AED]/15 text-xs font-bold text-[#8B5CF6]">
-                  {o.customer.split(" ").map((n) => n[0]).join("")}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-[#F8FAFC]">{o.customer}</p>
-                  <p className="text-xs text-muted-foreground">{o.id} · {o.items} items · {o.date}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <Badge status={o.status} />
-                <span className="text-sm font-semibold text-[#F8FAFC]">${o.total.toFixed(2)}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </ChartCard>
+      <LiveOrdersFeed />
     </div>
   );
 }

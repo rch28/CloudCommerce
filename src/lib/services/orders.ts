@@ -3,6 +3,7 @@ import { orderSchema, type OrderInput } from "@/lib/schemas";
 import { logAudit } from "@/lib/audit";
 import { isValidTransition } from "@/data/order-status";
 import { sendEmail } from "@/lib/email";
+import { OrderEventPublisher } from "@/lib/redis-pubsub";
 
 interface OrderAddressData {
   label: string;
@@ -184,6 +185,20 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
       action: "created",
       changes: { number: orderNumber, total, items: cart.items.length },
       tenantId,
+    }).catch(() => {});
+
+    OrderEventPublisher.publish(tenantId, {
+      event: "order.created",
+      data: {
+        id: order.id,
+        number: order.number,
+        status: order.status,
+        total: Number(order.total),
+        customerName: "",
+        itemCount: cart.items.length,
+        tenantId,
+      },
+      timestamp: new Date().toISOString(),
     }).catch(() => {});
 
     return {
@@ -508,6 +523,31 @@ export async function updateOrderStatusValidated(id: string, newStatus: string, 
     userId,
     tenantId,
   });
+
+  const eventPayload = {
+    id: updated.id,
+    number: updated.number,
+    status: updated.status,
+    total: Number(updated.total),
+    customerName: updated.customer?.name ?? "",
+    itemCount: updated.items.length,
+    tenantId,
+  };
+
+  const eventMap: Record<string, "order.payment_received" | "order.shipped" | "order.cancelled"> = {
+    paid: "order.payment_received",
+    shipped: "order.shipped",
+    cancelled: "order.cancelled",
+  };
+
+  const orderEvent = eventMap[newStatus];
+  if (orderEvent) {
+    OrderEventPublisher.publish(tenantId, {
+      event: orderEvent,
+      data: eventPayload,
+      timestamp: new Date().toISOString(),
+    }).catch(() => {});
+  }
 
   if (newStatus === "shipped" && updated.customer?.email) {
     sendEmail({
