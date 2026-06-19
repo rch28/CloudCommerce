@@ -83,6 +83,15 @@ export function useOrderWebSocket(): UseOrderWebSocketReturn {
           } else if (msg.type === "order_event") {
             const payload = msg as OrderEventPayload;
             setEvents((prev) => [payload, ...prev].slice(0, 100));
+          } else if (msg.type === "notification") {
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("ws-notification", { detail: msg.data }));
+            }
+          } else if (msg.type === "notification_replay") {
+            const notifEvents = (msg.events || []) as Array<Record<string, unknown>>;
+            if (notifEvents.length > 0 && typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("ws-notification-replay", { detail: notifEvents }));
+            }
           } else if (msg.type === "replay") {
             const replayEvents = (msg.events || []) as OrderEventPayload[];
             if (replayEvents.length > 0) {

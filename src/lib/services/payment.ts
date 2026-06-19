@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
+import { createNotification } from "@/lib/services/notifications";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "");
 
@@ -145,6 +146,17 @@ export async function handlePaymentIntentSucceeded(intent: Stripe.PaymentIntent)
       chargeId: intent.latest_charge?.toString() ?? null,
     },
   });
+
+  const paidOrder = await prisma.order.findUnique({ where: { id: orderId }, select: { number: true, total: true, tenantId: true, customer: { select: { name: true, email: true } } } });
+  if (paidOrder) {
+    createNotification(paidOrder.tenantId, {
+      type: "payment.received",
+      title: `Payment received for Order #${paidOrder.number}`,
+      body: `Payment of $${Number(paidOrder.total).toFixed(2)} was successful`,
+      data: { orderId, orderNumber: paidOrder.number, total: Number(paidOrder.total), customerEmail: paidOrder.customer?.email ?? "", customerName: paidOrder.customer?.name ?? "" },
+      channel: "both",
+    }).catch(() => {});
+  }
 }
 
 export async function handlePaymentIntentFailed(intent: Stripe.PaymentIntent) {
@@ -171,6 +183,14 @@ export async function handlePaymentIntentFailed(intent: Stripe.PaymentIntent) {
       );
     }
   });
+
+  createNotification(order.tenantId, {
+    type: "payment.failed",
+    title: `Payment failed for Order #${order.number}`,
+    body: `Payment of $${Number(order.total).toFixed(2)} failed. The order has been cancelled and stock released.`,
+    data: { orderId: order.id, orderNumber: order.number, total: Number(order.total) },
+    channel: "in_app",
+  }).catch(() => {});
 }
 
 export async function handleChargeRefunded(charge: Stripe.Charge) {

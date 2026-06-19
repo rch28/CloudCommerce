@@ -4,6 +4,7 @@ import { logAudit } from "@/lib/audit";
 import { isValidTransition } from "@/data/order-status";
 import { sendEmail } from "@/lib/email";
 import { OrderEventPublisher } from "@/lib/redis-pubsub";
+import { createNotification } from "@/lib/services/notifications";
 
 interface OrderAddressData {
   label: string;
@@ -199,6 +200,22 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
         tenantId,
       },
       timestamp: new Date().toISOString(),
+    }).catch(() => {});
+
+    const customer = customerId ? await tx.customer.findUnique({ where: { id: customerId }, select: { name: true, email: true } }) : null;
+    createNotification(tenantId, {
+      type: "order.created",
+      title: `Order #${orderNumber}`,
+      body: `New order placed for $${Number(total).toFixed(2)} with ${cart.items.length} item${cart.items.length !== 1 ? "s" : ""}`,
+      data: {
+        orderId: order.id,
+        orderNumber,
+        total: Number(total),
+        itemCount: cart.items.length,
+        customerName: customer?.name ?? "",
+        customerEmail: customer?.email ?? "",
+      },
+      channel: "both",
     }).catch(() => {});
 
     return {
@@ -564,6 +581,34 @@ export async function updateOrderStatusValidated(id: string, newStatus: string, 
       to: updated.customer.email,
       orderNumber: updated.number,
       customerName: updated.customer.name,
+    }).catch(() => {});
+  }
+
+  const notifChannel = (newStatus === "shipped" || newStatus === "delivered") ? "both" : "in_app";
+
+  if (newStatus === "shipped") {
+    createNotification(tenantId, {
+      type: "order.shipped",
+      title: `Order #${updated.number} shipped`,
+      body: `Your order has been shipped`,
+      data: { orderId: updated.id, orderNumber: updated.number, customerEmail: updated.customer?.email ?? "", customerName: updated.customer?.name ?? "" },
+      channel: notifChannel,
+    }).catch(() => {});
+  } else if (newStatus === "delivered") {
+    createNotification(tenantId, {
+      type: "order.delivered",
+      title: `Order #${updated.number} delivered`,
+      body: `Your order has been delivered`,
+      data: { orderId: updated.id, orderNumber: updated.number, customerEmail: updated.customer?.email ?? "", customerName: updated.customer?.name ?? "" },
+      channel: notifChannel,
+    }).catch(() => {});
+  } else if (newStatus === "cancelled") {
+    createNotification(tenantId, {
+      type: "order.cancelled",
+      title: `Order #${updated.number} cancelled`,
+      body: `Order has been cancelled`,
+      data: { orderId: updated.id, orderNumber: updated.number },
+      channel: "in_app",
     }).catch(() => {});
   }
 

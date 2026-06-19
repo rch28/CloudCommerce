@@ -1,7 +1,7 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { createServer } from "http";
 import { prisma } from "@/lib/prisma";
-import { OrderEventSubscriber, type OrderEventPayload } from "@/lib/redis-pubsub";
+import { OrderEventSubscriber, type OrderEventPayload, type NotificationEventPayload } from "@/lib/redis-pubsub";
 
 const WS_PORT = parseInt(process.env.WS_PORT || "3001", 10);
 const HEARTBEAT_INTERVAL_MS = 30_000;
@@ -90,6 +90,10 @@ async function main() {
     broadcast(event.data.tenantId, { type: "order_event", ...event });
   };
 
+  subscriber.onNotification = (event: NotificationEventPayload) => {
+    broadcast(event.data.tenantId, { type: "notification", ...event });
+  };
+
   const server = createServer();
   const wss = new WebSocketServer({ server });
 
@@ -113,8 +117,14 @@ async function main() {
         } else if (msg.type === "pong") {
           client.lastPong = Date.now();
         } else if (msg.type === "get_history" && client.authenticated && client.tenantId) {
-          const events = await subscriber.getHistory(client.tenantId);
+          const [events, notifs] = await Promise.all([
+            subscriber.getHistory(client.tenantId),
+            subscriber.getNotificationHistory(client.tenantId),
+          ]);
           send(ws, { type: "replay", events });
+          if (notifs.length > 0) {
+            send(ws, { type: "notification_replay", events: notifs });
+          }
         }
       } catch (err) {
         console.error("[WS] message error:", err);

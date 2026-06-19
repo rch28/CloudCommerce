@@ -17,8 +17,10 @@ model Tenant {
   products     Product[]
   categories   Category[]
   inventories  Inventory[]
-  auditLogs    AuditLog[]
-  orders       Order[]
+  auditLogs            AuditLog[]
+  notifications         Notification[]
+  notificationPreferences NotificationPreference[]
+  orders               Order[]
   customers    Customer[]
   carts        Cart[]
   subscription Subscription?
@@ -40,8 +42,10 @@ model User {
   updatedAt DateTime @updatedAt
 
   tenant    Tenant?   @relation(fields: [tenantId], references: [id])
-  sessions  Session[]
-  addresses Address[]
+  sessions               Session[]
+  addresses              Address[]
+  notifications          Notification[]
+  notificationPreferences NotificationPreference[]
 }
 
 model Session {
@@ -259,6 +263,42 @@ model AuditLog {
   createdAt  DateTime @default(now())
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
+}
+
+model Notification {
+  id           String    @id @default(cuid())
+  tenantId     String
+  userId       String?
+  type         String
+  title        String
+  body         String
+  data         Json?
+  channel      String    @default("in_app")
+  readAt       DateTime?
+  emailSentAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@index([tenantId, userId, readAt])
+  @@index([tenantId, createdAt])
+}
+
+model NotificationPreference {
+  id        String   @id @default(cuid())
+  tenantId  String
+  userId    String
+  channel   String
+  events    String[]
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([tenantId, userId, channel])
 }
 
 model Customer {

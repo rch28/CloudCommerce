@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { inventorySchema, stockAdjustSchema, stockReserveSchema, stockReleaseSchema, type InventoryInput, type StockAdjustInput, type StockReserveInput, type StockReleaseInput } from "@/lib/schemas";
+import { createNotification } from "@/lib/services/notifications";
 
 interface InventoryRecord {
   id: string; variantId: string; quantity: number; reserved: number;
@@ -137,6 +138,8 @@ export async function adjustStock(data: StockAdjustInput, userId?: string) {
       changes: { variantId, change, reason, previousQty: inv.quantity, newQty }, userId, tenantId: inv.tenantId,
     });
 
+    await checkAndNotifyStock(variantId, newQty, inv.tenantId, reason);
+
     return updated;
   }
   const idx = mockInventory.findIndex((i) => i.variantId === variantId);
@@ -217,6 +220,9 @@ export async function decreaseStockOnOrder(variantId: string, quantity: number, 
         previousReserved: inv.reserved, newReserved, userId,
       }),
     ]);
+
+    await checkAndNotifyStock(variantId, newQty, inv.tenantId, `Order ${orderId} confirmed`);
+
     return updated;
   }
   const idx = mockInventory.findIndex((i) => i.variantId === variantId);
@@ -240,6 +246,39 @@ export async function getStockHistory(variantId: string, limit = 50) {
     .filter((l) => l.variantId === variantId)
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(0, limit);
+}
+
+async function checkAndNotifyStock(
+  variantId: string,
+  newQty: number,
+  tenantId: string,
+  reason: string,
+) {
+  if (!process.env.DATABASE_URL) return;
+  const inv = await prisma.inventory.findUnique({
+    where: { variantId },
+    include: { variant: { include: { product: { select: { name: true } } } } },
+  });
+  if (!inv) return;
+  const productName = (inv.variant as any)?.product?.name ?? "Product";
+
+  if (newQty <= 0) {
+    createNotification(tenantId, {
+      type: "inventory.out_of_stock",
+      title: `${productName} is out of stock`,
+      body: `${productName} (SKU: ${(inv.variant as any)?.sku ?? variantId}) is now out of stock. ${reason}`,
+      data: { variantId, productName, sku: (inv.variant as any)?.sku ?? "", newQty, reason },
+      channel: "in_app",
+    }).catch(() => {});
+  } else if (newQty <= inv.lowStockThreshold) {
+    createNotification(tenantId, {
+      type: "inventory.low_stock",
+      title: `${productName} stock is low`,
+      body: `${productName} (SKU: ${(inv.variant as any)?.sku ?? variantId}) has only ${newQty} units remaining (threshold: ${inv.lowStockThreshold}). ${reason}`,
+      data: { variantId, productName, sku: (inv.variant as any)?.sku ?? "", newQty, threshold: inv.lowStockThreshold, reason },
+      channel: "in_app",
+    }).catch(() => {});
+  }
 }
 
 export async function getInventoryAlerts(tenantId: string) {

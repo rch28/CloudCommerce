@@ -16,11 +16,24 @@ export interface OrderEventPayload {
   timestamp: string;
 }
 
+export interface NotificationEventPayload {
+  event: "notification";
+  data: {
+    id: string;
+    type: string;
+    title: string;
+    body: string;
+    data: unknown;
+    tenantId: string;
+    createdAt: string;
+  };
+  timestamp: string;
+}
+
 const CHANNEL_PREFIX = "orders:";
 const HISTORY_PREFIX = "orders:";
 const MAX_HISTORY = 50;
 const HISTORY_TTL = 7 * 24 * 60 * 60;
-
 function channelFor(tenantId: string): string {
   return `${CHANNEL_PREFIX}${tenantId}`;
 }
@@ -48,6 +61,7 @@ export class OrderEventPublisher {
 export class OrderEventSubscriber {
   private sub: RedisClientType;
   onEvent: ((event: OrderEventPayload) => void) | null = null;
+  onNotification: ((event: NotificationEventPayload) => void) | null = null;
   private connected = false;
 
   constructor() {
@@ -65,6 +79,13 @@ export class OrderEventSubscriber {
         this.onEvent(event);
       } catch { /* skip malformed */ }
     });
+    await this.sub.pSubscribe(`notifications:*`, (message: string) => {
+      if (!this.onNotification) return;
+      try {
+        const event = JSON.parse(message) as NotificationEventPayload;
+        this.onNotification(event);
+      } catch { /* skip malformed */ }
+    });
   }
 
   async getHistory(tenantId: string): Promise<OrderEventPayload[]> {
@@ -72,6 +93,16 @@ export class OrderEventSubscriber {
     try {
       const raw = await redisClient.lRange(historyKey(tenantId), 0, MAX_HISTORY - 1);
       return raw.map((r) => JSON.parse(r) as OrderEventPayload).reverse();
+    } catch {
+      return [];
+    }
+  }
+
+  async getNotificationHistory(tenantId: string): Promise<NotificationEventPayload[]> {
+    if (!redisClient) return [];
+    try {
+      const raw = await redisClient.lRange(`notifications:${tenantId}:history`, 0, 49);
+      return raw.map((r) => JSON.parse(r) as NotificationEventPayload).reverse();
     } catch {
       return [];
     }

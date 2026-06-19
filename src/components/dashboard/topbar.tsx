@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { Menu, Bell, ChevronDown, LogOut, Building2, ShoppingBag, Search, Command } from "lucide-react";
+import { Menu, ChevronDown, LogOut, Building2, ShoppingBag, Search, Command } from "lucide-react";
+import NotificationDropdown from "@/components/dashboard/notification-dropdown";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface TopbarProps {
@@ -34,12 +35,7 @@ export default function Topbar({ onMenu, onSearchOpen }: TopbarProps) {
       </button>
 
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
-        <button
-          className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground transition-colors hover:text-[#F8FAFC]"
-        >
-          <Bell size={17} />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#7C3AED] ring-2 ring-background" />
-        </button>
+        <NotificationDropdown />
 
         {session && (
           <button className="hidden items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-[#7C3AED]/30 hover:text-[#F8FAFC] sm:flex">
