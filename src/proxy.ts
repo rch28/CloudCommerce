@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { rateLimitRedis } from "@/lib/rate-limit-redis";
 import { logger } from "@/lib/logger";
+import { redisClient } from "@/lib/redis";
 
 const CSP = [
   "default-src 'self'",
@@ -49,7 +51,7 @@ function shouldSkipAuth(pathname: string): boolean {
   return AUTH_SKIP_PATHS.some((p) => pathname.startsWith(p));
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const requestId = crypto.randomUUID?.() || `${Date.now()}`;
 
@@ -75,11 +77,26 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  // Rate limiting on API routes
+  // Rate limiting on API routes (Redis-backed, fallback to in-memory)
   if (pathname.startsWith("/api/") && !pathname.startsWith("/api/webhooks/")) {
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
     const key = `api:${ip}:${pathname}`;
-    const { allowed, remaining, reset } = rateLimit(key, { maxRequests: 100, windowMs: 60_000 });
+
+    let allowed: boolean;
+    let remaining: number;
+    let reset: number;
+
+    if (redisClient) {
+      const result = await rateLimitRedis(key, { maxRequests: 100, windowMs: 60_000 });
+      allowed = result.allowed;
+      remaining = result.remaining;
+      reset = result.reset;
+    } else {
+      const result = rateLimit(key, { maxRequests: 100, windowMs: 60_000 });
+      allowed = result.allowed;
+      remaining = result.remaining;
+      reset = result.reset;
+    }
 
     response.headers.set("x-ratelimit-remaining", String(remaining));
     response.headers.set("x-ratelimit-reset", String(reset));

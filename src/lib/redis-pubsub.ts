@@ -65,7 +65,8 @@ export class OrderEventSubscriber {
   private connected = false;
 
   constructor() {
-    this.sub = createClient({ url: "redis://localhost:6379" });
+    const url = process.env.REDIS_QUEUE_URL || process.env.REDIS_URL || process.env.UPSTASH_REST_URL || "redis://localhost:6379";
+    this.sub = createClient({ url });
   }
 
   async connect(): Promise<void> {

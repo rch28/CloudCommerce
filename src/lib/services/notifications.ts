@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
+import { enqueueNotificationDelivery } from "@/lib/queue/enqueue";
 
 export interface CreateNotificationInput {
   type: string;
@@ -58,7 +59,8 @@ export async function createNotification(
       sendEmailForNotification(input).catch(() => {});
     }
 
-    await publishNotificationEvent(tenantId, notification);
+    publishNotificationEvent(tenantId, notification).catch(() => {});
+    enqueueNotificationDelivery(notification.id, tenantId, notification.userId ?? undefined);
 
     return mapNotification(notification);
   }

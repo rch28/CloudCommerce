@@ -229,67 +229,37 @@ export const categoryCache = {
  */
 export const storefrontCache = {
   async get(tenantId: string): Promise<any | null> {
-    // Example key: storefront:tenant:<id>
-    return CacheService.get(
-      "storefront",
-      `tenant:${tenantId}`,
-      tenantId,
-      CacheService.STOREFRONT_TTL,
-    );
+    return CacheService.get("storefront", "data", tenantId, CacheService.STOREFRONT_TTL);
   },
 
   async set(data: any, tenantId: string): Promise<"OK"> {
-    return CacheService.set(
-      "storefront",
-      `tenant:${tenantId}`,
-      data,
-      tenantId,
-      CacheService.STOREFRONT_TTL,
-    );
+    return CacheService.set("storefront", "data", data, tenantId, CacheService.STOREFRONT_TTL);
   },
 
   async del(tenantId: string): Promise<"OK"> {
-    return CacheService.del("storefront", `tenant:${tenantId}`, tenantId);
+    return CacheService.del("storefront", "data", tenantId);
   },
 
   async invalidate(tenantId: string): Promise<"OK"> {
-    return CacheService.invalidate(
-      "storefront",
-      `tenant:${tenantId}`,
-      tenantId,
-    );
+    return CacheService.invalidate("storefront", "data", tenantId);
   },
 };
 
-/**
- * Settings cache – application-wide settings.
- */
 export const settingsCache = {
   async get(tenantId: string): Promise<any | null> {
-    return CacheService.get(
-      "settings",
-      `tenant:${tenantId}`,
-      tenantId,
-      CacheService.SETTINGS_TTL,
-    );
+    return CacheService.get("settings", "data", tenantId, CacheService.SETTINGS_TTL);
   },
 
   async set(data: any, tenantId: string): Promise<"OK"> {
-    return CacheService.set(
-      "settings",
-      `tenant:${tenantId}`,
-      data,
-      tenantId,
-      CacheService.SETTINGS_TTL,
-    );
+    return CacheService.set("settings", "data", data, tenantId, CacheService.SETTINGS_TTL);
   },
 
   async del(tenantId: string): Promise<"OK"> {
-    return CacheService.del("settings", `tenant:${tenantId}`, tenantId);
+    return CacheService.del("settings", "data", tenantId);
   },
 
   async invalidate(tenantId: string): Promise<"OK"> {
-    return CacheService.invalidate("settings", `tenant:${tenantId}`, tenantId);
+    return CacheService.invalidate("settings", "data", tenantId);
   },
 };
 

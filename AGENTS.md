@@ -25,6 +25,7 @@ This project has graphify set up for knowledge graph exploration.
 |--------|---------|
 | Dev server | `bun run dev` (port 3000, starts WS server on 3001) |
 | WS server | `bun run ws:start` (standalone, port 3001) |
+| Workers | `bun run workers:start` (BullMQ, requires Redis) |
 | Lint | `bun run lint` |
 | Typecheck | `bun run typecheck` (tsc --noEmit) |
 | Build | `bun run build` (includes full typecheck) |
@@ -89,8 +90,10 @@ src/
     security/       # CSRF, rate limiting
     upload/         # storage providers
     webhooks/       # webhook processing + retry queue
+    queue/          # BullMQ queue definitions + enqueue helpers
     repository.ts   # BaseRepository<T>
   hooks/            # useCart, useToast, useMobile
+  workers/          # BullMQ worker processors
   data/             # mock data fallback
 ```
 
@@ -117,6 +120,17 @@ src/
 - `Dockerfile` runs as non-root `nextjs` user.
 - `/api/webhooks/` paths bypass auth and rate limiting in proxy.
 - `openFormat` / `closeFormat` route handler naming (from Next.js docs) appears in community graph nodes — ignore the generic names.
+
+## Background Processing (BullMQ + Redis)
+- **Queues**: mail, inventory, notifications, webhooks — defined in `src/lib/queue/`
+- **Workers**: `src/workers/mail.worker.ts`, `inventory.worker.ts`, `notification.worker.ts`, `webhook.worker.ts`
+- **Runner**: `bun run workers:start` — standalone process, requires Redis
+- **Retries**: exponential backoff per queue (mail: 5, inventory: 3, notifications: 3, webhooks: 5)
+- **Dead-letter queues**: auto-created per queue (`mail:dead`, `inventory:dead`, etc), 30-day retention
+- **Monitoring**: `src/lib/queue/monitoring.ts` — `getQueueMetrics()`, `getAllQueueHealth()`, `getAggregateMetrics()`, `retryDeadLetterJob()`
+- **Enqueue helpers**: `src/lib/queue/enqueue.ts` — fire-and-forget functions called by services
+- **Connections**: uses `ioredis` (separate from cache `redis` package), reads same `REDIS_URL` env vars
+- **Service integration**: `orders.ts`, `notifications.ts`, `payment.ts`, `inventory.ts` all enqueue jobs instead of sync processing
 
 ## Graphify (knowledge graph)
 - Graph at `graphify-out/` — use `/graphify query "<question>"` for cross-module questions

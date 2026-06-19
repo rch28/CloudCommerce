@@ -3,6 +3,8 @@ import { BaseRepository, type AuditMeta, type PaginateParams, type PaginatedResu
 import { productSchema, type ProductInput } from "@/lib/schemas";
 import { generateSlug } from "@/lib/slug";
 import { logAudit } from "@/lib/audit";
+import { productCache } from "@/lib/redis";
+import { withCache, invalidateProductCache, invalidateStorefrontCache, invalidateSearchCache } from "@/lib/cache";
 
 interface ImageRecord {
   id: string; productId: string; url: string; alt: string | null; sortOrder: number; createdAt: Date;
@@ -79,8 +81,8 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
       const sortMap: Record<string, { field: string; dir: "asc" | "desc" }> = {
         name: { field: "name", dir: "asc" },
         newest: { field: "createdAt", dir: "desc" },
-        price_asc: { field: "createdAt", dir: "asc" },
-        price_desc: { field: "createdAt", dir: "desc" },
+        price_asc: { field: "price", dir: "asc" },
+        price_desc: { field: "price", dir: "desc" },
       };
 
       let orderBy: Record<string, "asc" | "desc"> = { createdAt: "desc" };
@@ -94,15 +96,15 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
       const page = Math.max(1, params.page || 1);
       const pageSize = Math.min(100, Math.max(1, params.pageSize || 20));
       const skip = (page - 1) * pageSize;
-      const [items, total] = await Promise.all([
-        prisma.product.findMany({
-          where,
-          include: buildIncludes(),
-          orderBy,
-          skip, take: pageSize,
-        }),
-        prisma.product.count({ where }),
-      ]);
+        const [items, total] = await Promise.all([
+          prisma.product.findMany({
+            where,
+            include: buildIncludes(),
+            orderBy,
+            skip, take: pageSize,
+          }),
+          prisma.product.count({ where }),
+        ]);
       return { items: items as unknown as ProductRecord[], total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
     }
     let items = mockProducts.filter((p) => p.tenantId === tenantId && !p.deletedAt).map(inflateMock);
@@ -123,8 +125,14 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
 
   async getById(id: string): Promise<ProductRecord | null> {
     if (process.env.DATABASE_URL) {
-      const record = await prisma.product.findFirst({ where: { id, deletedAt: null }, include: buildIncludes() });
-      return record as unknown as ProductRecord | null;
+      return withCache(
+        async () => {
+          const record = await prisma.product.findFirst({ where: { id, deletedAt: null }, include: buildIncludes() });
+          return record as unknown as ProductRecord | null;
+        },
+        { get: (key: string) => productCache.get(key), set: (data: any) => productCache.set(data, data.tenantId) },
+        id,
+      );
     }
     const record = mockProducts.find((p) => p.id === id && !p.deletedAt);
     return record ? inflateMock(record) : null;
@@ -132,8 +140,15 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
 
   async getBySlug(slug: string, tenantId: string): Promise<ProductRecord | null> {
     if (process.env.DATABASE_URL) {
-      const record = await prisma.product.findFirst({ where: { slug, tenantId, deletedAt: null }, include: buildIncludes() });
-      return record as unknown as ProductRecord | null;
+      return withCache(
+        async () => {
+          const record = await prisma.product.findFirst({ where: { slug, tenantId, deletedAt: null }, include: buildIncludes() });
+          return record as unknown as ProductRecord | null;
+        },
+        { get: (key: string) => productCache.get(key, tenantId), set: (data: any) => productCache.set(data, tenantId) },
+        slug,
+        tenantId,
+      );
     }
     const record = mockProducts.find((p) => p.slug === slug && p.tenantId === tenantId && !p.deletedAt);
     return record ? inflateMock(record) : null;
@@ -158,6 +173,8 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
         include: buildIncludes(),
       });
       await logAuditFn("created", record.id, parsed, meta);
+      invalidateStorefrontCache(meta.tenantId);
+      invalidateSearchCache(meta.tenantId);
       return record as unknown as ProductRecord;
     }
 
@@ -180,6 +197,9 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
       const { images: _imgs, variants: _vars, options: _opts, ...fields } = parsed;
       const record = await prisma.product.update({ where: { id }, data: fields as any, include: buildIncludes() });
       await logAuditFn("updated", id, fields, meta);
+      invalidateProductCache(id, meta.tenantId);
+      invalidateStorefrontCache(meta.tenantId);
+      invalidateSearchCache(meta.tenantId);
       return record as unknown as ProductRecord;
     }
     const idx = mockProducts.findIndex((p) => p.id === id);
@@ -192,6 +212,9 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
     if (process.env.DATABASE_URL) {
       const record = await prisma.product.update({ where: { id }, data: { deletedAt: new Date() } });
       await logAuditFn("deleted", id, { softDelete: true }, meta);
+      invalidateProductCache(id, meta.tenantId);
+      invalidateStorefrontCache(meta.tenantId);
+      invalidateSearchCache(meta.tenantId);
       return record as unknown as ProductRecord;
     }
     const idx = mockProducts.findIndex((p) => p.id === id);
@@ -204,6 +227,9 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
     if (process.env.DATABASE_URL) {
       const record = await prisma.product.update({ where: { id }, data: { status: "archived" }, include: buildIncludes() });
       await logAuditFn("updated", id, { status: "archived" }, meta);
+      invalidateProductCache(id, meta.tenantId);
+      invalidateStorefrontCache(meta.tenantId);
+      invalidateSearchCache(meta.tenantId);
       return record as unknown as ProductRecord;
     }
     const idx = mockProducts.findIndex((p) => p.id === id);
@@ -216,6 +242,9 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
     if (process.env.DATABASE_URL) {
       const record = await prisma.product.update({ where: { id }, data: { deletedAt: null, status: "active" }, include: buildIncludes() });
       await logAuditFn("updated", id, { deletedAt: null, status: "active" }, meta);
+      invalidateProductCache(id, meta.tenantId);
+      invalidateStorefrontCache(meta.tenantId);
+      invalidateSearchCache(meta.tenantId);
       return record as unknown as ProductRecord;
     }
     const idx = mockProducts.findIndex((p) => p.id === id);

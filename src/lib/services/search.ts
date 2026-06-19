@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { cacheSearchResults } from "@/lib/cache";
 
 export interface SearchResult<T = unknown> {
   items: T[];
@@ -25,6 +26,12 @@ export interface SearchAdapter {
 // ── PostgreSQL Full-Text Search Adapter ──────────────
 
 class PostgresSearchAdapter implements SearchAdapter {
+  private tenantId?: string;
+
+  setTenantId(tid: string) {
+    this.tenantId = tid;
+  }
+
   async searchProducts(params: SearchParams): Promise<SearchResult> {
     const q = params.query.trim();
     const page = Math.max(1, params.page || 1);
@@ -47,35 +54,36 @@ class PostgresSearchAdapter implements SearchAdapter {
     if (params.filters) {
       if (params.filters.categoryId) where.categoryId = params.filters.categoryId;
       if (params.filters.status) where.status = params.filters.status;
+      if (params.filters.tenantId) where.tenantId = params.filters.tenantId;
     }
 
     const orderBy = params.sort
       ? { [params.sort]: params.order || "desc" }
       : q ? { _relevance: { fields: ["name", "description"], search: q, sort: "desc" } } : { createdAt: "desc" as const };
 
-    const [items, total] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        include: {
-          images: { orderBy: { sortOrder: "asc" } },
-          variants: { where: { deletedAt: null }, take: 1, orderBy: { price: "asc" } },
-          category: { select: { id: true, name: true, slug: true } },
-        },
-        orderBy: orderBy as any,
-        skip,
-        take: pageSize,
-      }),
-      prisma.product.count({ where }),
-    ]);
-
-    return {
-      items: items as any[],
-      total,
-      page,
-      pageSize,
-      totalPages: Math.ceil(total / pageSize),
-      query: q,
+    const searchFn = async () => {
+      const [items, total] = await Promise.all([
+        prisma.product.findMany({
+          where,
+          include: {
+            images: { orderBy: { sortOrder: "asc" } },
+            variants: { where: { deletedAt: null }, take: 1, orderBy: { price: "asc" } },
+            category: { select: { id: true, name: true, slug: true } },
+          },
+          orderBy: orderBy as any,
+          skip,
+          take: pageSize,
+        }),
+        prisma.product.count({ where }),
+      ]);
+      return { items: items as any[], total, page, pageSize, totalPages: Math.ceil(total / pageSize), query: q };
     };
+
+    const tenantId = params.filters?.tenantId || this.tenantId;
+    if (tenantId && q) {
+      return cacheSearchResults(q, tenantId, page, searchFn);
+    }
+    return searchFn();
   }
 }
 

@@ -2,6 +2,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { createServer } from "http";
 import { prisma } from "@/lib/prisma";
 import { OrderEventSubscriber, type OrderEventPayload, type NotificationEventPayload } from "@/lib/redis-pubsub";
+import { wsMetrics } from "@/lib/ws-metrics";
 
 const WS_PORT = parseInt(process.env.WS_PORT || "3001", 10);
 const HEARTBEAT_INTERVAL_MS = 30_000;
@@ -87,17 +88,22 @@ async function main() {
   await subscriber.connect();
 
   subscriber.onEvent = (event: OrderEventPayload) => {
+    wsMetrics.totalEventsProcessed++;
     broadcast(event.data.tenantId, { type: "order_event", ...event });
   };
 
   subscriber.onNotification = (event: NotificationEventPayload) => {
+    wsMetrics.totalEventsProcessed++;
     broadcast(event.data.tenantId, { type: "notification", ...event });
   };
 
   const server = createServer();
   const wss = new WebSocketServer({ server });
 
+  wsMetrics.serverStartTime = Date.now();
+
   wss.on("connection", (ws) => {
+    wsMetrics.connectedClients = wss.clients.size;
     const client: ClientState = {
       tenantId: null,
       authenticated: false,
@@ -133,6 +139,7 @@ async function main() {
 
     ws.on("close", () => {
       cleanup(ws, client);
+      wsMetrics.connectedClients = wss.clients.size;
       console.log("[WS] client disconnected");
     });
 

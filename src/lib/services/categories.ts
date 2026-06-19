@@ -2,6 +2,8 @@ import { BaseRepository, type AuditMeta, type PaginateParams, type PaginatedResu
 import { categorySchema, type CategoryInput } from "@/lib/schemas";
 import { generateSlug } from "@/lib/slug";
 import { logAudit } from "@/lib/audit";
+import { withCache, invalidateCategoryCache, invalidateStorefrontCache } from "@/lib/cache";
+import { categoryCache } from "@/lib/redis";
 
 interface CategoryRecord {
   id: string; name: string; slug: string; description: string | null;
@@ -36,7 +38,13 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
   }
 
   async getById(id: string): Promise<CategoryRecord | null> {
-    if (process.env.DATABASE_URL) return this.findById(id);
+    if (process.env.DATABASE_URL) {
+      return withCache(
+        () => this.findById(id),
+        { get: (key: string) => categoryCache.get(key), set: (data: any) => categoryCache.set(data, data.tenantId) },
+        id,
+      );
+    }
     return mockCategories.find((c) => c.id === id && !c.deletedAt) ?? null;
   }
 
@@ -44,7 +52,10 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
     const parsed = categorySchema.parse(data);
     const slug = generateSlug(parsed.slug);
     const payload = { ...parsed, slug, description: parsed.description ?? null, image: parsed.image ?? null, parentId: parsed.parentId ?? null, status: parsed.status ?? "active", tenantId: meta.tenantId };
-    if (process.env.DATABASE_URL) return this.create(payload as CategoryInput, meta);
+    if (process.env.DATABASE_URL) {
+      invalidateStorefrontCache(meta.tenantId);
+      return this.create(payload as CategoryInput, meta);
+    }
     const record: CategoryRecord = { id: `cat-${Date.now()}`, ...payload, deletedAt: null, createdAt: new Date(), updatedAt: new Date() };
     mockCategories.push(record);
     return record;
@@ -54,7 +65,11 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
     const parsed = categorySchema.partial().parse(data);
     const slug = parsed.slug ? generateSlug(parsed.slug) : undefined;
     const payload = { ...parsed, slug, ...(parsed.description !== undefined ? { description: parsed.description ?? null } : {}), ...(parsed.image !== undefined ? { image: parsed.image ?? null } : {}), ...(parsed.parentId !== undefined ? { parentId: parsed.parentId ?? null } : {}) };
-    if (process.env.DATABASE_URL) return this.update(id, payload as Partial<CategoryInput>, meta);
+    if (process.env.DATABASE_URL) {
+      invalidateCategoryCache(id, meta.tenantId);
+      invalidateStorefrontCache(meta.tenantId);
+      return this.update(id, payload as Partial<CategoryInput>, meta);
+    }
     const idx = mockCategories.findIndex((c) => c.id === id);
     if (idx === -1) throw new Error("Category not found");
     Object.assign(mockCategories[idx], payload, { updatedAt: new Date() });
@@ -62,7 +77,11 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
   }
 
   async remove(id: string, meta: AuditMeta): Promise<CategoryRecord> {
-    if (process.env.DATABASE_URL) return this.softDelete(id, meta);
+    if (process.env.DATABASE_URL) {
+      invalidateCategoryCache(id, meta.tenantId);
+      invalidateStorefrontCache(meta.tenantId);
+      return this.softDelete(id, meta);
+    }
     const idx = mockCategories.findIndex((c) => c.id === id);
     if (idx === -1) throw new Error("Category not found");
     mockCategories[idx].deletedAt = new Date();
@@ -71,6 +90,8 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
 
   async archive(id: string, meta: AuditMeta): Promise<CategoryRecord> {
     if (process.env.DATABASE_URL) {
+      invalidateCategoryCache(id, meta.tenantId);
+      invalidateStorefrontCache(meta.tenantId);
       const record = await this.model.update({ where: { id }, data: { status: "archived" } });
       await logAudit({ entityType: "category", entityId: id, action: "updated", changes: { status: "archived" }, userId: meta.userId, tenantId: meta.tenantId });
       return record as CategoryRecord;
@@ -83,6 +104,8 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
 
   async restore(id: string, meta: AuditMeta): Promise<CategoryRecord> {
     if (process.env.DATABASE_URL) {
+      invalidateCategoryCache(id, meta.tenantId);
+      invalidateStorefrontCache(meta.tenantId);
       const record = await this.model.update({ where: { id }, data: { deletedAt: null, status: "active" } });
       await logAudit({ entityType: "category", entityId: id, action: "updated", changes: { deletedAt: null, status: "active" }, userId: meta.userId, tenantId: meta.tenantId });
       return record as CategoryRecord;

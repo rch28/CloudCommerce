@@ -2,9 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { orderSchema, type OrderInput } from "@/lib/schemas";
 import { logAudit } from "@/lib/audit";
 import { isValidTransition } from "@/data/order-status";
-import { sendEmail } from "@/lib/email";
 import { OrderEventPublisher } from "@/lib/redis-pubsub";
 import { createNotification } from "@/lib/services/notifications";
+import { enqueueMail } from "@/lib/queue/enqueue";
+import { enqueueInventoryAdjust } from "@/lib/queue/enqueue";
 
 interface OrderAddressData {
   label: string;
@@ -217,6 +218,27 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
       },
       channel: "both",
     }).catch(() => {});
+
+    if (customer?.email) {
+      enqueueMail({
+        type: "order_confirmation",
+        to: customer.email,
+        orderNumber,
+        customerName: customer.name ?? "",
+        total: Number(total),
+        tenantId,
+      });
+    }
+
+    for (const item of cart.items) {
+      enqueueInventoryAdjust(
+        item.variantId,
+        -item.quantity,
+        "Order confirmed",
+        tenantId,
+        { orderId: order.id },
+      );
+    }
 
     return {
       id: order.id,
@@ -566,22 +588,24 @@ export async function updateOrderStatusValidated(id: string, newStatus: string, 
     }).catch(() => {});
   }
 
-  if (newStatus === "shipped" && updated.customer?.email) {
-    sendEmail({
-      type: "order_shipped",
-      to: updated.customer.email,
-      orderNumber: updated.number,
-      customerName: updated.customer.name,
-    }).catch(() => {});
-  }
-
-  if (newStatus === "delivered" && updated.customer?.email) {
-    sendEmail({
-      type: "order_delivered",
-      to: updated.customer.email,
-      orderNumber: updated.number,
-      customerName: updated.customer.name,
-    }).catch(() => {});
+  if (updated.customer?.email) {
+    if (newStatus === "shipped") {
+      enqueueMail({
+        type: "shipping_confirmation",
+        to: updated.customer.email,
+        orderNumber: updated.number,
+        customerName: updated.customer.name,
+        tenantId,
+      });
+    } else if (newStatus === "delivered") {
+      enqueueMail({
+        type: "delivery_confirmation",
+        to: updated.customer.email,
+        orderNumber: updated.number,
+        customerName: updated.customer.name,
+        tenantId,
+      });
+    }
   }
 
   const notifChannel = (newStatus === "shipped" || newStatus === "delivered") ? "both" : "in_app";
@@ -624,12 +648,13 @@ export async function resendConfirmationEmail(orderId: string, tenantId: string)
   if (!order) throw new Error("Order not found");
   if (!order.customer?.email) throw new Error("Customer has no email address");
 
-  await sendEmail({
+  enqueueMail({
     type: "order_confirmation",
     to: order.customer.email,
     orderNumber: order.number,
     customerName: order.customer.name,
     total: Number(order.total),
+    tenantId,
   });
 
   await logAudit({
