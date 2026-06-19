@@ -28,6 +28,9 @@ model Tenant {
   users        User[]
   staffMembers StaffMember[]
   apiKeys      ApiKey[]
+  coupons          Coupon[]
+  promotions       Promotion[]
+  promotionUsages  PromotionUsage[]
 }
 
 model User {
@@ -374,6 +377,9 @@ model Order {
   shipping   Decimal  @default(0)
   tax        Decimal  @default(0)
   total      Decimal  @default(0)
+  discountAmount Decimal   @default(0)
+  discountCode   String?
+  discountType   String?
   notes            String?
   stripeSessionId  String?  @unique
   paymentIntentId  String?
@@ -489,4 +495,88 @@ model WebhookLog {
   createdAt DateTime @default(now())
 
   webhook WebhookEvent @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+}
+
+model Coupon {
+  id              String   @id @default(cuid())
+  code            String
+  type            String   // fixed | percentage | free_shipping
+  value           Decimal
+  maxDiscount     Decimal?
+  minOrderAmount  Decimal?
+  maxUses         Int?
+  currentUses     Int      @default(0)
+  appliesTo       String   @default("all") // all | products | categories | customers
+  productIds      String[]
+  categoryIds     String[]
+  customerIds     String[]
+  firstOrderOnly  Boolean  @default(false)
+  startsAt        DateTime
+  expiresAt       DateTime?
+  isActive        Boolean  @default(true)
+  tenantId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([code, tenantId])
+  @@index([tenantId])
+}
+
+model Promotion {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  type          String   // automatic | cart_rule
+  priority      Int      @default(0)
+  discountType  String   // fixed | percentage | free_shipping
+  discountValue Decimal
+  maxDiscount   Decimal?
+  startsAt      DateTime
+  expiresAt     DateTime?
+  isActive      Boolean  @default(true)
+  tenantId      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id])
+  rules  PromotionRule[]
+  usages PromotionUsage[]
+
+  @@index([tenantId])
+}
+
+model PromotionRule {
+  id          String @id @default(cuid())
+  promotionId String
+  type        String // min_amount | product | category | customer | first_order
+  value       String // JSON config
+  tenantId    String
+  createdAt   DateTime @default(now())
+
+  promotion Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+
+  @@index([promotionId])
+}
+
+model PromotionUsage {
+  id             String   @id @default(cuid())
+  promotionId    String?
+  couponId       String?
+  orderId        String
+  customerId     String?
+  discountAmount Decimal
+  discountType   String   // fixed | percentage | free_shipping
+  discountCode   String?
+  tenantId       String
+  createdAt      DateTime @default(now())
+
+  promotion Promotion? @relation(fields: [promotionId], references: [id])
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+
+  @@index([promotionId])
+  @@index([couponId])
+  @@index([orderId])
+  @@index([tenantId])
 }

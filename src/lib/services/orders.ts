@@ -6,6 +6,8 @@ import { OrderEventPublisher } from "@/lib/redis-pubsub";
 import { createNotification } from "@/lib/services/notifications";
 import { enqueueMail } from "@/lib/queue/enqueue";
 import { enqueueInventoryAdjust } from "@/lib/queue/enqueue";
+import { validateCoupon, calculateDiscount } from "@/lib/services/discounts";
+import { recordUsage } from "@/lib/services/coupon-usage";
 
 interface OrderAddressData {
   label: string;
@@ -24,6 +26,7 @@ export interface CheckoutParams {
   addressId?: string;
   address?: Omit<OrderAddressData, "id" | "orderId">;
   notes?: string;
+  couponCode?: string;
 }
 
 interface OrderResult {
@@ -61,7 +64,7 @@ async function generateOrderNumber(): Promise<string> {
 }
 
 export async function checkout(params: CheckoutParams): Promise<OrderResult> {
-  const { customerId, sessionId, tenantId, addressId, address: inlineAddress, notes } = params;
+  const { customerId, sessionId, tenantId, addressId, address: inlineAddress, notes, couponCode } = params;
 
   return prisma.$transaction(async (tx) => {
     const cart = await tx.cart.findFirst({
@@ -137,7 +140,49 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
     const subtotal = cart.items.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
     const shipping = subtotal >= 100 ? 0 : 10;
     const tax = Math.round(subtotal * 0.08 * 100) / 100;
-    const total = Math.round((subtotal + shipping + tax) * 100) / 100;
+
+    let discountAmount = 0;
+    let discountType: string | null = null;
+    let discountCode: string | null = null;
+    let couponId: string | null = null;
+    let freeShipping = false;
+
+    if (couponCode) {
+      const productIds = cart.items.map((i) => i.variant?.productId).filter(Boolean) as string[];
+      const categoryIds: string[] = [];
+
+      const validationResult = await validateCoupon(couponCode, tenantId, {
+        customerId: customerId ?? undefined,
+        orderSubtotal: subtotal,
+        shipping,
+        productIds,
+        categoryIds,
+        isFirstOrder: false,
+      });
+
+      if (!validationResult.valid) {
+        throw new Error(validationResult.error || "Invalid coupon code");
+      }
+
+      const discount = calculateDiscount(validationResult.coupon!, {
+        orderSubtotal: subtotal,
+        shipping,
+        productIds,
+        categoryIds,
+        appliesTo: validationResult.coupon!.appliesTo,
+        productIdsList: validationResult.coupon!.productIds,
+        categoryIdsList: validationResult.coupon!.categoryIds,
+      });
+
+      discountAmount = discount.amount;
+      discountType = discount.type;
+      discountCode = validationResult.coupon!.code;
+      couponId = validationResult.coupon!.id;
+      freeShipping = discount.freeShipping;
+    }
+
+    const shippingCost = freeShipping ? 0 : shipping;
+    const total = Math.round((subtotal + shippingCost + tax - discountAmount) * 100) / 100;
 
     const order = await tx.order.create({
       data: {
@@ -146,9 +191,12 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
         tenantId,
         status: "confirmed",
         subtotal,
-        shipping,
+        shipping: shippingCost,
         tax,
         total,
+        discountAmount,
+        discountCode,
+        discountType,
         notes: notes ?? null,
         items: {
           create: cart.items.map((item) => ({
@@ -164,6 +212,18 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
       },
       include: { items: true, address: true },
     });
+
+    if (couponId) {
+      await recordUsage({
+        orderId: order.id,
+        couponId,
+        customerId: customerId ?? undefined,
+        discountAmount,
+        discountType: discountType!,
+        discountCode: discountCode!,
+        tenantId,
+      });
+    }
 
     for (const item of cart.items) {
       const result = await tx.$queryRawUnsafe<Array<{ quantity: number }>>(

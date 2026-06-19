@@ -268,3 +268,55 @@ export type CreateApiKeyInput = z.infer<typeof createApiKeySchema>;
 export type CustomerRegisterInput = z.infer<typeof customerRegisterSchema>;
 export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+
+// ── Discount Engine ──────────────────────────────────
+export const couponSchema = z.object({
+  code: z.string().min(1).max(50).transform((v) => v.toUpperCase()),
+  type: z.enum(["fixed", "percentage", "free_shipping"]),
+  value: z.coerce.number().positive(),
+  maxDiscount: z.coerce.number().positive().optional(),
+  minOrderAmount: z.coerce.number().min(0).optional(),
+  maxUses: z.coerce.number().int().positive().optional(),
+  appliesTo: z.enum(["all", "products", "categories", "customers"]).default("all"),
+  productIds: z.array(z.string()).default([]),
+  categoryIds: z.array(z.string()).default([]),
+  customerIds: z.array(z.string()).default([]),
+  firstOrderOnly: z.boolean().default(false),
+  startsAt: z.union([z.string().datetime(), z.date()]),
+  expiresAt: z.union([z.string().datetime(), z.date()]).optional(),
+  isActive: z.boolean().default(true),
+});
+
+export type CouponInput = z.infer<typeof couponSchema>;
+
+export const promotionSchema = z.object({
+  name: z.string().min(1).max(200),
+  description: z.string().optional(),
+  type: z.enum(["automatic", "cart_rule"]).default("automatic"),
+  priority: z.coerce.number().int().default(0),
+  discountType: z.enum(["fixed", "percentage", "free_shipping"]),
+  discountValue: z.coerce.number().positive(),
+  maxDiscount: z.coerce.number().positive().optional(),
+  startsAt: z.union([z.string().datetime(), z.date()]),
+  expiresAt: z.union([z.string().datetime(), z.date()]).optional(),
+  isActive: z.boolean().default(true),
+  rules: z.array(z.object({
+    type: z.enum(["min_amount", "product", "category", "customer", "first_order"]),
+    value: z.string(),
+  })).default([]),
+});
+
+export type PromotionInput = z.infer<typeof promotionSchema>;
+
+export const couponValidateSchema = z.object({
+  code: z.string().min(1),
+  tenantId: z.string().min(1),
+  subtotal: z.coerce.number().min(0),
+  shipping: z.coerce.number().min(0).default(0),
+  productIds: z.array(z.string()).default([]),
+  categoryIds: z.array(z.string()).default([]),
+  customerId: z.string().optional(),
+  isFirstOrder: z.boolean().default(false),
+});
+
+export type CouponValidateInput = z.infer<typeof couponValidateSchema>;
