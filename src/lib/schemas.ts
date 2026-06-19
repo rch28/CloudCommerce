@@ -370,3 +370,23 @@ export const voteSchema = z.object({
 });
 
 export type VoteInput = z.infer<typeof voteSchema>;
+
+// ── Wishlist ──────────────────────────────────────────
+export const wishlistAddSchema = z.object({
+  variantId: z.string().min(1, "Variant is required"),
+});
+
+export type WishlistAddInput = z.infer<typeof wishlistAddSchema>;
+
+export const wishlistMoveToCartSchema = z.object({
+  wishlistItemId: z.string().min(1),
+  quantity: z.coerce.number().int().min(1).default(1),
+});
+
+export type WishlistMoveToCartInput = z.infer<typeof wishlistMoveToCartSchema>;
+
+export const wishlistSyncSchema = z.object({
+  sessionId: z.string().min(1, "Session ID is required"),
+});
+
+export type WishlistSyncInput = z.infer<typeof wishlistSyncSchema>;

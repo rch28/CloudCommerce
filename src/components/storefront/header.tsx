@@ -1,9 +1,10 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingCart, Menu, Zap, X } from "lucide-react";
+import { Search, ShoppingCart, Menu, Zap, X, Heart } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/hooks/useWishlist";
 
 interface StoreHeaderProps {
   tenant: string;
@@ -14,6 +15,7 @@ interface StoreHeaderProps {
 
 export default function StoreHeader({ tenant, storeName, logo, primaryColor }: StoreHeaderProps) {
   const { itemCount } = useCart();
+  const { count: wishlistCount } = useWishlist();
   const [searchOpen, setSearchOpen] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -63,6 +65,18 @@ export default function StoreHeader({ tenant, storeName, logo, primaryColor }: S
         </div>
 
         <Link
+          href={`${base}/wishlist`}
+          className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground transition-colors hover:text-[#F8FAFC]"
+        >
+          <Heart size={18} />
+          {wishlistCount > 0 && (
+            <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+              {wishlistCount > 99 ? "99+" : wishlistCount}
+            </span>
+          )}
+        </Link>
+
+        <Link
           href={`${base}/cart`}
           className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground transition-colors hover:text-[#F8FAFC]"
         >
@@ -92,6 +106,26 @@ export default function StoreHeader({ tenant, storeName, logo, primaryColor }: S
               {n.label}
             </Link>
           ))}
+          <div className="mt-2 flex gap-3 border-t border-border pt-3 px-3">
+            <Link href={`${base}/wishlist`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-[#F8FAFC] transition-colors">
+              <Heart size={16} />
+              Wishlist
+              {wishlistCount > 0 && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
+                  {wishlistCount > 99 ? "99+" : wishlistCount}
+                </span>
+              )}
+            </Link>
+            <Link href={`${base}/cart`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-[#F8FAFC] transition-colors">
+              <ShoppingCart size={16} />
+              Cart
+              {itemCount > 0 && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#7C3AED] text-[10px] font-bold text-white">
+                  {itemCount > 99 ? "99+" : itemCount}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
       )}
     </header>

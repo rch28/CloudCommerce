@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/get-session";
 import { mergeGuestCart } from "@/lib/services/cart";
+import { syncAfterLogin } from "@/lib/services/wishlist";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
 
   try {
     const cart = await mergeGuestCart(sessionId, customer.id, tenantId);
+    await syncAfterLogin(sessionId, customer.id, tenantId).catch(() => {});
     return NextResponse.json(cart);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

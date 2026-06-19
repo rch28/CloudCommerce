@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
-import { ShoppingCart, Check, Minus, Plus, Star, Truck, Shield } from "lucide-react";
+import { ShoppingCart, Check, Minus, Plus, Star, Truck, Shield, Heart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/hooks/useWishlist";
 import Link from "next/link";
 
 interface Variant {
@@ -23,6 +24,7 @@ const inventoryStatus = (available: number) => {
 
 export default function ProductDetailClient({ tenant, product, inventoryMap }: { tenant: string; product: ProductData; inventoryMap: Record<string, { quantity: number; reserved: number }> }) {
   const { addItem } = useCart();
+  const { isInWishlist, toggleItem } = useWishlist();
   const [selectedVariant, setSelectedVariant] = useState<Variant>(product.variants[0] || null);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
@@ -162,6 +164,17 @@ export default function ProductDetailClient({ tenant, product, inventoryMap }: {
               } disabled:cursor-not-allowed disabled:opacity-40`}
             >
               {added ? <><Check size={16} /> Added!</> : <><ShoppingCart size={16} /> {outOfStock ? "Sold Out" : "Add to Cart"}</>}
+            </button>
+            <button
+              onClick={() => toggleItem(selectedVariant.id)}
+              className={`p-3 rounded-lg border transition-all ${
+                isInWishlist(selectedVariant.id)
+                  ? "border-rose-500/50 bg-rose-500/10 text-rose-500"
+                  : "border-border text-muted-foreground hover:text-rose-400 hover:border-rose-500/50"
+              }`}
+              title={isInWishlist(selectedVariant.id) ? "Remove from wishlist" : "Add to wishlist"}
+            >
+              <Heart size={18} fill={isInWishlist(selectedVariant.id) ? "currentColor" : "none"} />
             </button>
           </div>
 

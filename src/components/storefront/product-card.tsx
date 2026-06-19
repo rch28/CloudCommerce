@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, Star } from "lucide-react";
+import { ShoppingCart, Star, Heart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/hooks/useWishlist";
 
 interface ProductCardProps {
   id: string;
@@ -19,6 +20,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ id, name, slug, price, image, stock, sold, tenant, category, variantId }: ProductCardProps) {
   const { addItem } = useCart();
+  const { isInWishlist, toggleItem } = useWishlist();
   const outOfStock = stock <= 0;
   const base = `/store/${tenant}`;
 
@@ -41,6 +43,17 @@ export default function ProductCard({ id, name, slug, price, image, stock, sold,
             <div className="absolute inset-0 flex items-center justify-center bg-black/60">
               <span className="rounded-lg bg-rose-500/20 px-3 py-1 text-sm font-medium text-rose-400">Sold out</span>
             </div>
+          )}
+          {variantId && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleItem(variantId); }}
+              className={`absolute top-2 right-2 p-1.5 rounded-full bg-black/40 backdrop-blur-sm transition-colors ${
+                isInWishlist(variantId) ? "text-rose-500" : "text-white/70 hover:text-rose-400"
+              }`}
+              title={isInWishlist(variantId) ? "Remove from wishlist" : "Add to wishlist"}
+            >
+              <Heart size={16} fill={isInWishlist(variantId) ? "currentColor" : "none"} />
+            </button>
           )}
         </div>
       </Link>

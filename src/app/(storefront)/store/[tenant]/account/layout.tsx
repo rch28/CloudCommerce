@@ -2,7 +2,7 @@
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Package, MapPin, LogOut, Loader2 } from "lucide-react";
+import { User, Package, MapPin, Heart, LogOut, Loader2 } from "lucide-react";
 
 export default function AccountLayout({ children, params }: { children: React.ReactNode; params: Promise<{ tenant: string }> }) {
   const { tenant } = React.use(params);
@@ -41,6 +41,7 @@ export default function AccountLayout({ children, params }: { children: React.Re
     { href: base, label: "Profile", icon: User },
     { href: `${base}/orders`, label: "Orders", icon: Package },
     { href: `${base}/addresses`, label: "Addresses", icon: MapPin },
+    { href: `/store/${tenant}/wishlist`, label: "Wishlist", icon: Heart },
   ];
 
   const isActive = (href: string) => {

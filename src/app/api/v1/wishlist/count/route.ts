@@ -1,0 +1,34 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getSessionUser } from "@/lib/get-session";
+import { getWishlistCount } from "@/lib/services/wishlist";
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getSessionUser();
+    const sessionId = request.cookies.get("cc_cart_session")?.value;
+    const tenantId = request.headers.get("x-tenant-id") || "t-1";
+
+    let customerId: string | null = null;
+
+    if (session?.role === "customer") {
+      const customer = await prisma.customer.findUnique({
+        where: { email_tenantId: { email: session.email, tenantId: session.tenantId! } },
+      });
+      if (customer) customerId = customer.id;
+    }
+
+    if (!customerId && !sessionId) {
+      return NextResponse.json({ count: 0 });
+    }
+
+    const count = await getWishlistCount(tenantId, {
+      customerId: customerId ?? undefined,
+      sessionId,
+    });
+
+    return NextResponse.json({ count });
+  } catch (e) {
+    return NextResponse.json({ count: 0 });
+  }
+}
