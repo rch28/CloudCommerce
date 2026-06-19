@@ -31,6 +31,8 @@ model Tenant {
   coupons          Coupon[]
   promotions       Promotion[]
   promotionUsages  PromotionUsage[]
+  reviews          Review[]
+  reports          Report[]
 }
 
 model User {
@@ -161,9 +163,13 @@ model Product {
   tenant   Tenant          @relation(fields: [tenantId], references: [id])
   store    Store?           @relation(fields: [storeId], references: [id])
   category Category?        @relation(fields: [categoryId], references: [id])
+  averageRating Decimal   @default(0)
+  reviewCount    Int       @default(0)
+
   images   ProductImage[]
   variants ProductVariant[]
   options  ProductOption[]
+  reviews  Review[]
 
   @@unique([slug, tenantId])
 }
@@ -317,6 +323,8 @@ model Customer {
   addresses Address[]
   carts     Cart[]
   orders    Order[]
+  reviews   Review[]
+  reviewVotes ReviewVote[]
 
   @@unique([email, tenantId])
 }
@@ -406,6 +414,7 @@ model OrderItem {
 
   order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   variant ProductVariant? @relation(fields: [variantId], references: [id])
+  reviews Review[]
 }
 
 model OrderAddress {
@@ -578,5 +587,95 @@ model PromotionUsage {
   @@index([promotionId])
   @@index([couponId])
   @@index([orderId])
+  @@index([tenantId])
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  productId    String
+  orderItemId  String
+  customerId   String
+  tenantId     String
+  rating       Int      // 1-5
+  title        String?
+  body         String?
+  status       String   @default("pending") // pending | approved | hidden
+  isVerified   Boolean  @default(false)
+  moderatedBy  String?
+  moderatedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  product   Product      @relation(fields: [productId], references: [id])
+  orderItem OrderItem    @relation(fields: [orderItemId], references: [id])
+  customer  Customer     @relation(fields: [customerId], references: [id])
+  tenant    Tenant       @relation(fields: [tenantId], references: [id])
+  images    ReviewImage[]
+  votes     ReviewVote[]
+  reply     ReviewReply?
+  reports   Report[]
+
+  @@unique([orderItemId, customerId])
+  @@index([productId, status])
+  @@index([productId, tenantId, status])
+  @@index([tenantId, status])
+  @@index([customerId])
+}
+
+model ReviewImage {
+  id        String   @id @default(cuid())
+  reviewId  String
+  url       String
+  alt       String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+}
+
+model ReviewVote {
+  id         String   @id @default(cuid())
+  reviewId   String
+  customerId String
+  helpful    Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  review   Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@unique([reviewId, customerId])
+}
+
+model ReviewReply {
+  id         String   @id @default(cuid())
+  reviewId   String   @unique
+  body       String
+  userId     String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  reviewId    String
+  reason      String
+  description String?
+  reportedBy  String?
+  status      String   @default("pending") // pending | resolved | dismissed
+  resolvedBy  String?
+  resolvedAt  DateTime?
+  tenantId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([reviewId])
+  @@index([status])
   @@index([tenantId])
 }

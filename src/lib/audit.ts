@@ -1,7 +1,7 @@
 import { prisma } from "./prisma";
-type EntityType = "product" | "category" | "variant" | "product_image" | "product_option" | "inventory" | "order" | "subscription" | "payment" | "settings" | "staff" | "api_key" | "coupon" | "promotion" | "promotion_usage";
+type EntityType = "product" | "category" | "variant" | "product_image" | "product_option" | "inventory" | "order" | "subscription" | "payment" | "settings" | "staff" | "api_key" | "coupon" | "promotion" | "promotion_usage" | "review" | "review_image" | "review_reply" | "report";
 
-type Action = "created" | "updated" | "deleted" | "archived" | "stock_adjusted" | "subscribed" | "upgraded" | "downgraded" | "canceled" | "payment_received" | "payment_refunded" | "invited" | "removed" | "role_changed" | "api_key_generated" | "api_key_revoked" | "disabled" | "discount_applied";
+type Action = "created" | "updated" | "deleted" | "archived" | "stock_adjusted" | "subscribed" | "upgraded" | "downgraded" | "canceled" | "payment_received" | "payment_refunded" | "invited" | "removed" | "role_changed" | "api_key_generated" | "api_key_revoked" | "disabled" | "discount_applied" | "moderated" | "reported" | "replied";
 
 interface LogInput {
   entityType: EntityType;

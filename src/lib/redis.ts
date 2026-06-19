@@ -245,6 +245,24 @@ export const storefrontCache = {
   },
 };
 
+export const reviewCache = {
+  async get(productId: string, tenantId?: string): Promise<any | null> {
+    return CacheService.get("review", productId, tenantId, CacheService.PRODUCT_TTL);
+  },
+
+  async set(data: any, productId: string, tenantId?: string): Promise<"OK"> {
+    return CacheService.set("review", productId, data, tenantId, CacheService.PRODUCT_TTL);
+  },
+
+  async del(productId: string, tenantId?: string): Promise<"OK"> {
+    return CacheService.del("review", productId, tenantId);
+  },
+
+  async invalidate(productId: string, tenantId?: string): Promise<"OK"> {
+    return CacheService.invalidate("review", productId, tenantId);
+  },
+};
+
 export const settingsCache = {
   async get(tenantId: string): Promise<any | null> {
     return CacheService.get("settings", "data", tenantId, CacheService.SETTINGS_TTL);

@@ -320,3 +320,53 @@ export const couponValidateSchema = z.object({
 });
 
 export type CouponValidateInput = z.infer<typeof couponValidateSchema>;
+
+// ── Reviews & Ratings ────────────────────────────────
+export const reviewImageSchema = z.object({
+  url: z.string().url("Invalid image URL"),
+  alt: z.string().max(200).optional(),
+  sortOrder: z.number().int().min(0).default(0),
+});
+
+export type ReviewImageInput = z.infer<typeof reviewImageSchema>;
+
+export const reviewSchema = z.object({
+  productId: z.string().min(1, "Product is required"),
+  orderItemId: z.string().min(1, "Order item is required"),
+  rating: z.coerce.number().int().min(1, "Rating must be at least 1").max(5, "Rating must be at most 5"),
+  title: z.string().max(200).optional(),
+  body: z.string().max(5000).optional(),
+  images: z.array(reviewImageSchema).default([]),
+});
+
+export type ReviewInput = z.infer<typeof reviewSchema>;
+
+export const reviewUpdateSchema = reviewSchema.partial().omit({ productId: true, orderItemId: true });
+
+export type ReviewUpdateInput = z.infer<typeof reviewUpdateSchema>;
+
+export const moderationSchema = z.object({
+  status: z.enum(["approved", "hidden"]),
+  reason: z.string().optional(),
+});
+
+export type ModerationInput = z.infer<typeof moderationSchema>;
+
+export const reviewReplySchema = z.object({
+  body: z.string().min(1, "Reply is required").max(5000),
+});
+
+export type ReviewReplyInput = z.infer<typeof reviewReplySchema>;
+
+export const reportSchema = z.object({
+  reason: z.string().min(1, "Reason is required").max(200),
+  description: z.string().max(2000).optional(),
+});
+
+export type ReportInput = z.infer<typeof reportSchema>;
+
+export const voteSchema = z.object({
+  helpful: z.boolean().default(true),
+});
+
+export type VoteInput = z.infer<typeof voteSchema>;

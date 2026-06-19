@@ -29,7 +29,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <AuthProvider>
       <AppProvider>
-        <div className="flex h-screen overflow-hidden bg-[#09090B] font-sans text-[#F8FAFC]">
+        <div className="flex h-screen overflow-hidden bg-slate-950 font-sans text-[#F8FAFC]">
           <Sidebar
             open={sidebarOpen}
             onClose={() => setSidebarOpen(false)}
