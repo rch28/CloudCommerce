@@ -325,7 +325,7 @@ export async function allocateStock(
     };
   }
 
-  let scoredWarehouses = warehouses.map((w) => ({
+  const scoredWarehouses = warehouses.map((w) => ({
     ...w,
     score: destination ? computeProximityScore(w, destination) : 0,
   }));

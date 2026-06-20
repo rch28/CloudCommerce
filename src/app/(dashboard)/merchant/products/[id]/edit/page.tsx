@@ -16,23 +16,27 @@ export default function ProductEditPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [productData, catData] = await Promise.all([
-        productsApi.get(id),
-        categoriesApi.list(),
-      ]);
-      setProduct(productData);
-      setCategories(catData.items ?? []);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load");
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const [productData, catData] = await Promise.all([
+          productsApi.get(id),
+          categoriesApi.list(),
+        ]);
+        if (!cancelled) {
+          setProduct(productData);
+          setCategories(catData.items ?? []);
+        }
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [id]);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
 
   const handleSave = useCallback(async (data: any) => {
     await productsApi.update(id, data);

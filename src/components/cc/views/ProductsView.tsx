@@ -34,7 +34,7 @@ export default function ProductsView() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -48,16 +48,33 @@ export default function ProductsView() {
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams();
+        if (searchQuery) params.set("q", searchQuery);
+        const data = await productsApi.list(Object.fromEntries(params));
+        if (!cancelled) setProducts(data.items ?? []);
+      } catch (e) {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : "Failed to load products");
+          setProducts([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+      try {
+        const data = await categoriesApi.list();
+        if (!cancelled) setCategories(data.items ?? []);
+      } catch { /* non-critical */ }
+    })();
+    return () => { cancelled = true; };
   }, [searchQuery]);
-
-  const fetchCategories = useCallback(async () => {
-    try {
-      const data = await categoriesApi.list();
-      setCategories(data.items ?? []);
-    } catch { /* non-critical */ }
-  }, []);
-
-  useEffect(() => { fetchProducts(); fetchCategories(); }, [fetchProducts, fetchCategories]);
 
   const filtered = products.filter((p) => {
     if (statusFilter !== "all" && p.status !== statusFilter) return false;

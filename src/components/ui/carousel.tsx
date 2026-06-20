@@ -76,6 +76,13 @@ const Carousel = React.forwardRef<
       setCanScrollNext(api.canScrollNext());
     }, []);
 
+    const onInit = React.useCallback((api: CarouselApi) => {
+      if (!api) {
+        return;
+      }
+      onSelect(api);
+    }, [onSelect]);
+
     const scrollPrev = React.useCallback(() => {
       api?.scrollPrev();
     }, [api]);
@@ -110,14 +117,14 @@ const Carousel = React.forwardRef<
         return;
       }
 
-      onSelect(api);
+      api.on("init", onInit);
       api.on("reInit", onSelect);
       api.on("select", onSelect);
 
       return () => {
         api?.off("select", onSelect);
       };
-    }, [api, onSelect]);
+    }, [api, onInit, onSelect]);
 
     return (
       <CarouselContext.Provider

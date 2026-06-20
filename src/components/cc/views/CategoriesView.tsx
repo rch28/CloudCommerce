@@ -21,7 +21,23 @@ export default function CategoriesView() {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const fetchCategories = useCallback(async () => {
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const data = await categoriesApi.list();
+        if (!cancelled) setCategories(data.items ?? []);
+      } catch {
+        if (!cancelled) setCategories([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const fetchCategories = async () => {
     setLoading(true);
     try {
       const data = await categoriesApi.list();
@@ -31,9 +47,7 @@ export default function CategoriesView() {
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  useEffect(() => { fetchCategories(); }, [fetchCategories]);
+  };
 
   const filtered = statusFilter === "all"
     ? categories

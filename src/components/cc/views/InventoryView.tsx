@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { AlertTriangle, Package, Loader2, RefreshCw, History, Archive, RotateCcw } from "lucide-react";
 import { inventoryApi } from "@/services/inventory.service";
 import DataTable from "@/components/dashboard/data-table";
@@ -51,7 +51,27 @@ export default function InventoryView() {
   const [historyLogs, setHistoryLogs] = useState<StockLog[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
-  const fetchInventory = useCallback(async () => {
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams();
+        if (filter === "low_stock") params.set("lowStock", "true");
+        if (filter === "out_of_stock") params.set("outOfStock", "true");
+        const data = await inventoryApi.list(Object.fromEntries(params));
+        if (!cancelled) setItems(data);
+      } catch (e: unknown) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Unknown error");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [filter]);
+
+  const fetchInventory = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -65,11 +85,7 @@ export default function InventoryView() {
     } finally {
       setLoading(false);
     }
-  }, [filter]);
-
-  useEffect(() => {
-    fetchInventory();
-  }, [fetchInventory]);
+  };
 
   const handleAdjust = async () => {
     if (!adjustOpen || !adjustReason.trim()) return;

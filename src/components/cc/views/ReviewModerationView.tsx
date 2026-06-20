@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Star, Check, X } from "lucide-react";
 import { reviewsApi } from "@/services/reviews.service";
@@ -18,18 +18,20 @@ export default function ReviewModerationView() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const fetchPending = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await reviewsApi.list({ status: "pending", pageSize: "50" });
-      setReviews((data as any).items);
-    } catch {
-      setReviews([]);
-    }
-    setLoading(false);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const data = await reviewsApi.list({ status: "pending", pageSize: "50" });
+        if (!cancelled) setReviews((data as any).items);
+      } catch {
+        if (!cancelled) setReviews([]);
+      }
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
   }, []);
-
-  useEffect(() => { fetchPending(); }, [fetchPending]);
 
   const handleAction = async (id: string, status: "approved" | "hidden") => {
     setActionLoading(id);

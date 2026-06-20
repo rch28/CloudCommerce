@@ -173,10 +173,10 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
         "/checkout/stripe-session",
         body,
       );
-      window.location.href = data.stripeUrl;
+      window.location.assign(data.stripeUrl);
     } catch (err: unknown) {
-      const errData = (err as { response?: { data?: { error?: string } } })
-        ?.response?.data?.error;
+      const apiErr = err as { response?: { data?: { error?: string } } };
+      const errData = apiErr?.response?.data?.error;
       setError(errData || "Network error. Please try again.");
       setLoading(false);
     }

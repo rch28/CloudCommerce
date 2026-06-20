@@ -105,7 +105,7 @@ export default function StorefrontView() {
           <p className="mt-1 text-sm text-slate-400">Join the SoundWave list for drops and exclusive offers.</p>
           {subscribed ? (
             <div className="mt-5 flex items-center justify-center gap-2 rounded-lg bg-emerald-500/10 py-3 text-emerald-400">
-              <Check size={18} /> You're subscribed!
+              <Check size={18} /> You&apos;re subscribed!
             </div>
           ) : (
             <form onSubmit={subscribe} className="mt-5 space-y-3 text-left">

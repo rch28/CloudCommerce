@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { warehouseApi } from "@/services/warehouse.service";
 import {
   Warehouse, Building2, MapPin, Boxes, ArrowRightLeft, Truck,
@@ -125,7 +125,7 @@ export default function WarehousesView() {
   const [allocationResult, setAllocationResult] = useState<{ success: boolean; allocations: AllocationPlanItem[]; shortages: Array<{ variantId: string; requested: number; available: number }> } | null>(null);
   const [allocLoading, setAllocLoading] = useState(false);
 
-  const fetchWarehouses = useCallback(async () => {
+  const fetchWarehouses = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -136,21 +136,9 @@ export default function WarehousesView() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  const fetchInventory = useCallback(async (whId: string) => {
-    setInvLoading(true);
-    try {
-      const data = await warehouseApi.getInventory(whId);
-      setInventory((data as any).items ?? data);
-    } catch {
-      setInventory(mockInv.filter((i) => i.warehouseId === whId));
-    } finally {
-      setInvLoading(false);
-    }
-  }, []);
-
-  const fetchTransfers = useCallback(async () => {
+  const fetchTransfers = async () => {
     setTransferLoading(true);
     try {
       const data = await warehouseApi.listTransfers();
@@ -160,18 +148,52 @@ export default function WarehousesView() {
     } finally {
       setTransferLoading(false);
     }
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await warehouseApi.list();
+        if (!cancelled) setWarehouses((data as any).items ?? data);
+      } catch {
+        if (!cancelled) setWarehouses(mockWarehouses);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    (async () => {
+      setTransferLoading(true);
+      try {
+        const data = await warehouseApi.listTransfers();
+        if (!cancelled) setTransfers((data as any).items ?? data);
+      } catch {
+        if (!cancelled) setTransfers(mockTransfers);
+      } finally {
+        if (!cancelled) setTransferLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
-    fetchWarehouses();
-    fetchTransfers();
-  }, [fetchWarehouses, fetchTransfers]);
-
-  useEffect(() => {
-    if (activeTab === "inventory" && selectedWarehouseId) {
-      fetchInventory(selectedWarehouseId);
-    }
-  }, [activeTab, selectedWarehouseId, fetchInventory]);
+    if (activeTab !== "inventory" || !selectedWarehouseId) return;
+    let cancelled = false;
+    (async () => {
+      setInvLoading(true);
+      try {
+        const data = await warehouseApi.getInventory(selectedWarehouseId);
+        if (!cancelled) setInventory((data as any).items ?? data);
+      } catch {
+        if (!cancelled) setInventory(mockInv.filter((i) => i.warehouseId === selectedWarehouseId));
+      } finally {
+        if (!cancelled) setInvLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTab, selectedWarehouseId]);
 
   // ── Warehouse CRUD ──
   const openCreate = () => {

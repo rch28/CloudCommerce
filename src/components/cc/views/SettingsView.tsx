@@ -95,40 +95,38 @@ export default function SettingsView() {
   const [creatingKey, setCreatingKey] = useState(false);
   const [revealedKeys, setRevealedKeys] = useState<Set<string>>(new Set());
 
-  const [origin, setOrigin] = useState("");
+  const [origin] = useState(
+    typeof window !== "undefined" ? window.location.origin : "",
+  );
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setOrigin(window.location.origin);
-    }
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const [settingsData, staffData, keysData] = await Promise.all([
+          settingsApi.get(),
+          settingsApi.listStaff(),
+          settingsApi.listApiKeys(),
+        ]);
+        if (!cancelled) {
+          if (settingsData.store) setStore(settingsData.store);
+          if (settingsData.branding) setBranding(settingsData.branding);
+          if (settingsData.contact) setContact(settingsData.contact);
+          if (settingsData.address) setAddress(settingsData.address);
+          if (settingsData.seo) setSeo(settingsData.seo);
+          if (settingsData.domains) setDomains(settingsData.domains);
+          setStaff(Array.isArray(staffData) ? staffData : (staffData as any).staff || []);
+          setApiKeys(Array.isArray(keysData) ? keysData : (keysData as any).keys || []);
+        }
+      } catch {
+        if (!cancelled) setError("Failed to load settings");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  async function loadData() {
-    setLoading(true);
-    try {
-      const [settingsData, staffData, keysData] = await Promise.all([
-        settingsApi.get(),
-        settingsApi.listStaff(),
-        settingsApi.listApiKeys(),
-      ]);
-      if (settingsData.store) setStore(settingsData.store);
-      if (settingsData.branding) setBranding(settingsData.branding);
-      if (settingsData.contact) setContact(settingsData.contact);
-      if (settingsData.address) setAddress(settingsData.address);
-      if (settingsData.seo) setSeo(settingsData.seo);
-      if (settingsData.domains) setDomains(settingsData.domains);
-      setStaff(Array.isArray(staffData) ? staffData : (staffData as any).staff || []);
-      setApiKeys(Array.isArray(keysData) ? keysData : (keysData as any).keys || []);
-    } catch {
-      setError("Failed to load settings");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   async function saveSection(sectionName: string, data: any) {
     setSaving(sectionName);

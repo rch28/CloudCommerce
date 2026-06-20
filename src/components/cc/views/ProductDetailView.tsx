@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Pencil, Archive, Trash2, RotateCcw, Copy, Loader2, AlertCircle, Package } from "lucide-react";
 import { productsApi } from "@/services/products.service";
@@ -30,7 +30,24 @@ export default function ProductDetailView() {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const fetchProduct = useCallback(async () => {
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await productsApi.get(id);
+        if (!cancelled) setProduct(data);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load product");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  const fetchProduct = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -41,9 +58,7 @@ export default function ProductDetailView() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
-
-  useEffect(() => { fetchProduct(); }, [fetchProduct]);
+  };
 
   const handleArchive = async () => {
     if (!product) return;

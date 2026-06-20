@@ -19,20 +19,24 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchMetrics = useCallback(async () => {
-    try {
+    const params: Record<string, string> = { range };
+    if (start) params.start = start;
+    if (end) params.end = end;
+    const data = await analyticsApi.getMerchant(params);
+    setMetrics(data);
+  }, [range, start, end]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
       const params: Record<string, string> = { range };
       if (start) params.start = start;
       if (end) params.end = end;
       const data = await analyticsApi.getMerchant(params);
-      setMetrics(data);
-    } catch {
-      // silent
-    } finally {
-      setLoading(false);
-    }
+      if (!cancelled) setMetrics(data);
+    })().finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [range, start, end]);
-
-  useEffect(() => { fetchMetrics(); }, [fetchMetrics]);
 
   const handleRangeChange = useCallback((newRange: TimeRangeValue, s?: string, e?: string) => {
     setRange(newRange);

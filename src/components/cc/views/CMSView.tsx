@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { cmsApi } from "@/services/cms.service";
 import {
   FileText, Plus, Pencil, Trash2, MoveUp, MoveDown, Eye, Globe,
@@ -140,24 +140,42 @@ export default function CMSView() {
     isActive: true, startsAt: "", endsAt: "", sortOrder: 0,
   });
 
-  const fetchPages = useCallback(async () => {
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      await Promise.all([
+        (async () => {
+          try {
+            const data = await cmsApi.listPages();
+            if (!cancelled) setPages((data as any).items ?? []);
+          } catch { if (!cancelled) setError("Failed to load pages"); }
+        })(),
+        (async () => {
+          try {
+            const data = await cmsApi.listBanners();
+            if (!cancelled) setBanners((data as any).items ?? []);
+          } catch { if (!cancelled) setError("Failed to load banners"); }
+        })(),
+      ]);
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const fetchPages = async () => {
     try {
       const data = await cmsApi.listPages();
       setPages((data as any).items ?? []);
     } catch { setError("Failed to load pages"); }
-  }, []);
+  };
 
-  const fetchBanners = useCallback(async () => {
+  const fetchBanners = async () => {
     try {
       const data = await cmsApi.listBanners();
       setBanners((data as any).items ?? []);
     } catch { setError("Failed to load banners"); }
-  }, []);
-
-  useEffect(() => {
-    setLoading(true);
-    Promise.all([fetchPages(), fetchBanners()]).finally(() => setLoading(false));
-  }, [fetchPages, fetchBanners]);
+  };
 
   // ── Page CRUD ──────────────────────────────────────────
 

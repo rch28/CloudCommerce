@@ -62,6 +62,7 @@ describe("Wishlist API - GET /api/v1/wishlist", () => {
     const { POST } = await import("@/app/api/v1/wishlist/route");
     const request = mockRequest("POST", "http://localhost/api/v1/wishlist", {
       body: { variantId: "var-1" },
+      headerTenant: "t-1",
     });
     const response = await POST(request);
     const data = await response.json();

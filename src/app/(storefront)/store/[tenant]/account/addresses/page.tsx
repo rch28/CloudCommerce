@@ -48,16 +48,16 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
   const [form, setForm] = React.useState(emptyForm);
 
   const fetchAddresses = React.useCallback(async () => {
-    try {
-      setAddresses(await accountApi.listAddresses());
-    } catch {
-      toast.error("Failed to load addresses");
-    } finally {
-      setLoading(false);
-    }
+    const data = await accountApi.listAddresses();
+    setAddresses(data);
   }, []);
 
-  React.useEffect(() => { fetchAddresses(); }, [fetchAddresses]);
+  React.useEffect(() => {
+    let cancelled = false;
+    fetchAddresses().catch(() => { if (!cancelled) toast.error("Failed to load addresses"); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const openForm = (addr?: Address) => {
     if (addr) {

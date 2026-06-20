@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, Tag, Percent, Truck, MoreHorizontal } from "lucide-react";
 import { promotionsApi } from "@/services/promotions.service";
@@ -31,31 +31,34 @@ export default function PromotionsView() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const fetchCoupons = useCallback(async () => {
-    try {
-      const data = await promotionsApi.listCoupons({ search, pageSize: "100" });
-      setCoupons((data as any).items);
-    } catch { /* ignore */ }
-  }, [search]);
-
-  const fetchPromotions = useCallback(async () => {
-    try {
-      const data = await promotionsApi.listPromotions({ pageSize: "100" });
-      setPromotions((data as any).items);
-    } catch { /* ignore */ }
-  }, []);
-
-  const fetchUsage = useCallback(async () => {
-    try {
-      await promotionsApi.listCoupons({ pageSize: "1" });
-      setUsageStats({ totalDiscount: 0, totalOrders: 0, totalUsages: 0, byType: {} });
-    } catch { /* ignore */ }
-  }, []);
-
   useEffect(() => {
-    setLoading(true);
-    Promise.all([fetchCoupons(), fetchPromotions(), fetchUsage()]).finally(() => setLoading(false));
-  }, [fetchCoupons, fetchPromotions, fetchUsage]);
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      await Promise.all([
+        (async () => {
+          try {
+            const data = await promotionsApi.listCoupons({ search, pageSize: "100" });
+            if (!cancelled) setCoupons((data as any).items);
+          } catch { /* ignore */ }
+        })(),
+        (async () => {
+          try {
+            const data = await promotionsApi.listPromotions({ pageSize: "100" });
+            if (!cancelled) setPromotions((data as any).items);
+          } catch { /* ignore */ }
+        })(),
+        (async () => {
+          try {
+            await promotionsApi.listCoupons({ pageSize: "1" });
+            if (!cancelled) setUsageStats({ totalDiscount: 0, totalOrders: 0, totalUsages: 0, byType: {} });
+          } catch { /* ignore */ }
+        })(),
+      ]);
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [search]);
 
   const typeIcon = (type: string) => {
     switch (type) {

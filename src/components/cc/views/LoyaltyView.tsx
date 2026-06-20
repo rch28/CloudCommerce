@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Gift, Star, Award, TrendingUp, Plus, Pencil, Trash2, Search, Loader2, AlertCircle, Check, X, Settings, Users, History, Ticket } from "lucide-react";
 import { loyaltyApi } from "@/services/loyalty.service";
 import DataTable from "@/components/dashboard/data-table";
@@ -234,55 +234,67 @@ export default function LoyaltyView() {
   const [ruleDialogOpen, setRuleDialogOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<RewardRuleItem | null>(null);
 
-  const fetchRules = useCallback(async () => {
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError("");
+      try {
+        await Promise.all([
+          (async () => {
+            try {
+              const data = await loyaltyApi.listRules({ limit: "100" });
+              if (!cancelled) setRules((data as any).items);
+            } catch { /* ignore */ }
+          })(),
+          (async () => {
+            try {
+              const data = await loyaltyApi.listCustomers({ pageSize: "100" });
+              const items = (data as any).items || [];
+              const accounts = await Promise.all(
+                items.map(async (c: { id: string; name: string; email: string }) => {
+                  try {
+                    const acc = await loyaltyApi.getAccount({ customerId: c.id });
+                    return { ...acc, customer: { name: c.name, email: c.email } };
+                  } catch {
+                    return null;
+                  }
+                }),
+              );
+              if (!cancelled) setCustomers(accounts.filter(Boolean));
+            } catch {}
+          })(),
+          (async () => {
+            try {
+              await loyaltyApi.listRules({ limit: "1" });
+              const txData = await loyaltyApi.listAuditLogs({ entityType: "loyalty_transaction", limit: "100" });
+              if (!cancelled) setTransactions((txData as any).items || []);
+            } catch {
+              if (!cancelled) setTransactions([]);
+            }
+          })(),
+          (async () => {
+            try {
+              const data = await loyaltyApi.getSettings();
+              if (!cancelled) setSettings(data);
+            } catch { /* ignore */ }
+          })(),
+        ]);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const fetchRules = async () => {
     try {
       const data = await loyaltyApi.listRules({ limit: "100" });
       setRules((data as any).items);
     } catch { /* ignore */ }
-  }, []);
-
-  const fetchCustomers = useCallback(async () => {
-    try {
-      const data = await loyaltyApi.listCustomers({ pageSize: "100" });
-      const items = (data as any).items || [];
-      const accounts = await Promise.all(
-        items.map(async (c: { id: string; name: string; email: string }) => {
-          try {
-            const acc = await loyaltyApi.getAccount({ customerId: c.id });
-            return { ...acc, customer: { name: c.name, email: c.email } };
-          } catch {
-            return null;
-          }
-        }),
-      );
-      setCustomers(accounts.filter(Boolean));
-    } catch {}
-  }, []);
-
-  const fetchTransactions = useCallback(async () => {
-    try {
-      await loyaltyApi.listRules({ limit: "1" });
-      const txData = await loyaltyApi.listAuditLogs({ entityType: "loyalty_transaction", limit: "100" });
-      setTransactions((txData as any).items || []);
-    } catch {
-      setTransactions([]);
-    }
-  }, []);
-
-  const fetchSettings = useCallback(async () => {
-    try {
-      const data = await loyaltyApi.getSettings();
-      setSettings(data);
-    } catch { /* ignore */ }
-  }, []);
-
-  useEffect(() => {
-    setLoading(true);
-    setError("");
-    Promise.all([fetchRules(), fetchCustomers(), fetchTransactions(), fetchSettings()])
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [fetchRules, fetchCustomers, fetchTransactions, fetchSettings]);
+  };
 
   const handleSaveRule = async (data: Record<string, unknown>) => {
     try {

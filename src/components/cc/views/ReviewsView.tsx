@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { reviewsApi } from "@/services/reviews.service";
 import { useRouter } from "next/navigation";
 import { Search, Star, Filter, MoreHorizontal } from "lucide-react";
@@ -26,24 +26,30 @@ export default function ReviewsView() {
   const [loading, setLoading] = useState(true);
   const pageSize = 20;
 
-  const fetchReviews = useCallback(async () => {
-    setLoading(true);
-    const params: Record<string, string> = { page: String(page), pageSize: String(pageSize) };
-    if (statusFilter !== "all") params.status = statusFilter;
-    if (search) params.search = search;
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const params: Record<string, string> = { page: String(page), pageSize: String(pageSize) };
+      if (statusFilter !== "all") params.status = statusFilter;
+      if (search) params.search = search;
 
-    try {
-      const data = await reviewsApi.list(params);
-      setReviews((data as any).items);
-      setTotal((data as any).total);
-    } catch {
-      setReviews([]);
-      setTotal(0);
-    }
-    setLoading(false);
+      try {
+        const data = await reviewsApi.list(params);
+        if (!cancelled) {
+          setReviews((data as any).items);
+          setTotal((data as any).total);
+        }
+      } catch {
+        if (!cancelled) {
+          setReviews([]);
+          setTotal(0);
+        }
+      }
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
   }, [page, statusFilter, search]);
-
-  useEffect(() => { fetchReviews(); }, [fetchReviews]);
 
   const totalPages = Math.ceil(total / pageSize);
 

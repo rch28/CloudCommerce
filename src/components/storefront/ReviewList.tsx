@@ -32,16 +32,24 @@ export default function ReviewList({ productId, showStats = true }: Props) {
   const pageSize = 10;
 
   useEffect(() => {
-    setLoading(true);
-    const params = { page: String(page), pageSize: String(pageSize), sort, stats: "true" };
-    reviewsApi.storefrontList(productId, params)
-      .then((data) => {
-        setReviews(data.items);
-        setTotal(data.total);
-        if (data.stats) setStats(data.stats);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const params = { page: String(page), pageSize: String(pageSize), sort, stats: "true" };
+      try {
+        const data = await reviewsApi.storefrontList(productId, params);
+        if (!cancelled) {
+          setReviews(data.items);
+          setTotal(data.total);
+          if (data.stats) setStats(data.stats);
+        }
+      } catch {
+        if (!cancelled) setLoading(false);
+        return;
+      }
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
   }, [productId, page, sort]);
 
   const totalPages = Math.ceil(total / pageSize);

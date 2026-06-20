@@ -14,7 +14,7 @@ export default function CartPage({ params }: { params: Promise<{ tenant: string 
       <div className="mx-auto max-w-7xl px-4 py-24 text-center">
         <ShoppingCart size={48} className="mx-auto text-muted-foreground mb-4" />
         <h1 className="text-2xl font-bold text-[#F8FAFC]">Your cart is empty</h1>
-        <p className="mt-2 text-muted-foreground">Looks like you haven't added anything yet.</p>
+        <p className="mt-2 text-muted-foreground">Looks like you haven&apos;t added anything yet.</p>
         <Link href={`${base}/products`} className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-6 py-3 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors">
           <ArrowLeft size={16} /> Continue Shopping
         </Link>

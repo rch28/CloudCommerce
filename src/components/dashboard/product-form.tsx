@@ -186,8 +186,8 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
                 {imageFields.map((field, index) => (
                   <div key={field.id} className="flex items-center gap-3 rounded-lg border border-border bg-background p-3">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#1E293B]">
-                      {form.watch(`images.${index}.url`) ? (
-                        <img src={form.watch(`images.${index}.url`)} alt="" className="h-full w-full object-cover" />
+                      {field.url ? (
+                        <img src={field.url} alt="" className="h-full w-full object-cover" />
                       ) : (
                         <ImageIcon size={16} className="text-muted-foreground/40" />
                       )}

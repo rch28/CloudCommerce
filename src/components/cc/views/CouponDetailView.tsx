@@ -32,27 +32,31 @@ export default function CouponDetailView({ mode = "coupon" }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchItem = async () => {
-    try {
-      const data = isPromotion ? await promotionsApi.getPromotion(id) : await promotionsApi.getCoupon(id);
-      setItem(data as CouponPromotionItem);
-    } catch {
-      setError("Not found");
-    }
-  };
-
-  const fetchUsage = async () => {
-    if (isPromotion) return;
-    try {
-      const data = await promotionsApi.getCouponUsage(id);
-      setUsages(data as unknown as UsageRecord[]);
-    } catch { /* ignore */ }
-  };
-
   useEffect(() => {
-    setLoading(true);
-    Promise.all([fetchItem(), fetchUsage()]).finally(() => setLoading(false));
-  }, [id]);
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      await Promise.all([
+        (async () => {
+          try {
+            const data = isPromotion ? await promotionsApi.getPromotion(id) : await promotionsApi.getCoupon(id);
+            if (!cancelled) setItem(data as CouponPromotionItem);
+          } catch {
+            if (!cancelled) setError("Not found");
+          }
+        })(),
+        (async () => {
+          if (isPromotion) return;
+          try {
+            const data = await promotionsApi.getCouponUsage(id);
+            if (!cancelled) setUsages(data as unknown as UsageRecord[]);
+          } catch { /* ignore */ }
+        })(),
+      ]);
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [id, isPromotion]);
 
   const toggleActive = async () => {
     if (!item) return;
