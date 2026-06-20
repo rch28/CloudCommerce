@@ -25,6 +25,12 @@ interface DataTableProps {
   emptyTitle?: string;
   emptyDescription?: string;
   actions?: ReactNode;
+  serverPagination?: {
+    page: number;
+    totalPages: number;
+    total: number;
+    onPageChange: (page: number) => void;
+  };
 }
 
 export default function DataTable({
@@ -41,6 +47,7 @@ export default function DataTable({
   emptyTitle = "No items found",
   emptyDescription = "Try adjusting your search or filters.",
   actions,
+  serverPagination,
 }: DataTableProps) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -55,7 +62,7 @@ export default function DataTable({
         searchKeys.some((key: string) => String(item[key] ?? "").toLowerCase().includes(q))
       );
     }
-    if (sortKey) {
+    if (sortKey && !serverPagination) {
       result.sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
         const aVal = String(a[sortKey] ?? "");
         const bVal = String(b[sortKey] ?? "");
@@ -64,10 +71,12 @@ export default function DataTable({
       });
     }
     return result;
-  }, [data, search, sortKey, sortOrder, searchKeys]);
+  }, [data, search, sortKey, sortOrder, searchKeys, serverPagination]);
 
-  const totalPages = Math.ceil(filtered.length / pageSize);
-  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const totalPages = serverPagination?.totalPages ?? Math.ceil(filtered.length / pageSize);
+  const activePage = serverPagination?.page ?? page;
+  const displayData = serverPagination ? data : filtered.slice((page - 1) * pageSize, page * pageSize);
+  const totalCount = serverPagination?.total ?? filtered.length;
 
   function handleSort(key: string) {
     if (sortKey === key) {
@@ -98,12 +107,12 @@ export default function DataTable({
               />
             </div>
           )}
-          {filterable && filters && onFilterChange && (
+              {filterable && filters && onFilterChange && (
             <div className="flex flex-wrap gap-1.5">
               {filters.map((f: { label: string; value: string }) => (
                 <button
                   key={f.value}
-                  onClick={() => { onFilterChange(f.value); setPage(1); }}
+                  onClick={() => { onFilterChange(f.value); serverPagination?.onPageChange(1); setPage(1); }}
                   className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                     activeFilter === f.value
                       ? "bg-[#7C3AED] text-white"
@@ -119,7 +128,7 @@ export default function DataTable({
         {actions && <div className="flex items-center gap-2">{actions}</div>}
       </div>
 
-      {filtered.length === 0 ? (
+      {displayData.length === 0 && !loading ? (
         <EmptyState title={emptyTitle} description={emptyDescription} />
       ) : (
         <>
@@ -144,7 +153,7 @@ export default function DataTable({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {paginated.map((item: Record<string, unknown>, i: number) => (
+                {displayData.map((item: Record<string, unknown>, i: number) => (
                   <tr key={(item.id as string) || String(i)} className="transition-colors hover:bg-[#1E293B]">
                     {columns.map((col: Column) => (
                       <td key={col.key} className="px-5 py-4">
@@ -160,26 +169,26 @@ export default function DataTable({
           {totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-border px-5 py-3 text-sm text-muted-foreground">
               <span>
-                Page {page} of {totalPages} ({filtered.length} total)
+                Page {activePage} of {totalPages} ({totalCount} total)
               </span>
               <div className="flex items-center gap-1">
                 <button
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => p - 1)}
+                  disabled={activePage <= 1}
+                  onClick={() => { const np = activePage - 1; serverPagination ? serverPagination.onPageChange(np) : setPage(np); }}
                   className="rounded-lg p-1.5 transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC] disabled:opacity-40"
                 >
                   <ChevronLeft size={16} />
                 </button>
                 {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                  const start = Math.max(1, page - 2);
+                  const start = Math.max(1, activePage - 2);
                   const p = start + i;
                   if (p > totalPages) return null;
                   return (
                     <button
                       key={p}
-                      onClick={() => setPage(p)}
+                      onClick={() => { serverPagination ? serverPagination.onPageChange(p) : setPage(p); }}
                       className={`min-w-[28px] rounded-lg px-2 py-1 text-sm font-medium transition-colors ${
-                        p === page ? "bg-[#7C3AED] text-white" : "hover:bg-[#1E293B] hover:text-[#F8FAFC]"
+                        p === activePage ? "bg-[#7C3AED] text-white" : "hover:bg-[#1E293B] hover:text-[#F8FAFC]"
                       }`}
                     >
                       {p}
@@ -187,8 +196,8 @@ export default function DataTable({
                   );
                 })}
                 <button
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
+                  disabled={activePage >= totalPages}
+                  onClick={() => { const np = activePage + 1; serverPagination ? serverPagination.onPageChange(np) : setPage(np); }}
                   className="rounded-lg p-1.5 transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC] disabled:opacity-40"
                 >
                   <ChevronRight size={16} />

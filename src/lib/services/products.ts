@@ -164,24 +164,55 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
           name: parsed.name, slug, tenantId: meta.tenantId,
           description: parsed.description ?? null, shortDescription: parsed.shortDescription ?? null,
           seoTitle: parsed.seoTitle ?? null, seoDescription: parsed.seoDescription ?? null,
-          status: parsed.status, categoryId: parsed.categoryId ?? null,
-          storeId: parsed.storeId ?? null, createdById: meta.userId ?? null,
-          images: { create: parsed.images.map((img, i) => ({ url: img.url, alt: img.alt ?? null, sortOrder: img.sortOrder || i })) },
-          variants: { create: parsed.variants.map((v) => ({ sku: v.sku, barcode: v.barcode ?? null, price: v.price, comparePrice: v.comparePrice ?? null, costPrice: v.costPrice ?? null, weight: v.weight ?? null, quantity: v.quantity, isDefault: v.isDefault, status: v.status })) },
+          status: parsed.status, categoryId: parsed.categoryId || null,
+          storeId: parsed.storeId || null, createdById: meta.userId ?? null,
+          images: { create: parsed.images.filter((img) => img.url).map((img, i) => ({ url: img.url, alt: img.alt ?? null, sortOrder: img.sortOrder || i })) },
           options: { create: parsed.options.map((o, oi) => ({ name: o.name, sortOrder: o.sortOrder || oi, values: { create: o.values.map((ov, vi) => ({ label: ov.label, value: ov.value, sortOrder: ov.sortOrder || vi })) } })) },
         },
-        include: buildIncludes(),
+        include: {
+          images: { orderBy: { sortOrder: "asc" as const } },
+          options: { include: { values: { orderBy: { sortOrder: "asc" as const } } }, orderBy: { sortOrder: "asc" as const } },
+        },
       });
+
+      // Create variants separately to avoid potential Prisma nested-create Int issues
+      const createdVariants = parsed.variants.length > 0
+        ? (await Promise.all(
+            parsed.variants.map((v) =>
+              prisma.productVariant.create({
+                data: {
+                  productId: record.id, sku: v.sku, barcode: v.barcode ?? null, price: v.price,
+                  comparePrice: v.comparePrice ?? null, costPrice: v.costPrice ?? null,
+                  weight: v.weight ?? null, quantity: v.quantity,
+                  isDefault: v.isDefault, status: v.status,
+                },
+              }),
+            ),
+          )) as unknown as VariantRecord[]
+        : [];
+
+      let category = null;
+      if (parsed.categoryId) {
+        const cat = await prisma.category.findUnique({ where: { id: parsed.categoryId }, select: { id: true, name: true, slug: true } });
+        if (cat) category = cat;
+      }
+
+      const result: ProductRecord = {
+        ...record as unknown as ProductRecord,
+        variants: createdVariants,
+        category,
+      };
+
       await logAuditFn("created", record.id, parsed, meta);
       invalidateStorefrontCache(meta.tenantId);
       invalidateSearchCache(meta.tenantId);
-      return record as unknown as ProductRecord;
+      return result;
     }
 
     const id = `prod-${Date.now()}`;
-    const record: ProductRecord = { id, tenantId: meta.tenantId, storeId: parsed.storeId ?? null, categoryId: parsed.categoryId ?? null, name: parsed.name, slug, description: parsed.description ?? null, shortDescription: parsed.shortDescription ?? null, seoTitle: parsed.seoTitle ?? null, seoDescription: parsed.seoDescription ?? null, status: parsed.status, createdById: meta.userId ?? null, deletedAt: null, createdAt: new Date(), updatedAt: new Date() };
+    const record: ProductRecord = { id, tenantId: meta.tenantId, storeId: parsed.storeId || null, categoryId: parsed.categoryId || null, name: parsed.name, slug, description: parsed.description ?? null, shortDescription: parsed.shortDescription ?? null, seoTitle: parsed.seoTitle ?? null, seoDescription: parsed.seoDescription ?? null, status: parsed.status, createdById: meta.userId ?? null, deletedAt: null, createdAt: new Date(), updatedAt: new Date() };
     mockProducts.push(record);
-    parsed.images.forEach((img, i) => mockImages.push({ id: `img-${i}`, productId: id, url: img.url, alt: img.alt ?? null, sortOrder: img.sortOrder || i, createdAt: new Date() }));
+    parsed.images.filter((img) => img.url).forEach((img, i) => mockImages.push({ id: `img-${i}`, productId: id, url: img.url, alt: img.alt ?? null, sortOrder: img.sortOrder || i, createdAt: new Date() }));
     parsed.variants.forEach((v, i) => mockVariants.push({ id: `var-${i}`, productId: id, sku: v.sku, barcode: v.barcode ?? null, price: v.price, comparePrice: v.comparePrice ?? null, costPrice: v.costPrice ?? null, weight: v.weight ?? null, quantity: v.quantity, isDefault: v.isDefault, status: v.status, deletedAt: null, createdAt: new Date(), updatedAt: new Date() }));
     parsed.options.forEach((o, oi) => {
       const optId = `opt-${oi}`;
@@ -194,13 +225,43 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
   async updateOne(id: string, data: Partial<ProductInput>, meta: AuditMeta): Promise<ProductRecord> {
     const parsed = productSchema.partial().parse(data);
     if (process.env.DATABASE_URL) {
-      const { images: _imgs, variants: _vars, options: _opts, ...fields } = parsed;
-      const record = await prisma.product.update({ where: { id }, data: fields as any, include: buildIncludes() });
+      const { images: _imgs, variants: updateVariants, options: _opts, ...fields } = parsed;
+      const record = await prisma.product.update({ where: { id }, data: fields as any });
+
+      // Update variants when provided (fixes quantity-not-saving bug)
+      if (updateVariants && updateVariants.length > 0) {
+        const existing = await prisma.productVariant.findMany({
+          where: { productId: id, deletedAt: null },
+          orderBy: { createdAt: "asc" },
+        });
+        for (let i = 0; i < updateVariants.length; i++) {
+          const v = updateVariants[i];
+          const existingId = v.id || existing[i]?.id;
+          if (existingId) {
+            await prisma.productVariant.update({
+              where: { id: existingId },
+              data: {
+                sku: v.sku, barcode: v.barcode ?? null, price: v.price,
+                comparePrice: v.comparePrice ?? null, costPrice: v.costPrice ?? null,
+                weight: v.weight ?? null, quantity: v.quantity,
+                isDefault: v.isDefault, status: v.status,
+              },
+            });
+          }
+        }
+      }
+
+      const complete = await prisma.product.findFirst({
+        where: { id },
+        include: buildIncludes(),
+      });
+      if (!complete) throw new Error("Product not found after update");
+
       await logAuditFn("updated", id, fields, meta);
       invalidateProductCache(id, meta.tenantId);
       invalidateStorefrontCache(meta.tenantId);
       invalidateSearchCache(meta.tenantId);
-      return record as unknown as ProductRecord;
+      return complete as unknown as ProductRecord;
     }
     const idx = mockProducts.findIndex((p) => p.id === id);
     if (idx === -1) throw new Error("Product not found");

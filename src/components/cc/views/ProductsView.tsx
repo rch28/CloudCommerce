@@ -28,20 +28,30 @@ export default function ProductsView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const pageSize = 10;
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ProductData | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (pageNum = page) => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams();
-      if (searchQuery) params.set("q", searchQuery);
-      const data = await productsApi.list(Object.fromEntries(params));
+      const params: Record<string, string> = {};
+      if (searchQuery) params.q = searchQuery;
+      if (categoryFilter !== "all") params.categoryId = categoryFilter;
+      if (statusFilter !== "all") params.status = statusFilter;
+      params.page = String(pageNum);
+      params.pageSize = String(pageSize);
+      const data = await productsApi.list(params);
       setProducts(data.items ?? []);
+      setTotal(data.total ?? 0);
+      setTotalPages(data.totalPages ?? 0);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load products");
       setProducts([]);
@@ -56,10 +66,18 @@ export default function ProductsView() {
       setLoading(true);
       setError(null);
       try {
-        const params = new URLSearchParams();
-        if (searchQuery) params.set("q", searchQuery);
-        const data = await productsApi.list(Object.fromEntries(params));
-        if (!cancelled) setProducts(data.items ?? []);
+        const params: Record<string, string> = {};
+        if (searchQuery) params.q = searchQuery;
+        if (categoryFilter !== "all") params.categoryId = categoryFilter;
+        if (statusFilter !== "all") params.status = statusFilter;
+        params.page = String(page);
+        params.pageSize = String(pageSize);
+        const data = await productsApi.list(params);
+        if (!cancelled) {
+          setProducts(data.items ?? []);
+          setTotal(data.total ?? 0);
+          setTotalPages(data.totalPages ?? 0);
+        }
       } catch (e) {
         if (!cancelled) {
           setError(e instanceof Error ? e.message : "Failed to load products");
@@ -74,20 +92,14 @@ export default function ProductsView() {
       } catch { /* non-critical */ }
     })();
     return () => { cancelled = true; };
-  }, [searchQuery]);
-
-  const filtered = products.filter((p) => {
-    if (statusFilter !== "all" && p.status !== statusFilter) return false;
-    if (categoryFilter !== "all" && p.categoryId !== categoryFilter) return false;
-    return true;
-  });
+  }, [searchQuery, categoryFilter, statusFilter, page]);
 
   const toggleSelect = (id: string) => {
     setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   };
   const toggleSelectAll = () => {
-    if (selected.size === filtered.length) setSelected(new Set());
-    else setSelected(new Set(filtered.map((p) => p.id)));
+    if (selected.size === products.length) setSelected(new Set());
+    else setSelected(new Set(products.map((p) => p.id)));
   };
 
   const handleSave = useCallback(async (data: any) => {
@@ -160,7 +172,7 @@ export default function ProductsView() {
         <AlertCircle size={32} className="text-rose-400" />
         <h3 className="mt-4 text-lg font-semibold text-[#F8FAFC]">Failed to load products</h3>
         <p className="mt-2 text-sm text-muted-foreground">{error}</p>
-        <button onClick={fetchProducts} className="mt-4 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6]">
+        <button onClick={() => fetchProducts()} className="mt-4 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6]">
           Retry
         </button>
       </div>
@@ -205,16 +217,42 @@ export default function ProductsView() {
         </div>
       )}
 
-      {/* Search bar */}
-      <div className="relative">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search products by name, SKU, description..."
-          className="w-full rounded-lg border border-border bg-background py-2.5 pl-10 pr-4 text-sm text-[#F8FAFC] outline-none placeholder:text-muted-foreground focus:border-[#7C3AED]"
-        />
+      {/* Search + Filter bar */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+            placeholder="Search products by name, SKU, description..."
+            className="w-full rounded-lg border border-border bg-background py-2.5 pl-10 pr-4 text-sm text-[#F8FAFC] outline-none placeholder:text-muted-foreground focus:border-[#7C3AED]"
+          />
+        </div>
+        <select
+          value={categoryFilter}
+          onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); setSelected(new Set()); }}
+          className="rounded-lg border border-border bg-background px-3 py-2.5 text-xs text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+        >
+          {categoryFilters.map((f) => (
+            <option key={f.value} value={f.value}>{f.label}</option>
+          ))}
+        </select>
+        <select
+          value={statusFilter}
+          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); setSelected(new Set()); }}
+          className="rounded-lg border border-border bg-background px-3 py-2.5 text-xs text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+        >
+          {statusFilters.map((f) => (
+            <option key={f.value} value={f.value}>{f.label}</option>
+          ))}
+        </select>
+        <button
+          onClick={() => { setEditing(null); setFormOpen(true); }}
+          className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6]"
+        >
+          <Plus size={16} /> Add Product
+        </button>
       </div>
 
       <DataTable
@@ -238,7 +276,6 @@ export default function ProductsView() {
             render: (item: Record<string, unknown>) => {
               const p = item as unknown as ProductData;
               const image = p.images?.[0]?.url;
-              const defaultVariant = p.variants?.find((v) => v.isDefault) ?? p.variants?.[0];
               return (
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-[#1E293B]">
@@ -358,34 +395,11 @@ export default function ProductsView() {
             },
           },
         ]}
-        data={filtered as unknown as Record<string, unknown>[]}
-        searchable
-        searchKeys={["name", "slug"]}
-        filterable
-        filters={categoryFilters}
-        activeFilter={categoryFilter}
-        onFilterChange={(v) => { setCategoryFilter(v); setSelected(new Set()); }}
+        data={products as unknown as Record<string, unknown>[]}
+        searchable={false}
+        serverPagination={{ page, totalPages, total, onPageChange: setPage }}
         emptyTitle="No products yet"
         emptyDescription="Create your first product to start selling."
-        actions={
-          <div className="flex items-center gap-2">
-            <select
-              value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setSelected(new Set()); }}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
-            >
-              {statusFilters.map((f) => (
-                <option key={f.value} value={f.value}>{f.label}</option>
-              ))}
-            </select>
-            <button
-              onClick={() => { setEditing(null); setFormOpen(true); }}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6]"
-            >
-              <Plus size={16} /> Add Product
-            </button>
-          </div>
-        }
       />
 
       <ProductForm

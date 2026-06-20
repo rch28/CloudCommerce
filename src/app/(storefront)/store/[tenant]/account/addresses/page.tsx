@@ -54,7 +54,10 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
 
   React.useEffect(() => {
     let cancelled = false;
-    fetchAddresses().catch(() => { if (!cancelled) toast.error("Failed to load addresses"); })
+    (async () => {
+      const data = await accountApi.listAddresses();
+      if (!cancelled) setAddresses(data);
+    })().catch(() => { if (!cancelled) toast.error("Failed to load addresses"); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);

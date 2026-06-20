@@ -29,18 +29,19 @@ export const productOptionSchema = z.object({
 
 // ── Product Image ────────────────────────────────────
 export const productImageSchema = z.object({
-  url: z.string().url("Invalid image URL"),
+  url: z.string().url("Invalid image URL").or(z.literal("")),
   alt: z.string().max(200).optional(),
   sortOrder: z.coerce.number().int().min(0).default(0),
 });
 
 // ── Variant ─────────────────────────────────────────
 export const variantSchema = z.object({
+  id: z.string().optional(),
   sku: z.string().min(1, "SKU is required").max(50),
   barcode: z.string().max(50).optional(),
   price: z.coerce.number().positive("Price must be positive"),
-  comparePrice: z.coerce.number().positive().optional(),
-  costPrice: z.coerce.number().positive().optional(),
+  comparePrice: z.coerce.number().positive().nullish(),
+  costPrice: z.coerce.number().positive().nullish(),
   weight: z.coerce.number().positive().optional(),
   quantity: z.coerce.number().int().min(0).default(0),
   isDefault: z.boolean().default(false),
@@ -56,8 +57,8 @@ export const productSchema = z.object({
   seoTitle: z.string().max(70).optional(),
   seoDescription: z.string().max(160).optional(),
   status: z.enum(["draft", "active", "archived"]).default("draft"),
-  categoryId: z.string().optional(),
-  storeId: z.string().optional(),
+  categoryId: z.string().optional().transform(v => v || undefined),
+  storeId: z.string().optional().transform(v => v || undefined),
   images: z.array(productImageSchema).default([]),
   variants: z.array(variantSchema).default([]),
   options: z.array(productOptionSchema).default([]),
