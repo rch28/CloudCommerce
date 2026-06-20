@@ -28,14 +28,18 @@ export async function GET(request: NextRequest) {
     }
 
     if (!customerId && sessionId) {
-      tenantId = request.headers.get("x-tenant-id") || "t-1";
+      tenantId = request.headers.get("x-tenant-id") || null;
     }
 
     if (!customerId && !sessionId) {
       return NextResponse.json({ items: [] });
     }
 
-    const result = await getWishlist(tenantId!, { customerId: customerId ?? undefined, sessionId });
+    if (!tenantId) {
+      return NextResponse.json({ error: "Bad Request: missing tenant identification" }, { status: 400 });
+    }
+
+    const result = await getWishlist(tenantId, { customerId: customerId ?? undefined, sessionId });
 
     return NextResponse.json({
       id: result.id,
@@ -60,7 +64,7 @@ export async function GET(request: NextRequest) {
         },
       })),
     });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -69,7 +73,11 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getSessionUser();
     const { sessionId } = resolveSession(request);
-    const tenantId = request.headers.get("x-tenant-id") || "t-1";
+    const tenantId = request.headers.get("x-tenant-id");
+
+    if (!tenantId) {
+      return NextResponse.json({ error: "Bad Request: missing x-tenant-id header" }, { status: 400 });
+    }
 
     let customerId: string | null = null;
 
