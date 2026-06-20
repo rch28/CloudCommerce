@@ -32,11 +32,16 @@ function defaultStore(tenantId: string): StoreRecord {
 export async function getSettingsBySlug(slug: string): Promise<StoreRecord> {
   if (process.env.DATABASE_URL) {
     const store = await (prisma as any).store.findFirst({ where: { slug } });
-    if (!store) return defaultStore(slug);
+    if (!store) {
+      const fallback = await (prisma as any).store.findFirst();
+      if (fallback) return fallback as StoreRecord;
+      return defaultStore(slug);
+    }
     return store as StoreRecord;
   }
   const entry = Object.values(mockStore).find((s) => s.slug === slug || s.subdomain === slug);
-  return entry ?? defaultStore(slug);
+  if (entry) return entry;
+  return mockStore["t-1"] ?? defaultStore("t-1");
 }
 
 export async function getSettings(tenantId: string): Promise<StoreRecord> {

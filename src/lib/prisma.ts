@@ -1,5 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { Decimal } from "@prisma/client-runtime-utils";
+
+const origToJSON = Decimal.prototype.toJSON;
+Decimal.prototype.toJSON = function () {
+  return Number(origToJSON.call(this)) as unknown as string;
+};
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 

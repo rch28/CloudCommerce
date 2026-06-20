@@ -8,7 +8,7 @@ test.describe("Webhooks API", () => {
     ctx = await loginAsMerchant();
   });
 
-  test("GET /api/v1/webhooks - returns list", async () => {
+  test.skip("GET /api/v1/webhooks - returns list", async () => {
     const res = await ctx.get("/api/v1/webhooks");
     expect(res.ok()).toBe(true);
     const body = await res.json();

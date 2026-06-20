@@ -4,7 +4,7 @@ test.describe("Home page", () => {
   test("should load and display the brand", async ({ page }) => {
     const response = await page.goto("/");
     expect(response?.ok()).toBe(true);
-    await expect(page.locator("text=CloudCommerce")).toBeVisible();
+    await expect(page.locator("text=CloudCommerce").first()).toBeVisible();
   });
 
   test("should have secure headers", async ({ page }) => {

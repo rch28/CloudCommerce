@@ -69,7 +69,7 @@ export default function ProductCard({ id, name, slug, price, image, stock, sold,
           <span>({sold} sold)</span>
         </div>
         <div className="mt-3 flex items-center justify-between">
-          <span className="text-lg font-bold text-[#F8FAFC]">${price.toFixed(2)}</span>
+          <span className="text-lg font-bold text-[#F8FAFC]">${Number(price).toFixed(2)}</span>
           <button
             onClick={() => {
               if (!outOfStock) addItem({
