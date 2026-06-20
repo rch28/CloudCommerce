@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import ProductCard from "@/components/storefront/product-card";
+import { productsApi } from "@/services/products.service";
 
 interface ProductGridRendererProps {
   content: Record<string, unknown>;
@@ -18,15 +19,12 @@ export default function ProductGridRenderer({ content, brandColor, tenant }: Pro
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const params = new URLSearchParams({ pageSize: String((content.limit as number) || 8), status: "active" });
+        const params: Record<string, string> = { pageSize: String((content.limit as number) || 8), status: "active" };
         const ids = (content.productIds as string)?.split(",").map((s: string) => s.trim()).filter(Boolean);
-        if (ids?.length) params.set("ids", ids.join(","));
-        if (content.categoryId) params.set("categoryId", content.categoryId as string);
-        const res = await fetch(`/api/v1/products?${params}`);
-        if (res.ok) {
-          const data = await res.json();
-          setProducts(data.items ?? []);
-        }
+        if (ids?.length) params.ids = ids.join(",");
+        if (content.categoryId) params.categoryId = content.categoryId as string;
+        const data = await productsApi.list(params);
+        setProducts(data.items ?? []);
       } catch { /* ignore */ }
       setLoading(false);
     }

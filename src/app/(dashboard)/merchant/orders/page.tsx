@@ -4,6 +4,7 @@ import Link from "next/link";
 import PageHeader from "@/components/dashboard/page-header";
 import Badge from "@/components/cc/Badge";
 import { Search, ChevronLeft, ChevronRight, Loader2, ArrowUpDown } from "lucide-react";
+import { ordersApi } from "@/services/orders.service";
 
 const STATUS_FILTERS = [
   { label: "All", value: "all" },
@@ -42,17 +43,15 @@ export default function MerchantOrdersPage() {
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({
+      const params: Record<string, string> = {
         tenantId: "t-1",
         page: String(page),
         limit: String(LIMIT),
         status: statusFilter,
-      });
-      if (search) params.set("search", search);
+      };
+      if (search) params.search = search;
 
-      const res = await fetch(`/api/v1/orders?${params}`);
-      if (!res.ok) throw new Error("Failed to fetch");
-      const data = await res.json();
+      const data = await ordersApi.list(params);
       setOrders(data.orders ?? []);
       setTotal(data.total ?? 0);
     } catch {

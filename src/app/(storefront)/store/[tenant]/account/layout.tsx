@@ -3,6 +3,7 @@ import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { User, Package, MapPin, Heart, Gift, LogOut, Loader2 } from "lucide-react";
+import { accountApi } from "@/services/account.service";
 
 export default function AccountLayout({ children, params }: { children: React.ReactNode; params: Promise<{ tenant: string }> }) {
   const { tenant } = React.use(params);
@@ -12,14 +13,8 @@ export default function AccountLayout({ children, params }: { children: React.Re
   const base = `/store/${tenant}/account`;
 
   React.useEffect(() => {
-    fetch("/api/v1/account/profile")
-      .then((res) => {
-        if (res.ok) {
-          setAuthState("authenticated");
-        } else {
-          setAuthState("unauthenticated");
-        }
-      })
+    accountApi.getProfile()
+      .then(() => setAuthState("authenticated"))
       .catch(() => setAuthState("unauthenticated"));
   }, []);
 

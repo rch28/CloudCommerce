@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Star, ArrowLeft } from "lucide-react";
+import { reviewsApi } from "@/services/reviews.service";
 import Link from "next/link";
 
 interface ReviewDetail {
@@ -27,27 +28,25 @@ export default function ReviewDetailView() {
 
   useEffect(() => {
     if (!params.id) return;
-    fetch(`/api/v1/reviews/${params.id}`)
-      .then((res) => res.ok ? res.json() : null)
-      .then((data) => {
+    (async () => {
+      try {
+        const data = await reviewsApi.get(params.id);
         setReview(data);
         if (data?.reply) setReplyText(data.reply.body);
-        setLoading(false);
-      });
+      } catch {
+        setReview(null);
+      }
+      setLoading(false);
+    })();
   }, [params.id]);
 
   const handleModerate = async (status: "approved" | "hidden") => {
     setModSaving(true);
     setModStatus(status);
-    const res = await fetch(`/api/v1/reviews/${params.id}/moderate`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    if (res.ok) {
-      const updated = await res.json();
+    try {
+      const updated = await reviewsApi.moderate(params.id, { status });
       setReview((prev) => prev ? { ...prev, status: updated.status, moderatedBy: updated.moderatedBy, moderatedAt: updated.moderatedAt } : prev);
-    }
+    } catch { /* ignore */ }
     setModSaving(false);
     setModStatus(null);
   };
@@ -55,15 +54,10 @@ export default function ReviewDetailView() {
   const handleSaveReply = async () => {
     if (!replyText.trim()) return;
     setSavingReply(true);
-    const res = await fetch(`/api/v1/reviews/${params.id}/reply`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ body: replyText }),
-    });
-    if (res.ok) {
-      const reply = await res.json();
+    try {
+      const reply = await reviewsApi.reply(params.id, { body: replyText });
       setReview((prev) => prev ? { ...prev, reply: { id: reply.id, body: reply.body, createdAt: reply.createdAt } } : prev);
-    }
+    } catch { /* ignore */ }
     setSavingReply(false);
   };
 

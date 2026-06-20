@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { reviewsApi } from "@/services/reviews.service";
 import { useRouter } from "next/navigation";
 import { Search, Star, Filter, MoreHorizontal } from "lucide-react";
 
@@ -27,15 +28,17 @@ export default function ReviewsView() {
 
   const fetchReviews = useCallback(async () => {
     setLoading(true);
-    const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
-    if (statusFilter !== "all") params.set("status", statusFilter);
-    if (search) params.set("search", search);
+    const params: Record<string, string> = { page: String(page), pageSize: String(pageSize) };
+    if (statusFilter !== "all") params.status = statusFilter;
+    if (search) params.search = search;
 
-    const res = await fetch(`/api/v1/reviews?${params}`);
-    if (res.ok) {
-      const data = await res.json();
-      setReviews(data.items);
-      setTotal(data.total);
+    try {
+      const data = await reviewsApi.list(params);
+      setReviews((data as any).items);
+      setTotal((data as any).total);
+    } catch {
+      setReviews([]);
+      setTotal(0);
     }
     setLoading(false);
   }, [page, statusFilter, search]);

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, Tag, Percent, Truck, MoreHorizontal } from "lucide-react";
+import { promotionsApi } from "@/services/promotions.service";
 
 const TABS = ["Coupons", "Promotions", "Usage Analytics"] as const;
 
@@ -31,20 +32,24 @@ export default function PromotionsView() {
   const [loading, setLoading] = useState(true);
 
   const fetchCoupons = useCallback(async () => {
-    const res = await fetch(`/api/v1/coupons?search=${search}&pageSize=100`);
-    if (res.ok) { const data = await res.json(); setCoupons(data.items); }
+    try {
+      const data = await promotionsApi.listCoupons({ search, pageSize: "100" });
+      setCoupons((data as any).items);
+    } catch { /* ignore */ }
   }, [search]);
 
   const fetchPromotions = useCallback(async () => {
-    const res = await fetch("/api/v1/promotions?pageSize=100");
-    if (res.ok) { const data = await res.json(); setPromotions(data.items); }
+    try {
+      const data = await promotionsApi.listPromotions({ pageSize: "100" });
+      setPromotions((data as any).items);
+    } catch { /* ignore */ }
   }, []);
 
   const fetchUsage = useCallback(async () => {
-    const res = await fetch("/api/v1/coupons?pageSize=1");
-    if (res.ok) {
+    try {
+      await promotionsApi.listCoupons({ pageSize: "1" });
       setUsageStats({ totalDiscount: 0, totalOrders: 0, totalUsages: 0, byType: {} });
-    }
+    } catch { /* ignore */ }
   }, []);
 
   useEffect(() => {

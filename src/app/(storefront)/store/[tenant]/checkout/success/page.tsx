@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Package, Loader2 } from "lucide-react";
+import { storefrontApi } from "@/services/storefront.service";
 
 interface OrderItem {
   id: string;
@@ -54,9 +55,7 @@ export default function CheckoutSuccessPage({ params }: { params: Promise<{ tena
     }
 
     try {
-      const res = await fetch(`/api/v1/payment/stripe/session-status?session_id=${sessionId}`);
-      if (!res.ok) throw new Error("Failed to fetch order");
-      const data = await res.json();
+      const data = await storefrontApi.getStripeSessionStatus(sessionId);
       if (data.found && data.order) {
         setOrder(data.order);
         setLoading(false);

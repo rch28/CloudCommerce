@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import RatingStars from "./RatingStars";
 import RatingDistribution from "./RatingDistribution";
+import { reviewsApi } from "@/services/reviews.service";
 
 interface ReviewItem {
   id: string; rating: number; title: string | null; body: string | null;
@@ -32,17 +33,15 @@ export default function ReviewList({ productId, showStats = true }: Props) {
 
   useEffect(() => {
     setLoading(true);
-    const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), sort, stats: "true" });
-    fetch(`/api/v1/storefront/products/${productId}/reviews?${params}`)
-      .then((res) => res.ok ? res.json() : null)
+    const params = { page: String(page), pageSize: String(pageSize), sort, stats: "true" };
+    reviewsApi.storefrontList(productId, params)
       .then((data) => {
-        if (data) {
-          setReviews(data.items);
-          setTotal(data.total);
-          if (data.stats) setStats(data.stats);
-        }
+        setReviews(data.items);
+        setTotal(data.total);
+        if (data.stats) setStats(data.stats);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, [productId, page, sort]);
 
   const totalPages = Math.ceil(total / pageSize);

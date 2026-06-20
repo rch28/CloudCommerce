@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { promotionsApi } from "@/services/promotions.service";
 
 interface Props {
   mode?: "coupon" | "promotion";
@@ -24,17 +25,20 @@ export default function CouponDetailView({ mode = "coupon" }: Props) {
   const [error, setError] = useState("");
 
   const fetchItem = async () => {
-    const endpoint = isPromotion ? `/api/v1/promotions/${id}` : `/api/v1/coupons/${id}`;
-    const res = await fetch(endpoint);
-    if (!res.ok) { setError("Not found"); setLoading(false); return; }
-    const data = await res.json();
-    setItem(data);
+    try {
+      const data = isPromotion ? await promotionsApi.getPromotion(id) : await promotionsApi.getCoupon(id);
+      setItem(data);
+    } catch {
+      setError("Not found");
+    }
   };
 
   const fetchUsage = async () => {
     if (isPromotion) return;
-    const res = await fetch(`/api/v1/coupons/${id}/usage?pageSize=50`);
-    if (res.ok) { const data = await res.json(); setUsages(data.items); }
+    try {
+      const data = await promotionsApi.getCouponUsage(id);
+      setUsages((data as any).items);
+    } catch { /* ignore */ }
   };
 
   useEffect(() => {
@@ -43,13 +47,15 @@ export default function CouponDetailView({ mode = "coupon" }: Props) {
   }, [id]);
 
   const toggleActive = async () => {
-    const endpoint = isPromotion ? `/api/v1/promotions/${id}` : `/api/v1/coupons/${id}`;
-    const res = await fetch(endpoint, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isActive: !item.isActive }),
-    });
-    if (res.ok) setItem({ ...item, isActive: !item.isActive });
+    if (!item) return;
+    try {
+      if (isPromotion) {
+        await promotionsApi.updatePromotion(id, { isActive: !item.isActive });
+      } else {
+        await promotionsApi.updateCoupon(id, { isActive: !item.isActive });
+      }
+      setItem({ ...item, isActive: !item.isActive });
+    } catch { /* ignore */ }
   };
 
   if (loading) return <div className="p-6 space-y-4"><div className="h-8 w-64 bg-muted animate-pulse rounded" /><div className="h-32 bg-muted animate-pulse rounded" /></div>;

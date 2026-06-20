@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Gift, Star, Award, TrendingUp, Plus, Pencil, Trash2, Search, Loader2, AlertCircle, Check, X, Settings, Users, History, Ticket } from "lucide-react";
+import { loyaltyApi } from "@/services/loyalty.service";
 import DataTable from "@/components/dashboard/data-table";
 import EmptyState from "@/components/dashboard/empty-state";
 import ErrorState from "@/components/dashboard/error-state";
@@ -234,10 +235,10 @@ export default function LoyaltyView() {
   const [editingRule, setEditingRule] = useState<RewardRuleItem | null>(null);
 
   const fetchRules = useCallback(async () => {
-    const res = await fetch("/api/v1/loyalty/rules?limit=100");
-    if (!res.ok) throw new Error("Failed to fetch rules");
-    const data = await res.json();
-    setRules(data.items);
+    try {
+      const data = await loyaltyApi.listRules({ limit: "100" });
+      setRules((data as any).items);
+    } catch { /* ignore */ }
   }, []);
 
   const fetchCustomers = useCallback(async () => {
@@ -246,19 +247,20 @@ export default function LoyaltyView() {
     const data = await res.json();
     const accounts = await Promise.all(
       (data.items || []).map(async (c: { id: string; name: string; email: string }) => {
-        const accRes = await fetch(`/api/v1/loyalty/account?customerId=${c.id}`);
-        if (!accRes.ok) return null;
-        const acc = await accRes.json();
-        return { ...acc, customer: { name: c.name, email: c.email } };
+        try {
+          const acc = await loyaltyApi.getAccount({ customerId: c.id });
+          return { ...acc, customer: { name: c.name, email: c.email } };
+        } catch {
+          return null;
+        }
       }),
     );
     setCustomers(accounts.filter(Boolean));
   }, []);
 
   const fetchTransactions = useCallback(async () => {
-    const res = await fetch("/api/v1/loyalty/rules?limit=1");
-    if (!res.ok) return;
     try {
+      await loyaltyApi.listRules({ limit: "1" });
       const txRes = await fetch("/api/v1/audit-logs?entityType=loyalty_transaction&limit=100");
       if (txRes.ok) {
         const txData = await txRes.json();
@@ -270,11 +272,10 @@ export default function LoyaltyView() {
   }, []);
 
   const fetchSettings = useCallback(async () => {
-    const res = await fetch("/api/v1/loyalty/settings");
-    if (res.ok) {
-      const data = await res.json();
+    try {
+      const data = await loyaltyApi.getSettings();
       setSettings(data);
-    }
+    } catch { /* ignore */ }
   }, []);
 
   useEffect(() => {
@@ -287,16 +288,11 @@ export default function LoyaltyView() {
 
   const handleSaveRule = async (data: Record<string, unknown>) => {
     try {
-      const url = editingRule
-        ? `/api/v1/loyalty/rules/${editingRule.id}`
-        : "/api/v1/loyalty/rules";
-      const method = editingRule ? "PATCH" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error("Failed to save rule");
+      if (editingRule) {
+        await loyaltyApi.updateRule(editingRule.id, data);
+      } else {
+        await loyaltyApi.createRule(data);
+      }
       toast.success(editingRule ? "Rule updated" : "Rule created");
       setRuleDialogOpen(false);
       setEditingRule(null);
@@ -309,8 +305,7 @@ export default function LoyaltyView() {
   const handleDeleteRule = async (id: string) => {
     if (!confirm("Delete this rule?")) return;
     try {
-      const res = await fetch(`/api/v1/loyalty/rules/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
+      await loyaltyApi.deleteRule(id);
       toast.success("Rule deleted");
       await fetchRules();
     } catch (e) {
@@ -321,12 +316,7 @@ export default function LoyaltyView() {
   const handleSaveSettings = async () => {
     if (!settings) return;
     try {
-      const res = await fetch("/api/v1/loyalty/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings),
-      });
-      if (!res.ok) throw new Error("Failed to save settings");
+      await loyaltyApi.updateSettings(settings);
       toast.success("Settings saved");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save settings");

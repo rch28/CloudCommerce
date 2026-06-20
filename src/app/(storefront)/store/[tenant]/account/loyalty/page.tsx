@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Gift, Star, Award, TrendingUp, Ticket, Truck, Loader2 } from "lucide-react";
+import { loyaltyApi } from "@/services/loyalty.service";
 
 const tierColors: Record<string, string> = {
   bronze: "text-amber-700 bg-amber-100",
@@ -44,16 +45,20 @@ export default function CustomerLoyaltyPage({ params }: { params: Promise<{ tena
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    Promise.all([
-      fetch("/api/v1/loyalty/account").then((r) => r.ok ? r.json() : null),
-      fetch("/api/v1/loyalty/rules?isActive=true&limit=100").then((r) => r.ok ? r.json() : { items: [] }),
-    ])
-      .then(([accData, rulesData]) => {
+    (async () => {
+      try {
+        const [accData, rulesData] = await Promise.all([
+          loyaltyApi.getAccount().catch(() => null),
+          loyaltyApi.listRules({ isActive: "true", limit: "100" }).catch(() => ({ items: [] })),
+        ]);
         if (accData) setAccount(accData);
-        setRules(rulesData.items || []);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+        setRules((rulesData as any).items || []);
+      } catch {
+        // ignore
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   if (loading) {
@@ -79,9 +84,13 @@ export default function CustomerLoyaltyPage({ params }: { params: Promise<{ tena
           <h3 className="mb-2 text-lg font-semibold text-[#F8FAFC]">Join Our Loyalty Program</h3>
           <p className="mb-6 text-sm text-muted-foreground">Earn points on every purchase and unlock exclusive rewards.</p>
           <button
-            onClick={() => {
-              fetch("/api/v1/loyalty/account?customerId=self", { method: "POST" })
-                .then(() => window.location.reload());
+            onClick={async () => {
+              try {
+                await loyaltyApi.enroll();
+                window.location.reload();
+              } catch {
+                // ignore
+              }
             }}
             className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6]"
           >

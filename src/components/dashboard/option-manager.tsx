@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { X, Plus, Loader2 } from "lucide-react";
+import { productsApi } from "@/services/products.service";
 
 interface OptionValue {
   label: string;
@@ -34,15 +35,12 @@ export default function OptionManager({ productId, onVariantsGenerated }: Option
 
   async function loadOptions() {
     try {
-      const res = await fetch(`/api/v1/products/options?productId=${productId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setGroups(data.map((o: any) => ({
-          id: o.id,
-          name: o.name,
-          values: (o.values || []).map((v: any) => ({ label: v.label, value: v.value })),
-        })));
-      }
+      const data = await productsApi.getOptions(productId);
+      setGroups(data.map((o: any) => ({
+        id: o.id,
+        name: o.name,
+        values: (o.values || []).map((v: any) => ({ label: v.label, value: v.value })),
+      })));
     } catch {
       // silent
     } finally {
@@ -89,16 +87,9 @@ export default function OptionManager({ productId, onVariantsGenerated }: Option
         basePrice,
         baseSku,
       };
-      const res = await fetch("/api/v1/products/generate-variants", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
-        const results = await res.json();
-        onVariantsGenerated?.(results.length);
-        await loadOptions();
-      }
+      const results = await productsApi.generateVariants(payload);
+      onVariantsGenerated?.(results.length);
+      await loadOptions();
     } catch {
       // silent
     } finally {

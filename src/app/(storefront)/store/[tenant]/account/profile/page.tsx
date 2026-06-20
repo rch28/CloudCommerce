@@ -2,6 +2,7 @@
 import React from "react";
 import { User, Mail, Phone } from "lucide-react";
 import { toast } from "sonner";
+import { accountApi } from "@/services/account.service";
 
 export default function AccountProfilePage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = React.use(params);
@@ -12,30 +13,25 @@ export default function AccountProfilePage({ params }: { params: Promise<{ tenan
   const [phone, setPhone] = React.useState("");
 
   React.useEffect(() => {
-    fetch("/api/v1/account/profile")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch profile");
-        return res.json();
-      })
-      .then((data) => {
+    (async () => {
+      try {
+        const data = await accountApi.getProfile();
         setName(data.name ?? "");
         setEmail(data.email ?? "");
         setPhone(data.phone ?? "");
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      } catch {
+        // ignore
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await fetch("/api/v1/account/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone: phone || undefined }),
-      });
-      if (!res.ok) throw new Error("Failed to update profile");
+      await accountApi.updateProfile({ name, phone: phone || undefined });
       toast.success("Profile updated");
     } catch {
       toast.error("Failed to update profile");

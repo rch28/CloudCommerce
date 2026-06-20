@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Zap } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { storefrontApi } from "@/services/storefront.service";
 
 export default function CustomerLoginPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = React.use(params);
@@ -22,21 +23,12 @@ export default function CustomerLoginPage({ params }: { params: Promise<{ tenant
     setLoading(true);
 
     try {
-      const res = await fetch("/api/v1/auth/customer/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Login failed");
-        return;
-      }
+      await storefrontApi.customerLogin({ email, password });
       await mergeAfterLogin();
       router.push(redirect || `/store/${tenant}/account`);
       router.refresh();
-    } catch {
-      setError("Connection error. Please try again.");
+    } catch (err: any) {
+      setError(err?.response?.data?.error || "Login failed");
     } finally {
       setLoading(false);
     }

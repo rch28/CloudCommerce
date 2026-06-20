@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { notificationsApi } from "@/services/notifications.service";
 
 export interface NotificationItem {
   id: string;
@@ -34,13 +35,10 @@ export function useNotifications(limit = 20): UseNotificationsReturn {
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const [notifRes, countRes] = await Promise.all([
-        fetch(`/api/v1/notifications?limit=${limit}`),
-        fetch("/api/v1/notifications/unread-count"),
+      const [notifData, countData] = await Promise.all([
+        notificationsApi.list(limit),
+        notificationsApi.getUnreadCount(),
       ]);
-      if (!notifRes.ok || !countRes.ok) throw new Error("Failed to fetch notifications");
-      const notifData = await notifRes.json();
-      const countData = await countRes.json();
       if (mountedRef.current) {
         setNotifications(notifData.notifications ?? []);
         setUnreadCount(countData.count ?? 0);
@@ -54,8 +52,7 @@ export function useNotifications(limit = 20): UseNotificationsReturn {
 
   const markAsRead = useCallback(async (id: string) => {
     try {
-      const res = await fetch(`/api/v1/notifications/${id}`, { method: "PATCH" });
-      if (!res.ok) return;
+      await notificationsApi.markRead(id);
       if (mountedRef.current) {
         setNotifications((prev) =>
           prev.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n)),
@@ -67,12 +64,7 @@ export function useNotifications(limit = 20): UseNotificationsReturn {
 
   const markAllAsRead = useCallback(async () => {
     try {
-      const res = await fetch("/api/v1/notifications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "mark_all_read" }),
-      });
-      if (!res.ok) return;
+      await notificationsApi.markAllRead();
       if (mountedRef.current) {
         setNotifications((prev) => prev.map((n) => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })));
         setUnreadCount(0);

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { GripVertical, Star, Trash2, Loader2, ImageIcon } from "lucide-react";
+import { uploadApi } from "@/services/upload.service";
 
 export interface GalleryImage {
   id: string;
@@ -48,11 +49,7 @@ export default function ImageGallery({ images, onReorder, onSetPrimary, onRemove
     try {
       const image = sorted.find((img) => img.id === id);
       if (image) {
-        await fetch("/api/v1/upload", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: image.url }),
-        });
+        await uploadApi.delete({ url: image.url });
       }
       onRemove(id);
     } catch { /* ignore */ }

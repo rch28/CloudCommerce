@@ -9,6 +9,8 @@ import {
   type ReactNode,
 } from "react";
 import { calculatePricing, type PricingResult } from "@/lib/services/pricing";
+import { cartApi } from "@/services/cart.service";
+import { accountApi } from "@/services/account.service";
 
 export interface CartItem {
   variantId: string;
@@ -87,14 +89,6 @@ function cartItemsToPricing(items: CartItem[]) {
   return calculatePricing(items.map((i) => ({ price: i.price, quantity: i.quantity })));
 }
 
-async function fetchWithCookies(url: string, options?: RequestInit) {
-  return fetch(url, {
-    ...options,
-    credentials: "include",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-  });
-}
-
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -111,30 +105,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     async function init() {
       try {
-        const res = await fetchWithCookies("/api/v1/account/profile");
-        if (res.ok) {
-          setIsAuthenticated(true);
-          const tenantId = getTenantFromPath();
-          if (tenantId) {
-            const cartRes = await fetchWithCookies(`/api/v1/cart?tenantId=${tenantId}`);
-            if (cartRes.ok) {
-              const data = await cartRes.json();
-              if (data.items?.length) {
-                setItems(data.items);
-                setLoading(false);
-                return;
-              }
-            }
-            const guestItems = loadGuestCart();
-            if (guestItems.length > 0) {
-              await mergeGuestItems(guestItems, tenantId);
+        await accountApi.getProfile();
+        setIsAuthenticated(true);
+        const tenantId = getTenantFromPath();
+        if (tenantId) {
+          try {
+            const data = await cartApi.get(tenantId);
+            if (data.items?.length) {
+              setItems(data.items);
+              setLoading(false);
               return;
             }
+          } catch {}
+          const guestItems = loadGuestCart();
+          if (guestItems.length > 0) {
+            await mergeGuestItems(guestItems, tenantId);
+            return;
           }
-          setItems([]);
-          setLoading(false);
-          return;
         }
+        setItems([]);
+        setLoading(false);
+        return;
       } catch {}
 
       setIsAuthenticated(false);
@@ -155,23 +146,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   async function mergeGuestItems(guestItems: CartItem[], tenantId: string) {
     try {
       for (const item of guestItems) {
-        await fetchWithCookies("/api/v1/cart", {
-          method: "POST",
-          body: JSON.stringify({
-            tenantId,
-            variantId: item.variantId,
-            quantity: item.quantity,
-            price: item.price,
-          }),
+        await cartApi.addItem({
+          tenantId,
+          variantId: item.variantId,
+          quantity: item.quantity,
+          price: item.price,
         });
       }
       localStorage.removeItem(GUEST_STORAGE_KEY);
 
-      const cartRes = await fetchWithCookies(`/api/v1/cart?tenantId=${tenantId}`);
-      if (cartRes.ok) {
-        const data = await cartRes.json();
-        setItems(data.items || []);
-      }
+      const data = await cartApi.get(tenantId);
+      setItems(data.items || []);
     } catch {
       setItems(guestItems);
     }
@@ -183,22 +168,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const tenantId = getTenantFromPath();
       if (!tenantId) return;
       try {
-        const res = await fetchWithCookies("/api/v1/cart", {
-          method: "POST",
-          body: JSON.stringify({
-            tenantId,
-            variantId: item.variantId,
-            quantity: item.quantity,
-            price: item.price,
-          }),
+        await cartApi.addItem({
+          tenantId,
+          variantId: item.variantId,
+          quantity: item.quantity,
+          price: item.price,
         });
-        if (res.ok) {
-          const cartRes = await fetchWithCookies(`/api/v1/cart?tenantId=${tenantId}`);
-          if (cartRes.ok) {
-            const data = await cartRes.json();
-            setItems(data.items || []);
-          }
-        }
+        const data = await cartApi.get(tenantId);
+        setItems(data.items || []);
       } catch {}
       return;
     }
@@ -226,17 +203,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const tenantId = getTenantFromPath();
       if (!tenantId) return;
       try {
-        const res = await fetchWithCookies(`/api/v1/cart/items/${variantId}`, {
-          method: "PATCH",
-          body: JSON.stringify({ quantity, tenantId }),
-        });
-        if (res.ok) {
-          const cartRes = await fetchWithCookies(`/api/v1/cart?tenantId=${tenantId}`);
-          if (cartRes.ok) {
-            const data = await cartRes.json();
-            setItems(data.items || []);
-          }
-        }
+        await cartApi.updateItem(variantId, { quantity, tenantId });
+        const data = await cartApi.get(tenantId);
+        setItems(data.items || []);
       } catch {}
       return;
     }
@@ -251,14 +220,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const tenantId = getTenantFromPath();
       if (!tenantId) return;
       try {
-        await fetchWithCookies(`/api/v1/cart/items/${variantId}?tenantId=${tenantId}`, {
-          method: "DELETE",
-        });
-        const cartRes = await fetchWithCookies(`/api/v1/cart?tenantId=${tenantId}`);
-        if (cartRes.ok) {
-          const data = await cartRes.json();
-          setItems(data.items || []);
-        }
+        await cartApi.removeItem(variantId, tenantId);
+        const data = await cartApi.get(tenantId);
+        setItems(data.items || []);
       } catch {}
       return;
     }
@@ -271,7 +235,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const tenantId = getTenantFromPath();
       if (!tenantId) return;
       try {
-        await fetchWithCookies(`/api/v1/cart?tenantId=${tenantId}`, { method: "DELETE" });
+        await cartApi.clear(tenantId);
       } catch {}
     }
     setItems([]);

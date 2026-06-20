@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { AlertTriangle, Package, Loader2, RefreshCw, History, Archive, RotateCcw } from "lucide-react";
+import { inventoryApi } from "@/services/inventory.service";
 import DataTable from "@/components/dashboard/data-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,9 +58,7 @@ export default function InventoryView() {
       const params = new URLSearchParams();
       if (filter === "low_stock") params.set("lowStock", "true");
       if (filter === "out_of_stock") params.set("outOfStock", "true");
-      const res = await fetch(`/api/v1/inventory?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to load inventory");
-      const data = await res.json();
+      const data = await inventoryApi.list(Object.fromEntries(params));
       setItems(data);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Unknown error");
@@ -76,12 +75,7 @@ export default function InventoryView() {
     if (!adjustOpen || !adjustReason.trim()) return;
     setAdjusting(true);
     try {
-      const res = await fetch("/api/v1/inventory", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ variantId: adjustOpen, change: adjustChange, reason: adjustReason }),
-      });
-      if (!res.ok) throw new Error("Adjustment failed");
+      await inventoryApi.update({ variantId: adjustOpen, change: adjustChange, reason: adjustReason });
       setAdjustOpen(null);
       setAdjustChange(1);
       setAdjustReason("");
@@ -98,11 +92,8 @@ export default function InventoryView() {
     setHistoryOpen(true);
     setHistoryLoading(true);
     try {
-      const res = await fetch(`/api/v1/inventory/history?variantId=${variantId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setHistoryLogs(data);
-      }
+      const data = await inventoryApi.getHistory(variantId);
+      setHistoryLogs(data);
     } catch {
       setHistoryLogs([]);
     } finally {

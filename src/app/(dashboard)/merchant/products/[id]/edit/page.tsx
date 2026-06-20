@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 import ProductForm from "@/components/dashboard/product-form";
+import { productsApi } from "@/services/products.service";
+import { categoriesApi } from "@/services/categories.service";
 
 export default function ProductEditPage() {
   const params = useParams();
@@ -17,13 +19,11 @@ export default function ProductEditPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [prodRes, catRes] = await Promise.all([
-        fetch(`/api/v1/products/${id}`),
-        fetch("/api/v1/categories"),
+      const [productData, catData] = await Promise.all([
+        productsApi.get(id),
+        categoriesApi.list(),
       ]);
-      if (!prodRes.ok) throw new Error("Product not found");
-      setProduct(await prodRes.json());
-      const catData = await catRes.json();
+      setProduct(productData);
       setCategories(catData.items ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load");
@@ -35,10 +35,7 @@ export default function ProductEditPage() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const handleSave = useCallback(async (data: any) => {
-    const res = await fetch(`/api/v1/products/${id}`, {
-      method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error("Update failed");
+    await productsApi.update(id, data);
     router.push(`/merchant/products/${id}`);
   }, [id, router]);
 

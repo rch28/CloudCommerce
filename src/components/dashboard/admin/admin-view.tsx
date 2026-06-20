@@ -16,6 +16,7 @@ import StatsCard from "@/components/dashboard/stats-card";
 import ChartCard from "@/components/dashboard/chart-card";
 import ErrorState from "@/components/dashboard/error-state";
 import Badge from "@/components/cc/Badge";
+import { adminApi } from "@/services/admin.service";
 
 interface Merchant {
   id: string;
@@ -60,21 +61,20 @@ export default function AdminDashboardView() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch("/api/v1/admin/stats")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.error) throw new Error(d.error);
+    (async () => {
+      try {
+        const d = await adminApi.getStats();
         setData(d);
-        setLoading(false);
-      })
-      .catch(() => {
+      } catch {
         setError(true);
+      } finally {
         setLoading(false);
-      });
+      }
+    })();
   }, []);
 
   if (error) {
-    return <ErrorState onRetry={() => { setError(false); setLoading(true); fetch("/api/v1/admin/stats").then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => { setError(true); setLoading(false); }); }} />;
+    return     <ErrorState onRetry={async () => { setError(false); setLoading(true); try { const d = await adminApi.getStats(); setData(d); } catch { setError(true); } finally { setLoading(false); } }} />;
   }
 
   if (loading) {

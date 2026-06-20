@@ -11,6 +11,9 @@ import {
   Truck,
 } from "lucide-react";
 import Link from "next/link";
+import { requests } from "@/lib/axios";
+import { accountApi } from "@/services/account.service";
+import { shippingApi } from "@/services/shipping.service";
 
 interface SavedAddress {
   id: string;
@@ -80,8 +83,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetch("/api/v1/account/addresses")
-        .then((res) => (res.ok ? res.json() : []))
+      accountApi.listAddresses()
         .then((data: SavedAddress[]) => {
           setSavedAddresses(data);
           const defaultAddr = data.find((a) => a.isDefault) ?? data[0];
@@ -157,24 +159,10 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
     }
 
     try {
-      const res = await fetch("/api/v1/checkout/stripe-session", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Failed to place order");
-        setLoading(false);
-        return;
-      }
-
+      const data = await requests.post("/checkout/stripe-session", body);
       window.location.href = data.stripeUrl;
-    } catch {
-      setError("Network error. Please try again.");
+    } catch (err: any) {
+      setError(err?.response?.data?.error || "Network error. Please try again.");
       setLoading(false);
     }
   }
@@ -336,19 +324,12 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                   price: i.price,
                   weight: undefined,
                 }));
-                const res = await fetch("/api/v1/shipping/calculate", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    address: { country: addr.country, state: addr.state, city: addr.city, zip: addr.zip },
-                    items: shippingItems,
-                  }),
+                const data = await shippingApi.calculate({
+                  address: { country: addr.country, state: addr.state, city: addr.city, zip: addr.zip },
+                  items: shippingItems,
                 });
-                if (res.ok) {
-                  const data = await res.json();
-                  setShippingOptions(data.options || []);
-                  if (data.options?.length > 0) setSelectedShipping(data.options[0]);
-                }
+                setShippingOptions(data.options || []);
+                if (data.options?.length > 0) setSelectedShipping(data.options[0]);
               } catch {}
               setShippingLoading(false);
               setStep("shipping");

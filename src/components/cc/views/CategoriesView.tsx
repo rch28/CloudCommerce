@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Pencil, Archive, Trash2, RotateCcw, Tag } from "lucide-react";
+import { categoriesApi } from "@/services/categories.service";
 import Badge from "../Badge";
 import DataTable from "@/components/dashboard/data-table";
 import CategoryForm from "@/components/dashboard/category-form";
@@ -23,8 +24,7 @@ export default function CategoriesView() {
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/v1/categories");
-      const data = await res.json();
+      const data = await categoriesApi.list();
       setCategories(data.items ?? []);
     } catch {
       setCategories([]);
@@ -56,13 +56,9 @@ export default function CategoriesView() {
   const handleSave = useCallback(async (data: { name: string; slug?: string; description?: string; image?: string; parentId?: string; status?: string }) => {
     try {
       if (editing) {
-        await fetch(`/api/v1/categories/${editing.id}`, {
-          method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
-        });
+        await categoriesApi.update(editing.id, data);
       } else {
-        await fetch("/api/v1/categories", {
-          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
-        });
+        await categoriesApi.create(data);
       }
       await fetchCategories();
       setFormOpen(false);
@@ -72,25 +68,21 @@ export default function CategoriesView() {
 
   const handleArchive = useCallback(async (id: string) => {
     try {
-      await fetch(`/api/v1/categories/${id}`, {
-        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "archive" }),
-      });
+      await categoriesApi.patch(id, { action: "archive" });
       await fetchCategories();
     } catch { /* ignore */ }
   }, [fetchCategories]);
 
   const handleRestore = useCallback(async (id: string) => {
     try {
-      await fetch(`/api/v1/categories/${id}`, {
-        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "restore" }),
-      });
+      await categoriesApi.patch(id, { action: "restore" });
       await fetchCategories();
     } catch { /* ignore */ }
   }, [fetchCategories]);
 
   const handleDelete = useCallback(async (id: string) => {
     try {
-      await fetch(`/api/v1/categories/${id}`, { method: "DELETE" });
+      await categoriesApi.delete(id);
       await fetchCategories();
     } catch { /* ignore */ }
     setConfirmDelete(null);
@@ -98,9 +90,7 @@ export default function CategoriesView() {
 
   const handleBulkArchive = useCallback(async () => {
     try {
-      await fetch("/api/v1/categories/bulk", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "archive", ids: Array.from(selected) }),
-      });
+      await categoriesApi.bulk({ action: "archive", ids: Array.from(selected) });
       setSelected(new Set());
       await fetchCategories();
     } catch { /* ignore */ }
@@ -108,9 +98,7 @@ export default function CategoriesView() {
 
   const handleBulkDelete = useCallback(async () => {
     try {
-      await fetch("/api/v1/categories/bulk", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "delete", ids: Array.from(selected) }),
-      });
+      await categoriesApi.bulk({ action: "delete", ids: Array.from(selected) });
       setSelected(new Set());
       await fetchCategories();
     } catch { /* ignore */ }

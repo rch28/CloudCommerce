@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { taxApi } from "@/services/tax.service";
 import {
   Globe, Percent, MapPin, Plus, Pencil, Trash2, Search,
   Loader2, AlertCircle, Settings,
@@ -68,12 +69,10 @@ export default function TaxSettingsView() {
 
   const fetchZones = useCallback(async () => {
     try {
-      const params = new URLSearchParams({ pageSize: "100" });
-      if (search) params.set("search", search);
-      const res = await fetch(`/api/v1/tax/zones?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to load zones");
-      const data = await res.json();
-      setZones(data.items ?? []);
+      const params: Record<string, string> = { pageSize: "100" };
+      if (search) params.search = search;
+      const data = await taxApi.listZones(params);
+      setZones((data as any).items ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load tax zones");
     }
@@ -81,10 +80,8 @@ export default function TaxSettingsView() {
 
   const fetchRates = useCallback(async () => {
     try {
-      const res = await fetch("/api/v1/tax/rates?pageSize=100");
-      if (!res.ok) throw new Error("Failed to load rates");
-      const data = await res.json();
-      setRates(data.items ?? []);
+      const data = await taxApi.listRates({ pageSize: "100" });
+      setRates((data as any).items ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load tax rates");
     }
@@ -105,18 +102,10 @@ export default function TaxSettingsView() {
     if (!editingZone?.name) return;
     setSaving(true);
     try {
-      const isUpdate = !!editingZone.id;
-      const url = isUpdate
-        ? `/api/v1/tax/zones/${editingZone.id}`
-        : "/api/v1/tax/zones";
-      const res = await fetch(url, {
-        method: isUpdate ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingZone),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to save zone");
+      if (editingZone.id) {
+        await taxApi.updateZone(editingZone.id, editingZone);
+      } else {
+        await taxApi.createZone(editingZone);
       }
       setZoneDialog(false);
       setEditingZone(null);
@@ -130,8 +119,7 @@ export default function TaxSettingsView() {
   async function deleteZone(id: string) {
     setSaving(true);
     try {
-      const res = await fetch(`/api/v1/tax/zones/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete zone");
+      await taxApi.deleteZone(id);
       await Promise.all([fetchZones(), fetchRates()]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to delete zone");
@@ -143,18 +131,10 @@ export default function TaxSettingsView() {
     if (!editingRate?.name || !editingRate?.zoneId || editingRate?.rate === undefined) return;
     setSaving(true);
     try {
-      const isUpdate = !!editingRate.id;
-      const url = isUpdate
-        ? `/api/v1/tax/rates/${editingRate.id}`
-        : "/api/v1/tax/rates";
-      const res = await fetch(url, {
-        method: isUpdate ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingRate),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to save rate");
+      if (editingRate.id) {
+        await taxApi.updateRate(editingRate.id, editingRate);
+      } else {
+        await taxApi.createRate(editingRate);
       }
       setRateDialog(false);
       setEditingRate(null);
@@ -168,8 +148,7 @@ export default function TaxSettingsView() {
   async function deleteRate(id: string) {
     setSaving(true);
     try {
-      const res = await fetch(`/api/v1/tax/rates/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete rate");
+      await taxApi.deleteRate(id);
       await Promise.all([fetchZones(), fetchRates()]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to delete rate");

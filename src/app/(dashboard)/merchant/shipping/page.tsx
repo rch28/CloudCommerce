@@ -3,6 +3,7 @@
 import { useState, useEffect, startTransition } from "react";
 import { Plus, Pencil, Trash2, Truck, Globe, GripVertical } from "lucide-react";
 import PageHeader from "@/components/dashboard/page-header";
+import { shippingApi } from "@/services/shipping.service";
 
 type Zone = {
   id: string;
@@ -104,12 +105,17 @@ export default function ShippingPage() {
   } | null>(null);
 
   async function loadData() {
-    const [z, m] = await Promise.all([
-      fetch("/api/v1/shipping/zones").then((r) => (r.ok ? r.json() : [])),
-      fetch("/api/v1/shipping/methods").then((r) => (r.ok ? r.json() : [])),
-    ]);
-    setZones(z);
-    setMethods(m);
+    try {
+      const [z, m] = await Promise.all([
+        shippingApi.listZones(),
+        shippingApi.listMethods(),
+      ]);
+      setZones(z ?? []);
+      setMethods(m ?? []);
+    } catch {
+      setZones([]);
+      setMethods([]);
+    }
   }
 
   useEffect(() => {
@@ -120,78 +126,76 @@ export default function ShippingPage() {
 
   async function saveZone() {
     if (!editingZone?.name) return;
-    const isUpdate = editingZone.id;
-    const url = isUpdate
-      ? `/api/v1/shipping/zones/${editingZone.id}`
-      : "/api/v1/shipping/zones";
-    const res = await fetch(url, {
-      method: isUpdate ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editingZone),
-    });
-    if (res.ok) {
+    try {
+      if (editingZone.id) {
+        await shippingApi.updateZone(editingZone.id, editingZone);
+      } else {
+        await shippingApi.createZone(editingZone);
+      }
       setShowZoneForm(false);
       setEditingZone(null);
       loadData();
+    } catch {
+      // silent
     }
   }
 
   async function deleteZone(id: string) {
-    const res = await fetch(`/api/v1/shipping/zones/${id}`, {
-      method: "DELETE",
-    });
-    if (res.ok) loadData();
+    try {
+      await shippingApi.deleteZone(id);
+      loadData();
+    } catch {
+      // silent
+    }
   }
 
   async function saveMethod() {
     if (!editingMethod?.name || !editingMethod?.type) return;
-    const isUpdate = editingMethod.id;
-    const url = isUpdate
-      ? `/api/v1/shipping/methods/${editingMethod.id}`
-      : "/api/v1/shipping/methods";
-    const res = await fetch(url, {
-      method: isUpdate ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editingMethod),
-    });
-    if (res.ok) {
+    try {
+      if (editingMethod.id) {
+        await shippingApi.updateMethod(editingMethod.id, editingMethod);
+      } else {
+        await shippingApi.createMethod(editingMethod);
+      }
       setShowMethodForm(false);
       setEditingMethod(null);
       loadData();
+    } catch {
+      // silent
     }
   }
 
   async function deleteMethod(id: string) {
-    const res = await fetch(`/api/v1/shipping/methods/${id}`, {
-      method: "DELETE",
-    });
-    if (res.ok) loadData();
+    try {
+      await shippingApi.deleteMethod(id);
+      loadData();
+    } catch {
+      // silent
+    }
   }
 
   async function saveRate() {
     if (!rateForm) return;
-    const res = await fetch("/api/v1/shipping/rates", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      await shippingApi.createRate({
         zoneId: rateForm.zoneId,
         methodId: rateForm.methodId,
         price: parseFloat(rateForm.price),
-      }),
-    });
-    if (res.ok) {
+      });
       setRateForm(null);
       loadData();
+    } catch {
+      // silent
     }
   }
 
   async function deleteRate(zoneId: string, methodId: string) {
-    const res = await fetch("/api/v1/shipping/rates", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ zoneId, methodId }),
-    });
-    if (res.ok) loadData();
+    try {
+      await shippingApi.deleteRate({ zoneId, methodId });
+      loadData();
+    } catch {
+      // silent
+    }
   }
 
   return (

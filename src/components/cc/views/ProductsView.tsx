@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Pencil, Archive, Trash2, Copy, RotateCcw, Package, AlertCircle, Loader2, Search } from "lucide-react";
+import { productsApi } from "@/services/products.service";
+import { categoriesApi } from "@/services/categories.service";
 import Badge from "../Badge";
 import DataTable from "@/components/dashboard/data-table";
 import ProductForm from "@/components/dashboard/product-form";
@@ -38,9 +40,7 @@ export default function ProductsView() {
     try {
       const params = new URLSearchParams();
       if (searchQuery) params.set("q", searchQuery);
-      const res = await fetch(`/api/v1/products?${params.toString()}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await productsApi.list(Object.fromEntries(params));
       setProducts(data.items ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load products");
@@ -52,8 +52,7 @@ export default function ProductsView() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const res = await fetch("/api/v1/categories");
-      const data = await res.json();
+      const data = await categoriesApi.list();
       setCategories(data.items ?? []);
     } catch { /* non-critical */ }
   }, []);
@@ -77,15 +76,9 @@ export default function ProductsView() {
   const handleSave = useCallback(async (data: any) => {
     try {
       if (editing) {
-        const res = await fetch(`/api/v1/products/${editing.id}`, {
-          method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
-        });
-        if (!res.ok) throw new Error("Update failed");
+        await productsApi.update(editing.id, data);
       } else {
-        const res = await fetch("/api/v1/products", {
-          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
-        });
-        if (!res.ok) throw new Error("Create failed");
+        await productsApi.create(data);
       }
       await fetchProducts();
       setFormOpen(false);
@@ -96,9 +89,7 @@ export default function ProductsView() {
   const handleArchive = useCallback(async (id: string) => {
     setActionLoading(id);
     try {
-      await fetch(`/api/v1/products/${id}`, {
-        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "archive" }),
-      });
+      await productsApi.patch(id, { action: "archive" });
       await fetchProducts();
     } catch { /* ignore */ }
     setActionLoading(null);
@@ -107,9 +98,7 @@ export default function ProductsView() {
   const handleRestore = useCallback(async (id: string) => {
     setActionLoading(id);
     try {
-      await fetch(`/api/v1/products/${id}`, {
-        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "restore" }),
-      });
+      await productsApi.patch(id, { action: "restore" });
       await fetchProducts();
     } catch { /* ignore */ }
     setActionLoading(null);
@@ -118,8 +107,7 @@ export default function ProductsView() {
   const handleDuplicate = useCallback(async (id: string) => {
     setActionLoading(id);
     try {
-      const res = await fetch(`/api/v1/products/${id}/duplicate`, { method: "POST" });
-      if (!res.ok) throw new Error("Duplicate failed");
+      await productsApi.duplicate(id);
       await fetchProducts();
     } catch { /* ignore */ }
     setActionLoading(null);
@@ -127,7 +115,7 @@ export default function ProductsView() {
 
   const handleDelete = useCallback(async (id: string) => {
     try {
-      await fetch(`/api/v1/products/${id}`, { method: "DELETE" });
+      await productsApi.delete(id);
       await fetchProducts();
     } catch { /* ignore */ }
     setConfirmDelete(null);
@@ -135,10 +123,7 @@ export default function ProductsView() {
 
   const handleBulkArchive = useCallback(async () => {
     try {
-      await fetch("/api/v1/products/bulk", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "archive", ids: Array.from(selected) }),
-      });
+      await productsApi.bulk({ action: "archive", ids: Array.from(selected) });
       setSelected(new Set());
       await fetchProducts();
     } catch { /* ignore */ }
@@ -146,10 +131,7 @@ export default function ProductsView() {
 
   const handleBulkDelete = useCallback(async () => {
     try {
-      await fetch("/api/v1/products/bulk", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete", ids: Array.from(selected) }),
-      });
+      await productsApi.bulk({ action: "delete", ids: Array.from(selected) });
       setSelected(new Set());
       await fetchProducts();
     } catch { /* ignore */ }

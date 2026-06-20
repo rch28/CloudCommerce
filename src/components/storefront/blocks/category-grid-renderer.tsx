@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { categoriesApi } from "@/services/categories.service";
 
 interface CategoryGridRendererProps {
   content: Record<string, unknown>;
@@ -20,14 +21,11 @@ export default function CategoryGridRenderer({ content, brandColor, tenant }: Ca
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await fetch("/api/v1/categories");
-        if (res.ok) {
-          const data = await res.json();
-          const ids = categoryIds?.split(",").map((s: string) => s.trim()).filter(Boolean);
-          let items = data.items ?? [];
-          if (ids?.length) items = items.filter((c: any) => ids.includes(c.id));
-          setCategories(items.slice(0, limit));
-        }
+        const data = await categoriesApi.list();
+        const ids = categoryIds?.split(",").map((s: string) => s.trim()).filter(Boolean);
+        let items = data.items ?? [];
+        if (ids?.length) items = items.filter((c: any) => ids.includes(c.id));
+        setCategories(items.slice(0, limit));
       } catch { /* ignore */ }
       setLoading(false);
     }

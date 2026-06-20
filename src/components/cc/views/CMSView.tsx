@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { cmsApi } from "@/services/cms.service";
 import {
   FileText, Plus, Pencil, Trash2, MoveUp, MoveDown, Eye, Globe,
   Layout, Image, Type as TypeIcon, Grid, Tag, Megaphone, MousePointerClick,
@@ -141,17 +142,15 @@ export default function CMSView() {
 
   const fetchPages = useCallback(async () => {
     try {
-      const res = await fetch("/api/v1/cms/pages");
-      const data = await res.json();
-      setPages(data.items ?? []);
+      const data = await cmsApi.listPages();
+      setPages((data as any).items ?? []);
     } catch { setError("Failed to load pages"); }
   }, []);
 
   const fetchBanners = useCallback(async () => {
     try {
-      const res = await fetch("/api/v1/cms/banners");
-      const data = await res.json();
-      setBanners(data.items ?? []);
+      const data = await cmsApi.listBanners();
+      setBanners((data as any).items ?? []);
     } catch { setError("Failed to load banners"); }
   }, []);
 
@@ -199,15 +198,9 @@ export default function CMSView() {
       };
 
       if (editingPage) {
-        const res = await fetch(`/api/v1/cms/pages/${editingPage.id}`, {
-          method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
-        });
-        if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Failed to update"); }
+        await cmsApi.updatePage(editingPage.id, body);
       } else {
-        const res = await fetch("/api/v1/cms/pages", {
-          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
-        });
-        if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Failed to create"); }
+        await cmsApi.createPage(body);
       }
       await fetchPages();
       setPageOpen(false);
@@ -221,16 +214,14 @@ export default function CMSView() {
 
   const handleDeletePage = async (id: string) => {
     try {
-      await fetch(`/api/v1/cms/pages/${id}`, { method: "DELETE" });
+      await cmsApi.deletePage(id);
       await fetchPages();
     } catch { setError("Failed to delete page"); }
   };
 
   const handlePublish = async (id: string, publish: boolean) => {
     try {
-      await fetch(`/api/v1/cms/pages/${id}/publish`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ publish }),
-      });
+      await cmsApi.publishPage(id, { publish });
       await fetchPages();
     } catch { setError("Failed to update page status"); }
   };
@@ -327,15 +318,9 @@ export default function CMSView() {
       if (bannerForm.endsAt) body.endsAt = new Date(bannerForm.endsAt).toISOString();
 
       if (editingBanner) {
-        const res = await fetch(`/api/v1/cms/banners/${editingBanner.id}`, {
-          method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
-        });
-        if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Failed to update"); }
+        await cmsApi.updateBanner(editingBanner.id, body);
       } else {
-        const res = await fetch("/api/v1/cms/banners", {
-          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
-        });
-        if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Failed to create"); }
+        await cmsApi.createBanner(body);
       }
       await fetchBanners();
       setBannerOpen(false);
@@ -349,7 +334,7 @@ export default function CMSView() {
 
   const handleDeleteBanner = async (id: string) => {
     try {
-      await fetch(`/api/v1/cms/banners/${id}`, { method: "DELETE" });
+      await cmsApi.deleteBanner(id);
       await fetchBanners();
     } catch { setError("Failed to delete banner"); }
   };

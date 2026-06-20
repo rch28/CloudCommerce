@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { CreditCard, Check, ArrowUpRight, Loader2, AlertCircle, Download, Receipt } from "lucide-react";
+import { billingApi } from "@/services/billing.service";
 import { PLANS, type PlanFeatures } from "@/lib/features";
 
 interface SubscriptionData {
@@ -35,12 +36,12 @@ export default function BillingView() {
   useEffect(() => {
     async function loadBilling() {
       try {
-        const [subRes, payRes] = await Promise.all([
-          fetch("/api/v1/subscriptions"),
-          fetch("/api/v1/payments"),
+        const [subData, payData] = await Promise.all([
+          billingApi.getSubscription(),
+          billingApi.listPayments(),
         ]);
-        if (subRes.ok) setSubscription(await subRes.json());
-        if (payRes.ok) setPayments(await payRes.json());
+        setSubscription(subData);
+        setPayments(payData);
       } catch {
         setError("Failed to load billing data");
       } finally {
@@ -54,16 +55,7 @@ export default function BillingView() {
     setChanging(true);
     setError("");
     try {
-      const res = await fetch("/api/v1/subscriptions", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planSlug: newSlug }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to change plan");
-      }
-      const updated = await res.json();
+      const updated = await billingApi.updateSubscription({ planSlug: newSlug });
       setSubscription(updated);
     } catch (err: any) {
       setError(err.message);
@@ -77,16 +69,7 @@ export default function BillingView() {
     setChanging(true);
     setError("");
     try {
-      const res = await fetch("/api/v1/subscriptions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "cancel" }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to cancel");
-      }
-      const updated = await res.json();
+      const updated = await billingApi.createSubscription({ action: "cancel" });
       setSubscription(updated);
     } catch (err: any) {
       setError(err.message);

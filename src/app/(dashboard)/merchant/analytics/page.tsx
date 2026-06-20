@@ -9,6 +9,7 @@ import AreaChart from "@/components/dashboard/charts/area-chart";
 import TimeFilter, { type TimeRangeValue } from "@/components/dashboard/time-filter";
 import { exportToCSV } from "@/lib/services/export";
 import type { MerchantMetrics } from "@/lib/services/analytics";
+import { analyticsApi } from "@/services/analytics.service";
 
 export default function AnalyticsPage() {
   const [range, setRange] = useState<TimeRangeValue>("month");
@@ -19,11 +20,11 @@ export default function AnalyticsPage() {
 
   const fetchMetrics = useCallback(async () => {
     try {
-      const params = new URLSearchParams({ range });
-      if (start) params.set("start", start);
-      if (end) params.set("end", end);
-      const res = await fetch(`/api/v1/analytics/merchant?${params}`);
-      if (res.ok) setMetrics(await res.json());
+      const params: Record<string, string> = { range };
+      if (start) params.start = start;
+      if (end) params.end = end;
+      const data = await analyticsApi.getMerchant(params);
+      setMetrics(data);
     } catch {
       // silent
     } finally {

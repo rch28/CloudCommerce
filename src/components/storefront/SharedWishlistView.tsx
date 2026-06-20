@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Heart, ShoppingCart, ArrowLeft, Loader2 } from "lucide-react";
+import { wishlistApi } from "@/services/wishlist.service";
 
 interface SharedItem {
   id: string;
@@ -27,10 +28,6 @@ interface Props {
   shareToken: string;
 }
 
-function fetchWithCookies(url: string, options?: RequestInit) {
-  return fetch(url, { ...options, credentials: "include" });
-}
-
 export default function SharedWishlistView({ tenant, shareToken }: Props) {
   const [items, setItems] = useState<SharedItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,13 +36,8 @@ export default function SharedWishlistView({ tenant, shareToken }: Props) {
   const base = `/store/${tenant}`;
 
   useEffect(() => {
-    fetchWithCookies(`/api/v1/storefront/wishlist/${shareToken}`)
-      .then(async (res) => {
-        if (!res.ok) {
-          setNotFound(true);
-          return;
-        }
-        const data = await res.json();
+    wishlistApi.getByShareToken(shareToken)
+      .then((data) => {
         setItems(data.items || []);
       })
       .catch(() => setNotFound(true))
@@ -55,11 +47,7 @@ export default function SharedWishlistView({ tenant, shareToken }: Props) {
   const handleAddToCart = async (item: SharedItem) => {
     setAdding(item.id);
     try {
-      await fetchWithCookies("/api/v1/wishlist/move-to-cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ wishlistItemId: item.id, quantity: 1 }),
-      });
+      await wishlistApi.moveToCart({ wishlistItemId: item.id, quantity: 1 });
     } catch {}
     setAdding(null);
   };

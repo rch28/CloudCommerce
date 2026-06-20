@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Star, Check, X } from "lucide-react";
+import { reviewsApi } from "@/services/reviews.service";
 
 interface PendingReview {
   id: string; rating: number; title: string | null; body: string | null;
@@ -19,10 +20,11 @@ export default function ReviewModerationView() {
 
   const fetchPending = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/v1/reviews?status=pending&pageSize=50");
-    if (res.ok) {
-      const data = await res.json();
-      setReviews(data.items);
+    try {
+      const data = await reviewsApi.list({ status: "pending", pageSize: "50" });
+      setReviews((data as any).items);
+    } catch {
+      setReviews([]);
     }
     setLoading(false);
   }, []);
@@ -31,14 +33,10 @@ export default function ReviewModerationView() {
 
   const handleAction = async (id: string, status: "approved" | "hidden") => {
     setActionLoading(id);
-    const res = await fetch(`/api/v1/reviews/${id}/moderate`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    if (res.ok) {
+    try {
+      await reviewsApi.moderate(id, { status });
       setReviews((prev) => prev.filter((r) => r.id !== id));
-    }
+    } catch { /* ignore */ }
     setActionLoading(null);
   };
 

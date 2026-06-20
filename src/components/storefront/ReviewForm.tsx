@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import RatingStars from "./RatingStars";
+import { reviewsApi } from "@/services/reviews.service";
 
 interface Props {
   productId: string;
@@ -25,20 +26,10 @@ export default function ReviewForm({ productId, orderItemId, onSuccess, onCancel
     setError("");
 
     try {
-      const res = await fetch("/api/v1/reviews", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, orderItemId, rating, title: title || undefined, body: body || undefined }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to submit review");
-      }
-
+      await reviewsApi.create({ productId, orderItemId, rating, title: title || undefined, body: body || undefined });
       onSuccess?.();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to submit review");
+    } catch (err: any) {
+      setError(err?.response?.data?.error || err?.message || "Failed to submit review");
     } finally {
       setSaving(false);
     }

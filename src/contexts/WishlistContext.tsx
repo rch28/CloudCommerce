@@ -9,6 +9,7 @@ import {
   useRef,
   type ReactNode,
 } from "react";
+import { wishlistApi } from "@/services/wishlist.service";
 
 export interface WishlistItem {
   id: string;
@@ -70,14 +71,6 @@ function ensureSessionCookie(): string {
   return sid;
 }
 
-async function fetchWithCookies(url: string, options?: RequestInit) {
-  return fetch(url, {
-    ...options,
-    credentials: "include",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-  });
-}
-
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,13 +80,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const fetchWishlist = useCallback(async () => {
     try {
-      const res = await fetchWithCookies("/api/v1/wishlist");
-      if (res.ok) {
-        const data = await res.json();
-        setItems(data.items || []);
-      } else {
-        setItems([]);
-      }
+      const data = await wishlistApi.get();
+      setItems(data.items || []);
     } catch {
       setItems([]);
     }
@@ -110,14 +98,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const addItem = useCallback(async (variantId: string) => {
     setLoading(true);
     try {
-      const res = await fetchWithCookies("/api/v1/wishlist", {
-        method: "POST",
-        body: JSON.stringify({ variantId }),
-      });
-      if (res.ok) {
-        await fetchWishlist();
-      }
-      return res.ok;
+      await wishlistApi.add(variantId);
+      await fetchWishlist();
+      return true;
     } catch {
       await fetchWishlist();
       return false;
@@ -127,13 +110,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const removeItem = useCallback(async (variantId: string) => {
     setItems((prev) => prev.filter((i) => i.variantId !== variantId));
     try {
-      const res = await fetchWithCookies(`/api/v1/wishlist/${variantId}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        await fetchWishlist();
-        return false;
-      }
+      await wishlistApi.remove(variantId);
       return true;
     } catch {
       await fetchWishlist();
@@ -155,14 +132,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const moveToCart = useCallback(async (wishlistItemId: string, quantity = 1) => {
     try {
-      const res = await fetchWithCookies("/api/v1/wishlist/move-to-cart", {
-        method: "POST",
-        body: JSON.stringify({ wishlistItemId, quantity }),
-      });
-      if (res.ok) {
-        setItems((prev) => prev.filter((i) => i.id !== wishlistItemId));
-      }
-      return res.ok;
+      await wishlistApi.moveToCart({ wishlistItemId, quantity });
+      setItems((prev) => prev.filter((i) => i.id !== wishlistItemId));
+      return true;
     } catch {
       return false;
     }
@@ -170,14 +142,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const generateShareLink = useCallback(async () => {
     try {
-      const res = await fetchWithCookies("/api/v1/wishlist/share", {
-        method: "POST",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        return data.shareToken as string;
-      }
-      return null;
+      const data = await wishlistApi.share();
+      return data.shareToken as string;
     } catch {
       return null;
     }

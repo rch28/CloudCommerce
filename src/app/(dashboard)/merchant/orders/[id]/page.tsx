@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Package, Loader2, CheckCircle, RefreshCw, AlertCircle, Send } from "lucide-react";
 import Badge from "@/components/cc/Badge";
 import { getValidTransitions, STATUS_LABELS } from "@/data/order-status";
+import { ordersApi } from "@/services/orders.service";
 
 interface TimelineEntry {
   id: string;
@@ -64,19 +65,14 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
   const fetchOrder = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/orders/${id}`);
-      if (!res.ok) {
-        if (res.status === 404) router.replace("/merchant/orders");
-        throw new Error("Failed to fetch order");
-      }
-      const data = await res.json();
+      const data = await ordersApi.get(id);
       setOrder(data.order);
     } catch {
       setError("Failed to load order");
     } finally {
       setLoading(false);
     }
-  }, [id, router]);
+  }, [id]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -86,16 +82,7 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
   async function handleStatusUpdate(newStatus: string) {
     setActionLoading("status");
     try {
-      const res = await fetch(`/api/v1/orders/${id}/status`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Failed to update status");
-        return;
-      }
+      await ordersApi.updateStatus(id, { status: newStatus });
       await fetchOrder();
     } catch {
       setError("Failed to update status");
@@ -108,15 +95,7 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
     if (!confirm("Are you sure you want to refund this order?")) return;
     setActionLoading("refund");
     try {
-      const res = await fetch(`/api/v1/orders/${id}/refund`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Failed to refund");
-        return;
-      }
+      await ordersApi.refund(id, {});
       await fetchOrder();
     } catch {
       setError("Failed to refund");
@@ -128,15 +107,7 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
   async function handleResendConfirmation() {
     setActionLoading("resend");
     try {
-      const res = await fetch(`/api/v1/orders/${id}/resend-confirmation`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Failed to resend");
-        return;
-      }
+      await ordersApi.resendConfirmation(id);
     } catch {
       setError("Failed to resend confirmation");
     } finally {

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useCallback } from "react";
 import { Upload, X, FileImage, Loader2, AlertCircle, Check } from "lucide-react";
+import { uploadApi } from "@/services/upload.service";
 
 export interface UploadedImage {
   url: string;
@@ -49,13 +50,7 @@ export default function UploadDropzone({ onUpload, path = "products", maxSize = 
       formData.append("file", file);
       formData.append("path", path);
 
-      const res = await fetch("/api/v1/upload", { method: "POST", body: formData });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Upload failed");
-      }
-
-      const result: UploadedImage = await res.json();
+      const result: UploadedImage = await uploadApi.upload(formData);
       setSuccess(`${file.name} uploaded successfully`);
       onUpload(result);
     } catch (e) {

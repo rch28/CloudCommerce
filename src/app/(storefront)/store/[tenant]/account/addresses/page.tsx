@@ -2,6 +2,7 @@
 import React from "react";
 import { MapPin, Plus, Pencil, Trash2, Check } from "lucide-react";
 import { toast } from "sonner";
+import { accountApi } from "@/services/account.service";
 
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
@@ -48,9 +49,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
 
   const fetchAddresses = React.useCallback(async () => {
     try {
-      const res = await fetch("/api/v1/account/addresses");
-      if (!res.ok) throw new Error("Failed to fetch");
-      setAddresses(await res.json());
+      setAddresses(await accountApi.listAddresses());
     } catch {
       toast.error("Failed to load addresses");
     } finally {
@@ -90,16 +89,11 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
     e.preventDefault();
     setSaving(true);
     try {
-      const url = editingId
-        ? `/api/v1/account/addresses/${editingId}`
-        : "/api/v1/account/addresses";
-      const method = editingId ? "PUT" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) throw new Error("Failed to save");
+      if (editingId) {
+        await accountApi.updateAddress(editingId, form);
+      } else {
+        await accountApi.createAddress(form);
+      }
       toast.success(editingId ? "Address updated" : "Address added");
       closeForm();
       fetchAddresses();
@@ -113,8 +107,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this address?")) return;
     try {
-      const res = await fetch(`/api/v1/account/addresses/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
+      await accountApi.deleteAddress(id);
       toast.success("Address deleted");
       fetchAddresses();
     } catch {
@@ -124,8 +117,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
 
   const handleSetDefault = async (id: string) => {
     try {
-      const res = await fetch(`/api/v1/account/addresses/${id}/default`, { method: "PUT" });
-      if (!res.ok) throw new Error("Failed to set default");
+      await accountApi.setDefaultAddress(id);
       toast.success("Default address updated");
       fetchAddresses();
     } catch {

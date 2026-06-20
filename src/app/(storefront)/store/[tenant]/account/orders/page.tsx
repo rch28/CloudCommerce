@@ -2,6 +2,7 @@
 import React from "react";
 import { Package, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { accountApi } from "@/services/account.service";
 
 const statusColors: Record<string, string> = {
   pending: "text-amber-400 bg-amber-500/10",
@@ -26,9 +27,8 @@ export default function AccountOrdersPage({ params }: { params: Promise<{ tenant
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    fetch("/api/v1/account/orders")
-      .then((res) => res.ok ? res.json() : Promise.resolve({ orders: [] }))
-      .then((data) => setOrders(data.orders || []))
+    accountApi.listOrders()
+      .then((data: any) => setOrders(data.orders || []))
       .catch(() => setOrders([]))
       .finally(() => setLoading(false));
   }, []);

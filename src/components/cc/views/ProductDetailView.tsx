@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Pencil, Archive, Trash2, RotateCcw, Copy, Loader2, AlertCircle, Package } from "lucide-react";
+import { productsApi } from "@/services/products.service";
 import Badge from "@/components/cc/Badge";
 import PageHeader from "@/components/dashboard/page-header";
 
@@ -33,9 +34,7 @@ export default function ProductDetailView() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/v1/products/${id}`);
-      if (!res.ok) throw new Error(res.status === 404 ? "Product not found" : "Failed to load");
-      const data = await res.json();
+      const data = await productsApi.get(id);
       setProduct(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load product");
@@ -50,9 +49,7 @@ export default function ProductDetailView() {
     if (!product) return;
     setActionLoading(true);
     try {
-      await fetch(`/api/v1/products/${product.id}`, {
-        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "archive" }),
-      });
+      await productsApi.patch(product.id, { action: "archive" });
       await fetchProduct();
     } catch { /* ignore */ }
     setActionLoading(false);
@@ -62,9 +59,7 @@ export default function ProductDetailView() {
     if (!product) return;
     setActionLoading(true);
     try {
-      await fetch(`/api/v1/products/${product.id}`, {
-        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "restore" }),
-      });
+      await productsApi.patch(product.id, { action: "restore" });
       await fetchProduct();
     } catch { /* ignore */ }
     setActionLoading(false);
@@ -74,11 +69,8 @@ export default function ProductDetailView() {
     if (!product) return;
     setActionLoading(true);
     try {
-      const res = await fetch(`/api/v1/products/${product.id}/duplicate`, { method: "POST" });
-      if (res.ok) {
-        const dup = await res.json();
-        router.push(`/merchant/products/${dup.id}`);
-      }
+      const dup = await productsApi.duplicate(product.id);
+      router.push(`/merchant/products/${dup.id}`);
     } catch { /* ignore */ }
     setActionLoading(false);
   };
@@ -86,7 +78,7 @@ export default function ProductDetailView() {
   const handleDelete = async () => {
     if (!product) return;
     try {
-      await fetch(`/api/v1/products/${product.id}`, { method: "DELETE" });
+      await productsApi.delete(product.id);
       router.push("/merchant/products");
     } catch { /* ignore */ }
   };

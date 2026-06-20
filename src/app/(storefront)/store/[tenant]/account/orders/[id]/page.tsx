@@ -3,6 +3,7 @@ import React from "react";
 import { ArrowLeft, Package } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { accountApi } from "@/services/account.service";
 
 const statusColors: Record<string, string> = {
   pending: "text-amber-400 bg-amber-500/10",
@@ -53,20 +54,16 @@ export default function AccountOrderDetailPage({ params }: { params: Promise<{ t
   const base = `/store/${tenant}/account/orders`;
 
   React.useEffect(() => {
-    fetch(`/api/v1/account/orders/${id}`)
-      .then((res) => {
-        if (res.status === 404) {
-          router.replace(`/store/${tenant}/account/orders`);
-          return null;
-        }
-        if (!res.ok) throw new Error("Failed to fetch");
-        return res.json();
-      })
-      .then((data) => {
-        if (data) setOrder(data.order || null);
-      })
-      .catch(() => router.replace(`/store/${tenant}/account/orders`))
-      .finally(() => setLoading(false));
+    (async () => {
+      try {
+        const data = await accountApi.getOrder(id);
+        setOrder(data.order || null);
+      } catch {
+        router.replace(`/store/${tenant}/account/orders`);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [id, tenant, router]);
 
   if (loading) {

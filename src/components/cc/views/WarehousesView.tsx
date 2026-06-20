@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { warehouseApi } from "@/services/warehouse.service";
 import {
   Warehouse, Building2, MapPin, Boxes, ArrowRightLeft, Truck,
   Plus, Pencil, Trash2, Search, Loader2, AlertCircle, Check, X,
@@ -128,10 +129,8 @@ export default function WarehousesView() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/v1/warehouses");
-      if (!res.ok) throw new Error("Failed to load warehouses");
-      const data = await res.json();
-      setWarehouses(data.items ?? data);
+      const data = await warehouseApi.list();
+      setWarehouses((data as any).items ?? data);
     } catch {
       setWarehouses(mockWarehouses);
     } finally {
@@ -142,13 +141,8 @@ export default function WarehousesView() {
   const fetchInventory = useCallback(async (whId: string) => {
     setInvLoading(true);
     try {
-      const res = await fetch(`/api/v1/warehouses/${whId}/inventory`);
-      if (res.ok) {
-        const data = await res.json();
-        setInventory(data.items ?? data);
-      } else {
-        setInventory(mockInv.filter((i) => i.warehouseId === whId));
-      }
+      const data = await warehouseApi.getInventory(whId);
+      setInventory((data as any).items ?? data);
     } catch {
       setInventory(mockInv.filter((i) => i.warehouseId === whId));
     } finally {
@@ -159,13 +153,8 @@ export default function WarehousesView() {
   const fetchTransfers = useCallback(async () => {
     setTransferLoading(true);
     try {
-      const res = await fetch("/api/v1/warehouses/transfers");
-      if (res.ok) {
-        const data = await res.json();
-        setTransfers(data.items ?? data);
-      } else {
-        setTransfers(mockTransfers);
-      }
+      const data = await warehouseApi.listTransfers();
+      setTransfers((data as any).items ?? data);
     } catch {
       setTransfers(mockTransfers);
     } finally {
@@ -200,16 +189,13 @@ export default function WarehousesView() {
   const handleSaveWarehouse = async () => {
     setSaving(true);
     try {
-      const method = editingWarehouse ? "PATCH" : "POST";
-      const url = editingWarehouse ? `/api/v1/warehouses/${editingWarehouse.id}` : "/api/v1/warehouses";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData) });
-      if (res.ok) {
-        setFormOpen(false);
-        await fetchWarehouses();
+      if (editingWarehouse) {
+        await warehouseApi.update(editingWarehouse.id, formData);
       } else {
-        const errData = await res.json();
-        alert(errData.error || "Failed to save warehouse");
+        await warehouseApi.create(formData);
       }
+      setFormOpen(false);
+      await fetchWarehouses();
     } catch {
       const newWh: WarehouseItem = {
         id: `wh-${Date.now()}`,
@@ -232,10 +218,8 @@ export default function WarehousesView() {
   const handleDeleteWarehouse = async (id: string, name: string) => {
     if (!confirm(`Delete warehouse "${name}"?`)) return;
     try {
-      const res = await fetch(`/api/v1/warehouses/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        await fetchWarehouses();
-      }
+      await warehouseApi.delete(id);
+      await fetchWarehouses();
     } catch {
       setWarehouses((prev) => prev.filter((w) => w.id !== id));
     }
@@ -246,19 +230,10 @@ export default function WarehousesView() {
     if (!transferData.fromWarehouseId || !transferData.toWarehouseId || !transferData.variantId || transferData.quantity < 1) return;
     setTransferSaving(true);
     try {
-      const res = await fetch("/api/v1/warehouses/transfers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(transferData),
-      });
-      if (res.ok) {
-        setTransferFormOpen(false);
-        setTransferData({ fromWarehouseId: "", toWarehouseId: "", variantId: "", quantity: 1, notes: "" });
-        await fetchTransfers();
-      } else {
-        const errData = await res.json();
-        alert(errData.error || "Failed to create transfer");
-      }
+      await warehouseApi.createTransfer(transferData);
+      setTransferFormOpen(false);
+      setTransferData({ fromWarehouseId: "", toWarehouseId: "", variantId: "", quantity: 1, notes: "" });
+      await fetchTransfers();
     } catch {
       const newTransfer: TransferItem = {
         id: `st-${Date.now()}`,
@@ -283,14 +258,8 @@ export default function WarehousesView() {
 
   const handleUpdateTransferStatus = async (id: string, status: string) => {
     try {
-      const res = await fetch(`/api/v1/warehouses/transfers/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      if (res.ok) {
-        await fetchTransfers();
-      }
+      await warehouseApi.updateTransfer(id, { status });
+      await fetchTransfers();
     } catch {
       setTransfers((prev) => prev.map((t) => t.id === id ? { ...t, status } : t));
     }
@@ -305,36 +274,8 @@ export default function WarehousesView() {
         const [vid, qty] = s.trim().split(":");
         return { variantId: vid.trim(), quantity: parseInt(qty.trim(), 10) || 1 };
       });
-      const res = await fetch("/api/v1/warehouses/allocate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, destination: { country: "US", state: "NY" } }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAllocationResult(data);
-      } else {
-        const warehouses = mockWarehouses;
-        const allocations: AllocationPlanItem[] = [];
-        const shortages: Array<{ variantId: string; requested: number; available: number }> = [];
-
-        for (const item of items) {
-          let remaining = item.quantity;
-          for (const wh of warehouses) {
-            if (remaining <= 0) break;
-            const inv = mockInv.find((i) => i.warehouseId === wh.id && i.variantId === item.variantId);
-            const available = inv ? inv.available : 0;
-            if (available <= 0) continue;
-            const take = Math.min(remaining, available);
-            allocations.push({ warehouseId: wh.id, warehouseName: wh.name, variantId: item.variantId, allocated: take });
-            remaining -= take;
-          }
-          if (remaining > 0) {
-            shortages.push({ variantId: item.variantId, requested: item.quantity, available: item.quantity - remaining });
-          }
-        }
-        setAllocationResult({ success: shortages.length === 0, allocations, shortages });
-      }
+      const data = await warehouseApi.allocate({ items, destination: { country: "US", state: "NY" } });
+      setAllocationResult(data);
     } catch {
       setAllocationResult({ success: false, allocations: [], shortages: [] });
     } finally {

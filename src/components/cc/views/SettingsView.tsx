@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { settingsApi } from "@/services/settings.service";
 import {
   Store, Palette, Mail, MapPin, Search, Globe, Users, Shield,
   Loader2, Check, X, Plus, Copy, EyeOff, AlertTriangle, Trash2,
@@ -109,28 +110,19 @@ export default function SettingsView() {
   async function loadData() {
     setLoading(true);
     try {
-      const [settingsRes, staffRes, keysRes] = await Promise.all([
-        fetch("/api/v1/settings"),
-        fetch("/api/v1/settings/staff"),
-        fetch("/api/v1/settings/api-keys"),
+      const [settingsData, staffData, keysData] = await Promise.all([
+        settingsApi.get(),
+        settingsApi.listStaff(),
+        settingsApi.listApiKeys(),
       ]);
-      if (settingsRes.ok) {
-        const data = await settingsRes.json();
-        if (data.store) setStore(data.store);
-        if (data.branding) setBranding(data.branding);
-        if (data.contact) setContact(data.contact);
-        if (data.address) setAddress(data.address);
-        if (data.seo) setSeo(data.seo);
-        if (data.domains) setDomains(data.domains);
-      }
-      if (staffRes.ok) {
-        const data = await staffRes.json();
-        setStaff(Array.isArray(data) ? data : data.staff || []);
-      }
-      if (keysRes.ok) {
-        const data = await keysRes.json();
-        setApiKeys(Array.isArray(data) ? data : data.keys || []);
-      }
+      if (settingsData.store) setStore(settingsData.store);
+      if (settingsData.branding) setBranding(settingsData.branding);
+      if (settingsData.contact) setContact(settingsData.contact);
+      if (settingsData.address) setAddress(settingsData.address);
+      if (settingsData.seo) setSeo(settingsData.seo);
+      if (settingsData.domains) setDomains(settingsData.domains);
+      setStaff(Array.isArray(staffData) ? staffData : (staffData as any).staff || []);
+      setApiKeys(Array.isArray(keysData) ? keysData : (keysData as any).keys || []);
     } catch {
       setError("Failed to load settings");
     } finally {
@@ -142,12 +134,7 @@ export default function SettingsView() {
     setSaving(sectionName);
     setError(null);
     try {
-      const res = await fetch("/api/v1/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [sectionName]: data }),
-      });
-      if (!res.ok) throw new Error(`Failed to save ${sectionName}`);
+      await settingsApi.update({ [sectionName]: data });
       setSavedSection(sectionName);
       setTimeout(() => setSavedSection(null), 2000);
     } catch (err: any) {
@@ -162,13 +149,7 @@ export default function SettingsView() {
     setInviting(true);
     setError(null);
     try {
-      const res = await fetch("/api/v1/settings/staff", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
-      });
-      if (!res.ok) throw new Error("Failed to invite staff member");
-      const data = await res.json();
+      const data = await settingsApi.inviteStaff({ email: inviteEmail, role: inviteRole });
       setStaff((prev) => [...prev, data]);
       setInviteEmail("");
       setInviteRole("staff");
@@ -182,8 +163,7 @@ export default function SettingsView() {
   async function removeStaff(id: string) {
     setError(null);
     try {
-      const res = await fetch(`/api/v1/settings/staff?staffId=${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to remove staff member");
+      await settingsApi.deleteStaff(id);
       setStaff((prev) => prev.filter((s) => s.id !== id));
     } catch (err: any) {
       setError(err.message);
@@ -193,12 +173,7 @@ export default function SettingsView() {
   async function updateStaffRole(id: string, role: string) {
     setError(null);
     try {
-      const res = await fetch(`/api/v1/settings/staff?staffId=${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role }),
-      });
-      if (!res.ok) throw new Error("Failed to update role");
+      await settingsApi.updateStaff(id, { role });
       setStaff((prev) => prev.map((s) => (s.id === id ? { ...s, role } : s)));
     } catch (err: any) {
       setError(err.message);
@@ -211,13 +186,7 @@ export default function SettingsView() {
     setError(null);
     try {
       const scopes = keyScopes.split(",").map((s) => s.trim()).filter(Boolean);
-      const res = await fetch("/api/v1/settings/api-keys", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: keyName, scopes }),
-      });
-      if (!res.ok) throw new Error("Failed to create API key");
-      const data = await res.json();
+      const data = await settingsApi.createApiKey({ name: keyName, scopes });
       setNewKey(data.fullKey || data.key || "");
       setApiKeys((prev) => [...prev, data]);
       setKeyName("");
@@ -232,8 +201,7 @@ export default function SettingsView() {
   async function revokeKey(id: string) {
     setError(null);
     try {
-      const res = await fetch(`/api/v1/settings/api-keys?keyId=${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to revoke API key");
+      await settingsApi.deleteApiKey(id);
       setApiKeys((prev) => prev.filter((k) => k.id !== id));
     } catch (err: any) {
       setError(err.message);

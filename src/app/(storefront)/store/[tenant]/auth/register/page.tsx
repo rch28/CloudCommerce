@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Zap } from "lucide-react";
+import { storefrontApi } from "@/services/storefront.service";
 
 export default function CustomerRegisterPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = React.use(params);
@@ -25,20 +26,11 @@ export default function CustomerRegisterPage({ params }: { params: Promise<{ ten
     setLoading(true);
 
     try {
-      const res = await fetch("/api/v1/auth/customer/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name, tenantId: tenant }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Registration failed");
-        return;
-      }
+      await storefrontApi.customerRegister({ email, password, name, tenantId: tenant });
       router.push(`/store/${tenant}/account`);
       router.refresh();
-    } catch {
-      setError("Connection error. Please try again.");
+    } catch (err: any) {
+      setError(err?.response?.data?.error || "Registration failed");
     } finally {
       setLoading(false);
     }
