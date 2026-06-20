@@ -446,3 +446,50 @@ export const wishlistSyncSchema = z.object({
 });
 
 export type WishlistSyncInput = z.infer<typeof wishlistSyncSchema>;
+
+// ── Tax ────────────────────────────────────────────────
+export const taxZoneSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  type: z.enum(["country", "state", "region"]),
+  country: z.string().default("US"),
+  state: z.string().optional(),
+  region: z.string().optional(),
+  zipCodes: z.array(z.string()).default([]),
+  isActive: z.boolean().default(true),
+});
+export type TaxZoneInput = z.infer<typeof taxZoneSchema>;
+
+export const taxRateSchema = z.object({
+  zoneId: z.string().min(1, "Zone is required"),
+  name: z.string().min(1, "Name is required"),
+  type: z.enum(["percentage", "compound"]),
+  rate: z.coerce.number().min(0, "Rate must be non-negative"),
+  priority: z.coerce.number().int().default(0),
+  isActive: z.boolean().default(true),
+  startsAt: z.union([z.string().datetime(), z.date()]).optional(),
+  endsAt: z.union([z.string().datetime(), z.date()]).optional(),
+});
+export type TaxRateInput = z.infer<typeof taxRateSchema>;
+
+export const taxCalculateSchema = z.object({
+  amount: z.number().min(0),
+  shipping: z.number().min(0).default(0),
+  origin: z.object({
+    country: z.string(),
+    state: z.string().optional(),
+    zip: z.string().optional(),
+  }),
+  destination: z.object({
+    country: z.string(),
+    state: z.string().optional(),
+    zip: z.string().optional(),
+    city: z.string().optional(),
+  }),
+  items: z.array(z.object({
+    id: z.string(),
+    quantity: z.number().int().min(1),
+    price: z.number().min(0),
+    taxCode: z.string().optional(),
+  })).optional(),
+});
+export type TaxCalculateInput = z.infer<typeof taxCalculateSchema>;

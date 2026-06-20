@@ -8,6 +8,8 @@ import { enqueueMail } from "@/lib/queue/enqueue";
 import { enqueueInventoryAdjust } from "@/lib/queue/enqueue";
 import { validateCoupon, calculateDiscount } from "@/lib/services/discounts";
 import { recordUsage } from "@/lib/services/coupon-usage";
+import { calculateTax } from "@/lib/services/tax";
+import { allocateStock, reserveStock, confirmDeduction } from "@/lib/services/warehouse";
 
 interface OrderAddressData {
   label: string;
@@ -141,7 +143,19 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
     const orderNumber = await generateOrderNumber();
     const subtotal = cart.items.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
     const shipping = params.shippingPrice !== undefined ? params.shippingPrice : (subtotal >= 100 ? 0 : 10);
-    const tax = Math.round(subtotal * 0.08 * 100) / 100;
+
+    let tax = 0;
+    try {
+      const taxResult = await calculateTax(tenantId, {
+        amount: subtotal,
+        shipping,
+        origin: { country: resolvedAddress.country, state: resolvedAddress.state, zip: resolvedAddress.zip },
+        destination: { country: resolvedAddress.country, state: resolvedAddress.state, zip: resolvedAddress.zip, city: resolvedAddress.city },
+      });
+      tax = taxResult.totalTax;
+    } catch {
+      tax = Math.round(subtotal * 0.08 * 100) / 100;
+    }
 
     let discountAmount = 0;
     let discountType: string | null = null;
@@ -302,7 +316,13 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
       );
     }
 
-    return {
+    if (customerId) {
+      import("@/lib/services/loyalty").then(({ earnPurchasePoints }) => {
+        earnPurchasePoints(tenantId, customerId!, order.id, Number(total)).catch(() => {});
+      });
+    }
+
+    const result = {
       id: order.id,
       number: order.number,
       customerId: order.customerId,
@@ -335,7 +355,41 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
           }
         : null,
     };
+
+    warehouseAllocateAndReserve(tenantId, cart.items, resolvedAddress).catch(() => {});
+
+    return result;
   });
+}
+
+async function warehouseAllocateAndReserve(
+  tenantId: string,
+  items: Array<{ variantId: string; quantity: number }>,
+  address: { country: string; state: string; zip: string },
+) {
+  try {
+    const allocationResult = await allocateStock(tenantId, items, {
+      country: address.country,
+      state: address.state,
+      zip: address.zip,
+    });
+
+    if (allocationResult.success) {
+      const grouped = new Map<string, Array<{ variantId: string; allocated: number }>>();
+      for (const a of allocationResult.allocations) {
+        if (!grouped.has(a.warehouseId)) grouped.set(a.warehouseId, []);
+        grouped.get(a.warehouseId)!.push({ variantId: a.variantId, allocated: a.allocated });
+      }
+
+      for (const [warehouseId, allocs] of grouped) {
+        for (const a of allocs) {
+          await reserveStock(tenantId, { warehouseId, variantId: a.variantId, quantity: a.allocated }).catch(() => {});
+        }
+      }
+    }
+  } catch {
+    // fail silently - warehouse allocation is best-effort at checkout
+  }
 }
 
 let orderCounter = 1000;
@@ -680,6 +734,10 @@ export async function updateOrderStatusValidated(id: string, newStatus: string, 
       data: { orderId: updated.id, orderNumber: updated.number, customerEmail: updated.customer?.email ?? "", customerName: updated.customer?.name ?? "" },
       channel: notifChannel,
     }).catch(() => {});
+
+    for (const item of updated.items) {
+      confirmDeduction(tenantId, { warehouseId: "", variantId: item.variantId, quantity: item.quantity }, { userId }).catch(() => {});
+    }
   } else if (newStatus === "delivered") {
     createNotification(tenantId, {
       type: "order.delivered",

@@ -15,6 +15,7 @@ import {
   Tag,
   X,
   Truck,
+  FileText,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,7 @@ const merchantNav: NavItem[] = [
   { id: "shipping", label: "Shipping", path: "/merchant/shipping", icon: Truck },
   { id: "customers", label: "Customers", path: "/merchant/customers", icon: Users },
   { id: "storefront", label: "Storefront", path: "/merchant/storefront", icon: Store },
+  { id: "cms", label: "CMS", path: "/merchant/cms", icon: FileText },
   { id: "analytics", label: "Analytics", path: "/merchant/analytics", icon: BarChart3 },
   { id: "billing", label: "Billing", path: "/merchant/billing", icon: CreditCard },
   { id: "settings", label: "Settings", path: "/merchant/settings", icon: Settings },

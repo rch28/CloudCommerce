@@ -13,6 +13,7 @@ const labelMap: Record<string, string> = {
   inventory: "Inventory",
   customers: "Customers",
   storefront: "Storefront",
+  cms: "CMS",
   admin: "Admin",
   settings: "Settings",
 };

@@ -11,6 +11,7 @@ import {
   Settings,
   Zap,
   X,
+  FileText,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -23,6 +24,7 @@ const merchantNav: NavItem[] = [
   { id: "inventory", label: "Inventory", path: "/merchant/inventory", icon: Boxes },
   { id: "customers", label: "Customers", path: "/merchant/customers", icon: Users },
   { id: "storefront", label: "Storefront", path: "/merchant/storefront", icon: Store },
+  { id: "cms", label: "CMS", path: "/merchant/cms", icon: FileText },
 ];
 
 const platformNav: NavItem[] = [

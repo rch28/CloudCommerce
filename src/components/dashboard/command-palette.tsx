@@ -43,6 +43,7 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
     { label: "Inventory", icon: Boxes, path: "/merchant/inventory" },
     { label: "Customers", icon: Users, path: "/merchant/customers" },
     { label: "Storefront", icon: Store, path: "/merchant/storefront" },
+    { label: "CMS", icon: FileText, path: "/merchant/cms" },
     { label: "Settings", icon: Settings, path: "/merchant/settings" },
   ];
 
