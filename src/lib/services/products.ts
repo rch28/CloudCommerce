@@ -130,7 +130,7 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
           const record = await prisma.product.findFirst({ where: { id, deletedAt: null }, include: buildIncludes() });
           return record as unknown as ProductRecord | null;
         },
-        { get: (key: string) => productCache.get(key), set: (data: any) => productCache.set(data, data.tenantId) },
+        { get: (key: string) => productCache.get(key), set: (data) => productCache.set(data, (data as Record<string, unknown>).tenantId as string | undefined) },
         id,
       );
     }
@@ -145,7 +145,7 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
           const record = await prisma.product.findFirst({ where: { slug, tenantId, deletedAt: null }, include: buildIncludes() });
           return record as unknown as ProductRecord | null;
         },
-        { get: (key: string) => productCache.get(key, tenantId), set: (data: any) => productCache.set(data, tenantId) },
+        { get: (key: string) => productCache.get(key, tenantId), set: (data) => productCache.set(data, tenantId) },
         slug,
         tenantId,
       );
@@ -283,7 +283,7 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
       options: (original.options ?? []).map((o) => ({
         name: o.name,
         sortOrder: o.sortOrder,
-        values: (o as any).values?.map((ov: any) => ({ label: ov.label, value: ov.value, sortOrder: ov.sortOrder })) ?? [],
+        values: (o as any).values?.map((ov: Record<string, unknown>) => ({ label: ov.label as string, value: ov.value as string, sortOrder: ov.sortOrder as number })) ?? [],
       })),
     };
 
@@ -303,8 +303,8 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
   }
 }
 
-async function logAuditFn(action: string, entityId: string, changes: any, meta: AuditMeta) {
-  await logAudit({ entityType: "product", entityId, action: action as any, changes, userId: meta.userId, tenantId: meta.tenantId });
+async function logAuditFn(action: string, entityId: string, changes: unknown, meta: AuditMeta) {
+  await logAudit({ entityType: "product", entityId, action: action as any, changes: changes as Record<string, unknown>, userId: meta.userId, tenantId: meta.tenantId });
 }
 
 export const productRepo = new ProductRepository();

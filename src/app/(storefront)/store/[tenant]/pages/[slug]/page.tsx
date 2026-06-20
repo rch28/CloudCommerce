@@ -21,18 +21,19 @@ export default async function PagePage({ params }: { params: Promise<{ tenant: s
 
   if (!page) notFound();
 
+  const p = page as { metaTitle?: string; metaDescription?: string; sections?: { id: string; type: string; content: Record<string, unknown>; styles: Record<string, unknown> | null; sortOrder: number; isVisible: boolean }[] };
   const brandColor = store?.primaryColor || "#7C3AED";
   const secondaryColor = store?.secondaryColor || "#8B5CF6";
 
   return (
     <div>
-      {page.metaTitle && (
+      {p.metaTitle && (
         <div className="sr-only">
-          <title>{page.metaTitle}</title>
-          {page.metaDescription && <meta name="description" content={page.metaDescription} />}
+          <title>{p.metaTitle}</title>
+          {p.metaDescription && <meta name="description" content={p.metaDescription} />}
         </div>
       )}
-      <PageRenderer sections={page.sections ?? []} brandColor={brandColor} secondaryColor={secondaryColor} tenant={tenant} />
+      <PageRenderer sections={p.sections ?? []} brandColor={brandColor} secondaryColor={secondaryColor} tenant={tenant} />
     </div>
   );
 }

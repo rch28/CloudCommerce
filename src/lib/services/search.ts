@@ -76,7 +76,7 @@ class PostgresSearchAdapter implements SearchAdapter {
         }),
         prisma.product.count({ where }),
       ]);
-      return { items: items as any[], total, page, pageSize, totalPages: Math.ceil(total / pageSize), query: q };
+      return { items: items as unknown[], total, page, pageSize, totalPages: Math.ceil(total / pageSize), query: q };
     };
 
     const tenantId = params.filters?.tenantId || this.tenantId;
@@ -153,8 +153,8 @@ class MockSearchAdapter implements SearchAdapter {
 
     if (params.sort) {
       scored.sort((a, b) => {
-        const aVal = (a.product as any)[params.sort!] ?? "";
-        const bVal = (b.product as any)[params.sort!] ?? "";
+        const aVal = (a.product as Record<string, unknown>)[params.sort!] ?? "";
+        const bVal = (b.product as Record<string, unknown>)[params.sort!] ?? "";
         const cmp = String(aVal).localeCompare(String(bVal));
         return params.order === "asc" ? cmp : -cmp;
       });
@@ -163,7 +163,7 @@ class MockSearchAdapter implements SearchAdapter {
     const total = scored.length;
     const items = scored.slice((page - 1) * pageSize, page * pageSize).map((s) => s.product);
 
-    return { items: items as any[], total, page, pageSize, totalPages: Math.ceil(total / pageSize), query: q };
+    return { items: items as unknown[], total, page, pageSize, totalPages: Math.ceil(total / pageSize), query: q };
   }
 }
 

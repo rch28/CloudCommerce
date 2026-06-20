@@ -283,7 +283,7 @@ async function checkAndNotifyStock(
 
 export async function getInventoryAlerts(tenantId: string) {
   const all = await listInventory(tenantId);
-  const lowStock = all.filter((i: any) => i.status === "low_stock");
-  const outOfStock = all.filter((i: any) => i.status === "out_of_stock");
+  const lowStock = all.filter((i: Record<string, unknown>) => i.status === "low_stock");
+  const outOfStock = all.filter((i: Record<string, unknown>) => i.status === "out_of_stock");
   return { lowStock, outOfStock, total: all.length };
 }

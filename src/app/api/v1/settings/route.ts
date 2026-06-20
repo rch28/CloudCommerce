@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const forbidden = requirePermission(request, "manage");
+  const forbidden = requirePermission(request, "update");
   if (forbidden) return forbidden;
 
   try {

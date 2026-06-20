@@ -398,7 +398,7 @@ export const shippingMethodSchema = z.object({
   type: z.enum(["flat", "weight_based", "price_based", "free"]),
   configuration: shippingMethodConfigSchema.default({}),
   carrier: z.string().optional(),
-  carrierConfig: z.record(z.unknown()).optional(),
+  carrierConfig: z.record(z.string(), z.unknown()).optional(),
   isActive: z.boolean().default(true),
   sortOrder: z.number().int().default(0),
 });

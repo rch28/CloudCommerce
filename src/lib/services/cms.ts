@@ -17,16 +17,13 @@ interface PaginatedResult<T> {
   totalPages: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockPages: any[] = [];
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockSections: any[] = [];
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockBanners: any[] = [];
+const mockPages: Record<string, unknown>[] = [];
+const mockSections: Record<string, unknown>[] = [];
+const mockBanners: Record<string, unknown>[] = [];
 
 // ── Pages ──────────────────────────────────────────────
 
-export async function getPages(tenantId: string, params: PaginateParams = {}): Promise<PaginatedResult<any>> {
+export async function getPages(tenantId: string, params: PaginateParams = {}): Promise<PaginatedResult<unknown>> {
   if (process.env.DATABASE_URL) {
     const where: Record<string, unknown> = { tenantId };
     if (params.search) where.title = { contains: params.search };
@@ -46,37 +43,37 @@ export async function getPages(tenantId: string, params: PaginateParams = {}): P
     ]);
     return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
   }
-  let items = mockPages.filter((p) => p.tenantId === tenantId);
-  if (params.search) items = items.filter((p) => p.title.toLowerCase().includes(params.search!.toLowerCase()));
-  if (params.status) items = items.filter((p) => p.status === params.status);
+  let items = mockPages.filter((p: Record<string, unknown>) => p.tenantId === tenantId);
+  if (params.search) items = items.filter((p: Record<string, unknown>) => String(p.title).toLowerCase().includes(params.search!.toLowerCase()));
+  if (params.status) items = items.filter((p: Record<string, unknown>) => p.status === params.status);
   const total = items.length;
   const pg = params.page || 1;
   const ps = params.pageSize || 20;
   return { items: items.slice((pg - 1) * ps, pg * ps), total, page: pg, pageSize: ps, totalPages: Math.ceil(total / ps) };
 }
 
-export async function getPage(id: string): Promise<any | null> {
+export async function getPage(id: string): Promise<Record<string, unknown> | null> {
   if (process.env.DATABASE_URL) {
     return (prisma as any).page.findUnique({ where: { id }, include: { sections: { orderBy: { sortOrder: "asc" } } } });
   }
-  const page = mockPages.find((p) => p.id === id);
+  const page = mockPages.find((p: Record<string, unknown>) => p.id === id);
   if (!page) return null;
-  return { ...page, sections: mockSections.filter((s) => s.pageId === id).sort((a, b) => a.sortOrder - b.sortOrder) };
+  return { ...page, sections: mockSections.filter((s: Record<string, unknown>) => s.pageId === id).sort((a: Record<string, unknown>, b: Record<string, unknown>) => Number(a.sortOrder) - Number(b.sortOrder)) };
 }
 
-export async function getPageBySlug(slug: string, tenantId: string): Promise<any | null> {
+export async function getPageBySlug(slug: string, tenantId: string): Promise<Record<string, unknown> | null> {
   if (process.env.DATABASE_URL) {
     return (prisma as any).page.findUnique({
       where: { slug_tenantId: { slug, tenantId } },
       include: { sections: { where: { isVisible: true }, orderBy: { sortOrder: "asc" } } },
     });
   }
-  const page = mockPages.find((p) => p.slug === slug && p.tenantId === tenantId);
+  const page = mockPages.find((p: Record<string, unknown>) => p.slug === slug && p.tenantId === tenantId);
   if (!page) return null;
-  return { ...page, sections: mockSections.filter((s) => s.pageId === page.id && s.isVisible).sort((a, b) => a.sortOrder - b.sortOrder) };
+  return { ...page, sections: mockSections.filter((s: Record<string, unknown>) => s.pageId === page.id && s.isVisible).sort((a: Record<string, unknown>, b: Record<string, unknown>) => Number(a.sortOrder) - Number(b.sortOrder)) };
 }
 
-export async function createPage(data: PageInput, meta: { tenantId: string; userId?: string }): Promise<any> {
+export async function createPage(data: PageInput, meta: { tenantId: string; userId?: string }): Promise<Record<string, unknown>> {
   const parsed = pageSchema.parse(data);
   const slug = parsed.slug.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
   const payload: Record<string, unknown> = {
@@ -118,10 +115,10 @@ export async function createPage(data: PageInput, meta: { tenantId: string; user
       mockSections.push({ id: `sec-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, pageId: record.id, tenantId: meta.tenantId, type: s.type, content: s.content, styles: s.styles ?? null, sortOrder: s.sortOrder, isVisible: s.isVisible ?? true, createdAt: new Date(), updatedAt: new Date() });
     }
   }
-  return { ...record, sections: mockSections.filter((s) => s.pageId === record.id).sort((a, b) => a.sortOrder - b.sortOrder) };
+  return { ...record, sections: mockSections.filter((s: Record<string, unknown>) => s.pageId === record.id).sort((a: Record<string, unknown>, b: Record<string, unknown>) => Number(a.sortOrder) - Number(b.sortOrder)) };
 }
 
-export async function updatePage(id: string, data: Partial<PageInput>, meta: { tenantId: string; userId?: string }): Promise<any> {
+export async function updatePage(id: string, data: Partial<PageInput>, meta: { tenantId: string; userId?: string }): Promise<Record<string, unknown>> {
   const parsed = pageSchema.partial().parse(data);
   const payload: Record<string, unknown> = {};
   if (parsed.title !== undefined) payload.title = parsed.title;
@@ -156,18 +153,18 @@ export async function updatePage(id: string, data: Partial<PageInput>, meta: { t
     return result;
   }
 
-  const idx = mockPages.findIndex((p) => p.id === id);
+  const idx = mockPages.findIndex((p: Record<string, unknown>) => p.id === id);
   if (idx === -1) throw new Error("Page not found");
   Object.assign(mockPages[idx], payload, { updatedAt: new Date() });
   if (parsed.sections) {
-    const remaining = mockSections.filter((s) => s.pageId !== id);
+    const remaining = mockSections.filter((s: Record<string, unknown>) => s.pageId !== id);
     for (const s of parsed.sections) {
       remaining.push({ id: `sec-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, pageId: id, tenantId: meta.tenantId, type: s.type, content: s.content, styles: s.styles ?? null, sortOrder: s.sortOrder, isVisible: s.isVisible ?? true, createdAt: new Date(), updatedAt: new Date() });
     }
     mockSections.length = 0;
     mockSections.push(...remaining);
   }
-  return { ...mockPages[idx], sections: mockSections.filter((s) => s.pageId === id).sort((a, b) => a.sortOrder - b.sortOrder) };
+  return { ...mockPages[idx], sections: mockSections.filter((s: Record<string, unknown>) => s.pageId === id).sort((a: Record<string, unknown>, b: Record<string, unknown>) => Number(a.sortOrder) - Number(b.sortOrder)) };
 }
 
 export async function deletePage(id: string, meta: { tenantId: string; userId?: string }): Promise<void> {
@@ -176,15 +173,15 @@ export async function deletePage(id: string, meta: { tenantId: string; userId?: 
     await logAudit({ entityType: "page", entityId: id, action: "deleted", userId: meta.userId, tenantId: meta.tenantId });
     return;
   }
-  const idx = mockPages.findIndex((p) => p.id === id);
+  const idx = mockPages.findIndex((p: Record<string, unknown>) => p.id === id);
   if (idx === -1) throw new Error("Page not found");
   mockPages.splice(idx, 1);
-  const remaining = mockSections.filter((s) => s.pageId !== id);
+  const remaining = mockSections.filter((s: Record<string, unknown>) => s.pageId !== id);
   mockSections.length = 0;
   mockSections.push(...remaining);
 }
 
-export async function publishPage(id: string, publish: boolean, meta: { tenantId: string; userId?: string }): Promise<any> {
+export async function publishPage(id: string, publish: boolean, meta: { tenantId: string; userId?: string }): Promise<Record<string, unknown>> {
   if (process.env.DATABASE_URL) {
     const page = await (prisma as any).page.update({
       where: { id },
@@ -193,7 +190,7 @@ export async function publishPage(id: string, publish: boolean, meta: { tenantId
     await logAudit({ entityType: "page", entityId: id, action: publish ? "updated" : "updated", changes: { status: publish ? "published" : "draft" }, userId: meta.userId, tenantId: meta.tenantId });
     return page;
   }
-  const idx = mockPages.findIndex((p) => p.id === id);
+  const idx = mockPages.findIndex((p: Record<string, unknown>) => p.id === id);
   if (idx === -1) throw new Error("Page not found");
   mockPages[idx].status = publish ? "published" : "draft";
   mockPages[idx].publishedAt = publish ? new Date() : null;
@@ -203,7 +200,7 @@ export async function publishPage(id: string, publish: boolean, meta: { tenantId
 
 // ── Sections ───────────────────────────────────────────
 
-export async function addSection(pageId: string, data: { type: string; content: Record<string, unknown>; styles?: Record<string, unknown>; sortOrder?: number; isVisible?: boolean }, meta: { tenantId: string; userId?: string }): Promise<any> {
+export async function addSection(pageId: string, data: { type: string; content: Record<string, unknown>; styles?: Record<string, unknown>; sortOrder?: number; isVisible?: boolean }, meta: { tenantId: string; userId?: string }): Promise<Record<string, unknown>> {
   const payload = { pageId, tenantId: meta.tenantId, type: data.type, content: data.content, styles: data.styles ?? null, sortOrder: data.sortOrder ?? 0, isVisible: data.isVisible ?? true };
   if (process.env.DATABASE_URL) {
     const section = await (prisma as any).pageSection.create({ data: payload });
@@ -215,13 +212,13 @@ export async function addSection(pageId: string, data: { type: string; content: 
   return record;
 }
 
-export async function updateSection(id: string, data: Partial<{ type: string; content: Record<string, unknown>; styles: Record<string, unknown> | null; sortOrder: number; isVisible: boolean }>, meta: { tenantId: string; userId?: string }): Promise<any> {
+export async function updateSection(id: string, data: Partial<{ type: string; content: Record<string, unknown>; styles: Record<string, unknown> | null; sortOrder: number; isVisible: boolean }>, meta: { tenantId: string; userId?: string }): Promise<Record<string, unknown>> {
   if (process.env.DATABASE_URL) {
     const section = await (prisma as any).pageSection.update({ where: { id }, data });
     await logAudit({ entityType: "page_section", entityId: id, action: "updated", userId: meta.userId, tenantId: meta.tenantId });
     return section;
   }
-  const idx = mockSections.findIndex((s) => s.id === id);
+  const idx = mockSections.findIndex((s: Record<string, unknown>) => s.id === id);
   if (idx === -1) throw new Error("Section not found");
   Object.assign(mockSections[idx], data, { updatedAt: new Date() });
   return mockSections[idx];
@@ -232,9 +229,9 @@ export async function reorderSections(pageId: string, sectionIds: string[], meta
     await Promise.all(sectionIds.map((id, idx) => (prisma as any).pageSection.update({ where: { id }, data: { sortOrder: idx } })));
     return;
   }
-  const pageSections = mockSections.filter((s) => s.pageId === pageId);
+  const pageSections = mockSections.filter((s: Record<string, unknown>) => s.pageId === pageId);
   for (const s of pageSections) {
-    const newIdx = sectionIds.indexOf(s.id);
+    const newIdx = sectionIds.indexOf(String(s.id));
     if (newIdx !== -1) s.sortOrder = newIdx;
   }
 }
@@ -245,20 +242,20 @@ export async function removeSection(id: string, meta: { tenantId: string; userId
     await logAudit({ entityType: "page_section", entityId: id, action: "deleted", userId: meta.userId, tenantId: meta.tenantId });
     return;
   }
-  const idx = mockSections.findIndex((s) => s.id === id);
+  const idx = mockSections.findIndex((s: Record<string, unknown>) => s.id === id);
   if (idx !== -1) mockSections.splice(idx, 1);
 }
 
 // ── Banners ────────────────────────────────────────────
 
-export async function getBanner(id: string): Promise<any | null> {
+export async function getBanner(id: string): Promise<Record<string, unknown> | null> {
   if (process.env.DATABASE_URL) {
     return (prisma as any).banner.findUnique({ where: { id } });
   }
-  return mockBanners.find((b) => b.id === id) ?? null;
+  return mockBanners.find((b: Record<string, unknown>) => b.id === id) ?? null;
 }
 
-export async function getBanners(tenantId: string, params: PaginateParams = {}): Promise<PaginatedResult<any>> {
+export async function getBanners(tenantId: string, params: PaginateParams = {}): Promise<PaginatedResult<unknown>> {
   if (process.env.DATABASE_URL) {
     const where: Record<string, unknown> = { tenantId };
     if (params.search) where.title = { contains: params.search };
@@ -271,15 +268,15 @@ export async function getBanners(tenantId: string, params: PaginateParams = {}):
     ]);
     return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
   }
-  let items = mockBanners.filter((b) => b.tenantId === tenantId);
-  if (params.search) items = items.filter((b) => b.title.toLowerCase().includes(params.search!.toLowerCase()));
+  let items = mockBanners.filter((b: Record<string, unknown>) => b.tenantId === tenantId);
+  if (params.search) items = items.filter((b: Record<string, unknown>) => String(b.title).toLowerCase().includes(params.search!.toLowerCase()));
   const total = items.length;
   const pg = params.page || 1;
   const ps = params.pageSize || 20;
   return { items: items.slice((pg - 1) * ps, pg * ps), total, page: pg, pageSize: ps, totalPages: Math.ceil(total / ps) };
 }
 
-export async function getActiveBanners(tenantId: string, position?: string): Promise<any[]> {
+export async function getActiveBanners(tenantId: string, position?: string): Promise<Record<string, unknown>[]> {
   const now = new Date();
   if (process.env.DATABASE_URL) {
     const where: Record<string, unknown> = { tenantId, isActive: true };
@@ -305,16 +302,16 @@ export async function getActiveBanners(tenantId: string, position?: string): Pro
       orderBy: { sortOrder: "asc" },
     });
   }
-  return mockBanners.filter((b) => {
+  return mockBanners.filter((b: Record<string, unknown>) => {
     if (b.tenantId !== tenantId || !b.isActive) return false;
     if (position && b.position !== position) return false;
-    if (b.startsAt && new Date(b.startsAt) > now) return false;
-    if (b.endsAt && new Date(b.endsAt) < now) return false;
+    if (b.startsAt && new Date(b.startsAt as string) > now) return false;
+    if (b.endsAt && new Date(b.endsAt as string) < now) return false;
     return true;
-  }).sort((a, b) => a.sortOrder - b.sortOrder);
+  }).sort((a: Record<string, unknown>, b: Record<string, unknown>) => Number(a.sortOrder) - Number(b.sortOrder));
 }
 
-export async function createBanner(data: BannerInput, meta: { tenantId: string; userId?: string }): Promise<any> {
+export async function createBanner(data: BannerInput, meta: { tenantId: string; userId?: string }): Promise<Record<string, unknown>> {
   const parsed = bannerSchema.parse(data);
   const payload: Record<string, unknown> = {
     ...parsed,
@@ -339,7 +336,7 @@ export async function createBanner(data: BannerInput, meta: { tenantId: string; 
   return record;
 }
 
-export async function updateBanner(id: string, data: Partial<BannerInput>, meta: { tenantId: string; userId?: string }): Promise<any> {
+export async function updateBanner(id: string, data: Partial<BannerInput>, meta: { tenantId: string; userId?: string }): Promise<Record<string, unknown>> {
   const parsed = bannerSchema.partial().parse(data);
   const payload: Record<string, unknown> = {};
   if (parsed.title !== undefined) payload.title = parsed.title;
@@ -361,7 +358,7 @@ export async function updateBanner(id: string, data: Partial<BannerInput>, meta:
     await logAudit({ entityType: "banner", entityId: id, action: "updated", userId: meta.userId, tenantId: meta.tenantId });
     return banner;
   }
-  const idx = mockBanners.findIndex((b) => b.id === id);
+  const idx = mockBanners.findIndex((b: Record<string, unknown>) => b.id === id);
   if (idx === -1) throw new Error("Banner not found");
   Object.assign(mockBanners[idx], payload, { updatedAt: new Date() });
   return mockBanners[idx];
@@ -373,7 +370,7 @@ export async function deleteBanner(id: string, meta: { tenantId: string; userId?
     await logAudit({ entityType: "banner", entityId: id, action: "deleted", userId: meta.userId, tenantId: meta.tenantId });
     return;
   }
-  const idx = mockBanners.findIndex((b) => b.id === id);
+  const idx = mockBanners.findIndex((b: Record<string, unknown>) => b.id === id);
   if (idx === -1) throw new Error("Banner not found");
   mockBanners.splice(idx, 1);
 }

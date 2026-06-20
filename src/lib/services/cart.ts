@@ -26,19 +26,20 @@ export interface CartResponse {
   itemCount: number;
 }
 
-function mapCartItem(item: any): CartItemResponse {
-  const product = item.variant?.product;
+function mapCartItem(item: Record<string, unknown>): CartItemResponse {
+  const vi = item as { id: string; variantId: string; price: number; quantity: number; variant?: { sku: string; product?: { id: string; name: string; slug: string; images?: { url: string }[] } } };
+  const product = vi.variant?.product;
   const firstImage = product?.images?.[0]?.url ?? null;
   return {
-    id: item.id,
-    variantId: item.variantId,
+    id: vi.id,
+    variantId: vi.variantId,
     productId: product?.id ?? "",
     productName: product?.name ?? "",
     slug: product?.slug ?? "",
     image: firstImage,
-    price: Number(item.price),
-    sku: item.variant?.sku ?? "",
-    quantity: item.quantity,
+    price: Number(vi.price),
+    sku: vi.variant?.sku ?? "",
+    quantity: vi.quantity,
   };
 }
 

@@ -41,7 +41,7 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
     if (process.env.DATABASE_URL) {
       return withCache(
         () => this.findById(id),
-        { get: (key: string) => categoryCache.get(key), set: (data: any) => categoryCache.set(data, data.tenantId) },
+        { get: (key: string) => categoryCache.get(key), set: (data) => categoryCache.set(data, (data as Record<string, unknown>).tenantId as string | undefined) },
         id,
       );
     }

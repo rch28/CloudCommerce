@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { FlatRateProvider } from "@/lib/shipping/flat-rate";
 import { WeightBasedProvider } from "@/lib/shipping/weight-based";
@@ -45,7 +46,7 @@ export async function createZone(tenantId: string, data: {
       states: data.states,
       regions: data.regions,
       zipCodes: data.zipCodes,
-      zipRanges: data.zipRanges ?? null,
+      zipRanges: data.zipRanges as Prisma.InputJsonValue,
     },
     include: { rates: { include: { method: true } } },
   });
@@ -67,7 +68,7 @@ export async function updateZone(id: string, tenantId: string, data: {
       ...(data.states !== undefined ? { states: data.states } : {}),
       ...(data.regions !== undefined ? { regions: data.regions } : {}),
       ...(data.zipCodes !== undefined ? { zipCodes: data.zipCodes } : {}),
-      ...(data.zipRanges !== undefined ? { zipRanges: data.zipRanges } : {}),
+      ...(data.zipRanges !== undefined ? { zipRanges: data.zipRanges as Prisma.InputJsonValue } : {}),
     },
     include: { rates: { include: { method: true } } },
   });
@@ -110,9 +111,9 @@ export async function createMethod(tenantId: string, data: {
       tenantId,
       name: data.name,
       type: data.type,
-      configuration: data.configuration,
+      configuration: data.configuration as Prisma.InputJsonValue,
       carrier: data.carrier ?? null,
-      carrierConfig: data.carrierConfig ?? null,
+      carrierConfig: (data.carrierConfig ?? null) as Prisma.InputJsonValue,
       isActive: data.isActive ?? true,
       sortOrder: data.sortOrder ?? 0,
     },
@@ -137,9 +138,9 @@ export async function updateMethod(id: string, tenantId: string, data: {
     data: {
       ...(data.name !== undefined ? { name: data.name } : {}),
       ...(data.type !== undefined ? { type: data.type } : {}),
-      ...(data.configuration !== undefined ? { configuration: data.configuration } : {}),
+      ...(data.configuration !== undefined ? { configuration: data.configuration as Prisma.InputJsonValue } : {}),
       ...(data.carrier !== undefined ? { carrier: data.carrier } : {}),
-      ...(data.carrierConfig !== undefined ? { carrierConfig: data.carrierConfig } : {}),
+      ...(data.carrierConfig !== undefined ? { carrierConfig: data.carrierConfig as Prisma.InputJsonValue } : {}),
       ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
       ...(data.sortOrder !== undefined ? { sortOrder: data.sortOrder } : {}),
     },
@@ -227,7 +228,7 @@ export async function calculateShipping(
     },
   });
 
-  const matchingZones = zones.filter((z) => addressMatchesZone(address, z));
+  const matchingZones = zones.filter((z) => addressMatchesZone(address, z as Parameters<typeof addressMatchesZone>[1]));
   if (matchingZones.length === 0) return [];
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);

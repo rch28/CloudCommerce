@@ -8,6 +8,14 @@ interface Props {
   mode?: "coupon" | "promotion";
 }
 
+type CouponPromotionItem = {
+  name?: string; code?: string; discountType?: string; type?: string; isActive?: boolean;
+  value?: string | number; discountValue?: string | number;
+  maxDiscount?: string | number; minOrderAmount?: string | number;
+  maxUses?: number; currentUses?: number; startsAt?: string; expiresAt?: string;
+  firstOrderOnly?: boolean; createdAt?: string; appliesTo?: string;
+};
+
 interface UsageRecord {
   id: string; orderId: string; discountAmount: number; discountType: string;
   discountCode: string | null; customerId: string | null; createdAt: string;
@@ -19,7 +27,7 @@ export default function CouponDetailView({ mode = "coupon" }: Props) {
   const id = params.id as string;
   const isPromotion = mode === "promotion";
 
-  const [item, setItem] = useState<Record<string, unknown> | null>(null);
+  const [item, setItem] = useState<CouponPromotionItem | null>(null);
   const [usages, setUsages] = useState<UsageRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,7 +35,7 @@ export default function CouponDetailView({ mode = "coupon" }: Props) {
   const fetchItem = async () => {
     try {
       const data = isPromotion ? await promotionsApi.getPromotion(id) : await promotionsApi.getCoupon(id);
-      setItem(data);
+      setItem(data as CouponPromotionItem);
     } catch {
       setError("Not found");
     }
@@ -37,7 +45,7 @@ export default function CouponDetailView({ mode = "coupon" }: Props) {
     if (isPromotion) return;
     try {
       const data = await promotionsApi.getCouponUsage(id);
-      setUsages((data as any).items);
+      setUsages(data as unknown as UsageRecord[]);
     } catch { /* ignore */ }
   };
 
@@ -62,7 +70,7 @@ export default function CouponDetailView({ mode = "coupon" }: Props) {
   if (error) return <div className="p-6"><p className="text-red-500">{error}</p></div>;
   if (!item) return null;
 
-  const typeLabel = (t: string) => {
+  const typeLabel = (t: string | undefined) => {
     switch (t) { case "fixed": return "Fixed Amount"; case "percentage": return "Percentage"; case "free_shipping": return "Free Shipping"; default: return t; }
   };
 

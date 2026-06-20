@@ -249,11 +249,11 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
                         {entry.action === "created" ? "Order Created" : "Status Updated"}
                       </p>
                       {entry.changes && (() => {
-                        const ch = entry.changes as Record<string, unknown>;
+                        const ch = entry.changes as { from?: string; to?: string; emailResent?: boolean; number?: string };
                         return (
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {ch.from && (
-                              <>From <Badge status={String(ch.from)} /> → <Badge status={String(ch.to)} /></>
+                              <>From <Badge status={ch.from} /> → <Badge status={ch.to ?? ""} /></>
                             )}
                             {ch.emailResent && <>Confirmation email resent</>}
                             {ch.number && <>Order #{ch.number} created</>}

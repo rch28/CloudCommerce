@@ -61,7 +61,9 @@ interface ShippingOption {
 
 export default function CheckoutForm({ tenant }: CheckoutFormProps) {
   const { items, isAuthenticated } = useCart();
-  const [step, setStep] = useState<"address" | "shipping" | "review">("address");
+  const [step, setStep] = useState<"address" | "shipping" | "review">(
+    "address",
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -72,10 +74,11 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
   const [notes, setNotes] = useState("");
 
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
-  const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
+  const [selectedShipping, setSelectedShipping] =
+    useState<ShippingOption | null>(null);
   const [shippingLoading, setShippingLoading] = useState(false);
 
-  const selectedAddr = getSelectedAddress();
+  const shippingSelectedAddr = getSelectedAddress();
   const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
   const shippingCost = selectedShipping?.price ?? 0;
   const tax = Math.round(subtotal * 0.08 * 100) / 100;
@@ -83,7 +86,8 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
 
   useEffect(() => {
     if (isAuthenticated) {
-      accountApi.listAddresses()
+      accountApi
+        .listAddresses()
         .then((data: SavedAddress[]) => {
           setSavedAddresses(data);
           const defaultAddr = data.find((a) => a.isDefault) ?? data[0];
@@ -109,7 +113,8 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
       }
     }
     if (showNewAddress || !isAuthenticated) {
-      if (!address.line1 || !address.city || !address.state || !address.zip) return null;
+      if (!address.line1 || !address.city || !address.state || !address.zip)
+        return null;
       return {
         label: address.label,
         line1: address.line1,
@@ -126,7 +131,12 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
   function canContinueToReview(): boolean {
     if (isAuthenticated && !showNewAddress) return selectedAddressId !== "";
     const addr = address;
-    return addr.line1 !== "" && addr.city !== "" && addr.state !== "" && addr.zip !== "";
+    return (
+      addr.line1 !== "" &&
+      addr.city !== "" &&
+      addr.state !== "" &&
+      addr.zip !== ""
+    );
   }
 
   async function handlePlaceOrder() {
@@ -159,10 +169,15 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
     }
 
     try {
-      const data = await requests.post("/checkout/stripe-session", body);
+      const data = await requests.post<{ stripeUrl: string }>(
+        "/checkout/stripe-session",
+        body,
+      );
       window.location.href = data.stripeUrl;
-    } catch (err: any) {
-      setError(err?.response?.data?.error || "Network error. Please try again.");
+    } catch (err: unknown) {
+      const errData = (err as { response?: { data?: { error?: string } } })
+        ?.response?.data?.error;
+      setError(errData || "Network error. Please try again.");
       setLoading(false);
     }
   }
@@ -172,7 +187,10 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <CreditCard size={48} className="text-muted-foreground mb-4" />
         <p className="text-muted-foreground">Your cart is empty</p>
-        <Link href={`/store/${tenant}/products`} className="mt-4 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors">
+        <Link
+          href={`/store/${tenant}/products`}
+          className="mt-4 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors"
+        >
           Browse products
         </Link>
       </div>
@@ -202,11 +220,13 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 ${
-                      selectedAddressId === addr.id
-                        ? "border-[#7C3AED] bg-[#7C3AED]"
-                        : "border-muted-foreground"
-                    }`}>
+                    <div
+                      className={`mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 ${
+                        selectedAddressId === addr.id
+                          ? "border-[#7C3AED] bg-[#7C3AED]"
+                          : "border-muted-foreground"
+                      }`}
+                    >
                       {selectedAddressId === addr.id && (
                         <CheckCircle size={14} className="text-white" />
                       )}
@@ -214,15 +234,22 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                     <div className="text-sm">
                       <p className="font-medium text-[#F8FAFC]">{addr.label}</p>
                       <p className="text-muted-foreground">{addr.line1}</p>
-                      {addr.line2 && <p className="text-muted-foreground">{addr.line2}</p>}
-                      <p className="text-muted-foreground">{addr.city}, {addr.state} {addr.zip}</p>
+                      {addr.line2 && (
+                        <p className="text-muted-foreground">{addr.line2}</p>
+                      )}
+                      <p className="text-muted-foreground">
+                        {addr.city}, {addr.state} {addr.zip}
+                      </p>
                     </div>
                   </div>
                 </button>
               ))}
               <button
                 type="button"
-                onClick={() => { setShowNewAddress(true); setSelectedAddressId(""); }}
+                onClick={() => {
+                  setShowNewAddress(true);
+                  setSelectedAddressId("");
+                }}
                 className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground hover:text-[#F8FAFC] hover:border-muted-foreground/50 transition-colors"
               >
                 <Plus size={16} /> Add a new address
@@ -230,7 +257,9 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
             </div>
           )}
 
-          {(showNewAddress || !isAuthenticated || savedAddresses.length === 0) && (
+          {(showNewAddress ||
+            !isAuthenticated ||
+            savedAddresses.length === 0) && (
             <div className="space-y-4">
               {isAuthenticated && savedAddresses.length > 0 && (
                 <button
@@ -244,61 +273,85 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1 block text-xs text-muted-foreground">Label</label>
+                  <label className="mb-1 block text-xs text-muted-foreground">
+                    Label
+                  </label>
                   <input
                     value={address.label}
-                    onChange={(e) => setAddress({ ...address, label: e.target.value })}
+                    onChange={(e) =>
+                      setAddress({ ...address, label: e.target.value })
+                    }
                     className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
                     placeholder="Home"
                   />
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-xs text-muted-foreground">Address Line 1</label>
+                <label className="mb-1 block text-xs text-muted-foreground">
+                  Address Line 1
+                </label>
                 <input
                   required
                   value={address.line1}
-                  onChange={(e) => setAddress({ ...address, line1: e.target.value })}
+                  onChange={(e) =>
+                    setAddress({ ...address, line1: e.target.value })
+                  }
                   className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
                   placeholder="123 Main St"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs text-muted-foreground">Address Line 2 (optional)</label>
+                <label className="mb-1 block text-xs text-muted-foreground">
+                  Address Line 2 (optional)
+                </label>
                 <input
                   value={address.line2}
-                  onChange={(e) => setAddress({ ...address, line2: e.target.value })}
+                  onChange={(e) =>
+                    setAddress({ ...address, line2: e.target.value })
+                  }
                   className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
                   placeholder="Apt 4B"
                 />
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="mb-1 block text-xs text-muted-foreground">City</label>
+                  <label className="mb-1 block text-xs text-muted-foreground">
+                    City
+                  </label>
                   <input
                     required
                     value={address.city}
-                    onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                    onChange={(e) =>
+                      setAddress({ ...address, city: e.target.value })
+                    }
                     className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
                     placeholder="Portland"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs text-muted-foreground">State</label>
+                  <label className="mb-1 block text-xs text-muted-foreground">
+                    State
+                  </label>
                   <input
                     required
                     value={address.state}
-                    onChange={(e) => setAddress({ ...address, state: e.target.value })}
+                    onChange={(e) =>
+                      setAddress({ ...address, state: e.target.value })
+                    }
                     className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
                     placeholder="OR"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs text-muted-foreground">ZIP</label>
+                  <label className="mb-1 block text-xs text-muted-foreground">
+                    ZIP
+                  </label>
                   <input
                     required
                     value={address.zip}
-                    onChange={(e) => setAddress({ ...address, zip: e.target.value })}
+                    onChange={(e) =>
+                      setAddress({ ...address, zip: e.target.value })
+                    }
                     className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
                     placeholder="97201"
                   />
@@ -317,7 +370,10 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
               setError("");
               try {
                 const addr = getSelectedAddress();
-                if (!addr) { setShippingLoading(false); return; }
+                if (!addr) {
+                  setShippingLoading(false);
+                  return;
+                }
                 const shippingItems = items.map((i) => ({
                   variantId: i.variantId,
                   quantity: i.quantity,
@@ -325,18 +381,30 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                   weight: undefined,
                 }));
                 const data = await shippingApi.calculate({
-                  address: { country: addr.country, state: addr.state, city: addr.city, zip: addr.zip },
+                  address: {
+                    country: addr.country,
+                    state: addr.state,
+                    city: addr.city,
+                    zip: addr.zip,
+                  },
                   items: shippingItems,
                 });
                 setShippingOptions(data.options || []);
-                if (data.options?.length > 0) setSelectedShipping(data.options[0]);
+                if (data.options?.length > 0)
+                  setSelectedShipping(data.options[0]);
               } catch {}
               setShippingLoading(false);
               setStep("shipping");
             }}
             className="flex items-center gap-2 rounded-lg bg-[#7C3AED] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {shippingLoading ? <Loader2 size={16} className="animate-spin" /> : <>Continue <ChevronRight size={16} /></>}
+            {shippingLoading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <>
+                Continue <ChevronRight size={16} />
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -352,16 +420,21 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
             Shipping Method
           </h2>
 
-          {selectedAddr && (
+          {shippingSelectedAddr && (
             <div className="mb-4 rounded-lg bg-[#09090B] p-3 text-sm">
               <p className="text-muted-foreground">Shipping to</p>
-              <p className="text-[#F8FAFC] font-medium">{selectedAddr.line1}, {selectedAddr.city}, {selectedAddr.state} {selectedAddr.zip}</p>
+              <p className="text-[#F8FAFC] font-medium">
+                {shippingSelectedAddr.line1}, {shippingSelectedAddr.city},{" "}
+                {shippingSelectedAddr.state} {shippingSelectedAddr.zip}
+              </p>
             </div>
           )}
 
           {shippingOptions.length === 0 ? (
             <div className="py-8 text-center">
-              <p className="text-muted-foreground text-sm">No shipping options available for this address</p>
+              <p className="text-muted-foreground text-sm">
+                No shipping options available for this address
+              </p>
               <button
                 onClick={() => setStep("address")}
                 className="mt-4 text-sm text-[#7C3AED] hover:text-[#8B5CF6] transition-colors"
@@ -384,18 +457,26 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-start gap-3">
-                      <div className={`mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 ${
-                        selectedShipping?.methodId === opt.methodId
-                          ? "border-[#7C3AED] bg-[#7C3AED]"
-                          : "border-muted-foreground"
-                      }`}>
+                      <div
+                        className={`mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 ${
+                          selectedShipping?.methodId === opt.methodId
+                            ? "border-[#7C3AED] bg-[#7C3AED]"
+                            : "border-muted-foreground"
+                        }`}
+                      >
                         {selectedShipping?.methodId === opt.methodId && (
                           <CheckCircle size={14} className="text-white" />
                         )}
                       </div>
                       <div>
-                        <p className="font-medium text-[#F8FAFC] text-sm">{opt.methodName}</p>
-                        {opt.carrier && <p className="text-xs text-muted-foreground">{opt.carrier}</p>}
+                        <p className="font-medium text-[#F8FAFC] text-sm">
+                          {opt.methodName}
+                        </p>
+                        {opt.carrier && (
+                          <p className="text-xs text-muted-foreground">
+                            {opt.carrier}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <span className="text-sm font-bold text-[#F8FAFC]">
@@ -434,17 +515,28 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="rounded-xl border border-border bg-card p-6">
-        <h2 className="text-lg font-semibold text-[#F8FAFC] mb-4">Review Order</h2>
+        <h2 className="text-lg font-semibold text-[#F8FAFC] mb-4">
+          Review Order
+        </h2>
 
         <div className="space-y-4">
           <div>
-            <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Items ({items.length})</h3>
+            <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Items ({items.length})
+            </h3>
             <div className="divide-y divide-border rounded-lg border border-border">
               {items.map((item) => (
-                <div key={item.variantId} className="flex items-center gap-3 p-3 text-sm">
+                <div
+                  key={item.variantId}
+                  className="flex items-center gap-3 p-3 text-sm"
+                >
                   <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#18181B]">
                     {item.image ? (
-                      <img src={item.image} alt={item.productName} className="h-full w-full object-cover" />
+                      <img
+                        src={item.image}
+                        alt={item.productName}
+                        className="h-full w-full object-cover"
+                      />
                     ) : (
                       <div className="flex h-full items-center justify-center text-muted-foreground">
                         <CreditCard size={14} />
@@ -452,12 +544,20 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-[#F8FAFC]">{item.productName}</p>
-                    <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>
+                    <p className="truncate font-medium text-[#F8FAFC]">
+                      {item.productName}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      SKU: {item.sku}
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[#F8FAFC]">${(item.price * item.quantity).toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground">{item.quantity} × ${item.price.toFixed(2)}</p>
+                    <p className="text-[#F8FAFC]">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.quantity} × ${item.price.toFixed(2)}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -466,18 +566,28 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
 
           {selectedAddr && (
             <div>
-              <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Shipping Address</h3>
+              <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Shipping Address
+              </h3>
               <div className="rounded-lg border border-border bg-[#09090B] p-3 text-sm">
-                <p className="font-medium text-[#F8FAFC]">{selectedAddr.label}</p>
+                <p className="font-medium text-[#F8FAFC]">
+                  {selectedAddr.label}
+                </p>
                 <p className="text-muted-foreground">{selectedAddr.line1}</p>
-                {selectedAddr.line2 && <p className="text-muted-foreground">{selectedAddr.line2}</p>}
-                <p className="text-muted-foreground">{selectedAddr.city}, {selectedAddr.state} {selectedAddr.zip}</p>
+                {selectedAddr.line2 && (
+                  <p className="text-muted-foreground">{selectedAddr.line2}</p>
+                )}
+                <p className="text-muted-foreground">
+                  {selectedAddr.city}, {selectedAddr.state} {selectedAddr.zip}
+                </p>
               </div>
             </div>
           )}
 
           <div>
-            <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Order Notes (optional)</h3>
+            <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Order Notes (optional)
+            </h3>
             <textarea
               rows={2}
               value={notes}
@@ -489,11 +599,19 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
 
           {selectedShipping && (
             <div>
-              <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Shipping Method</h3>
+              <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Shipping Method
+              </h3>
               <div className="rounded-lg border border-border bg-[#09090B] p-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-[#F8FAFC]">{selectedShipping.methodName}</span>
-                  <span className="text-muted-foreground">{selectedShipping.price === 0 ? "Free" : `$${selectedShipping.price.toFixed(2)}`}</span>
+                  <span className="text-[#F8FAFC]">
+                    {selectedShipping.methodName}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {selectedShipping.price === 0
+                      ? "Free"
+                      : `$${selectedShipping.price.toFixed(2)}`}
+                  </span>
                 </div>
               </div>
             </div>
@@ -507,7 +625,9 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
               </div>
               <div className="flex justify-between text-muted-foreground">
                 <span>Shipping</span>
-                <span>{shippingCost === 0 ? "Free" : `$${shippingCost.toFixed(2)}`}</span>
+                <span>
+                  {shippingCost === 0 ? "Free" : `$${shippingCost.toFixed(2)}`}
+                </span>
               </div>
               <div className="flex justify-between text-muted-foreground">
                 <span>Tax (8%)</span>

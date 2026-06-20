@@ -28,7 +28,7 @@ export class InventoryService {
           newQuantity,
         },
       });
-      await redisClient.publish(makeEventChannel(tenantId), JSON.stringify(event));
+      await redisClient!.publish(InventoryService.makeEventChannel(tenantId), JSON.stringify(event));
     });
   }
 
@@ -58,7 +58,7 @@ export class InventoryService {
           newQuantity,
         },
       });
-      await redisClient.publish(makeEventChannel(tenantId), JSON.stringify(event));
+      await redisClient!.publish(InventoryService.makeEventChannel(tenantId), JSON.stringify(event));
     });
   }
 
@@ -93,7 +93,7 @@ export class InventoryService {
           amount,
         },
       });
-      await redisClient.publish(makeEventChannel(tenantId), JSON.stringify(event));
+      await redisClient!.publish(InventoryService.makeEventChannel(tenantId), JSON.stringify(event));
     });
   }
 
@@ -121,14 +121,14 @@ export class InventoryService {
       await tx.inventoryReservation.delete({
         where: { variantId_reservationId_tenantId: { variantId, reservationId, tenantId } },
       });
-      await redisClient.publish(makeEventChannel(tenantId), JSON.stringify(event));
+      await redisClient!.publish(InventoryService.makeEventChannel(tenantId), JSON.stringify(event));
     });
   }
 
   /**
    * Internal helper that wraps database operations in a serializable transaction.
    */
-  private async #withTransaction(callback: TransactionBody): Promise<any> {
+  async #withTransaction(callback: TransactionBody): Promise<any> {
     const prisma = getPrisma();
     // Prisma $transaction expects an array of operations or a callback that receives a transaction client.
     // We use the callback form for serializability.
@@ -140,7 +140,7 @@ export class InventoryService {
   /**
    * Build a Redis channel name for a tenant.
    */
-  private static makeEventChannel(tenantId: string): string {
+  static makeEventChannel(tenantId: string): string {
     return `inventory:${tenantId}:events`;
   }
 }

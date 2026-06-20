@@ -101,13 +101,13 @@ export class CacheService {
     const client = redisClient!;
     const json = JSON.stringify(value);
     if (ttl !== undefined) {
-      return client.set(key, json, { EX: ttl });
+      return client.set(key, json, { EX: ttl }) as Promise<"OK">;
     }
-    const defaultTtl = (CacheService as any)[`${namespace.toUpperCase()}_TTL`];
+    const defaultTtl = (CacheService as unknown as Record<string, number | undefined>)[`${namespace.toUpperCase()}_TTL`];
     if (defaultTtl !== undefined) {
-      return client.set(key, json, { EX: defaultTtl });
+      return client.set(key, json, { EX: defaultTtl }) as Promise<"OK">;
     }
-    return client.set(key, json);
+    return client.set(key, json) as Promise<"OK">;
   }
 
   /**
@@ -117,7 +117,7 @@ export class CacheService {
     namespace: string,
     identifier: string,
     tenantId?: string,
-  ): Promise<"OK"> {
+  ): Promise<number> {
     const key = makeCacheKey(namespace, identifier, tenantId);
     const client = redisClient!;
     return client.del(key);
@@ -129,8 +129,8 @@ export class CacheService {
   static async expire(
     namespace: string,
     identifier: string,
-    tenantId?: string,
     ttl: number,
+    tenantId?: string,
   ): Promise<number> {
     const key = makeCacheKey(namespace, identifier, tenantId);
     const client = redisClient!;
@@ -144,7 +144,7 @@ export class CacheService {
     namespace: string,
     identifier: string,
     tenantId?: string,
-  ): Promise<"OK"> {
+  ): Promise<number> {
     return this.del(namespace, identifier, tenantId);
   }
 }
@@ -180,14 +180,14 @@ export const productCache = {
   /**
    * Remove a product from cache.
    */
-  async del(id: string, tenantId?: string): Promise<"OK"> {
+  async del(id: string, tenantId?: string): Promise<number> {
     return CacheService.del("product", id, tenantId);
   },
 
   /**
    * Invalidate product cache – can be called after create/update/delete.
    */
-  async invalidate(id: string, tenantId?: string): Promise<"OK"> {
+  async invalidate(id: string, tenantId?: string): Promise<number> {
     return CacheService.invalidate("product", id, tenantId);
   },
 };
@@ -215,11 +215,11 @@ export const categoryCache = {
     );
   },
 
-  async del(id: string, tenantId?: string): Promise<"OK"> {
+  async del(id: string, tenantId?: string): Promise<number> {
     return CacheService.del("category", id, tenantId);
   },
 
-  async invalidate(id: string, tenantId?: string): Promise<"OK"> {
+  async invalidate(id: string, tenantId?: string): Promise<number> {
     return CacheService.invalidate("category", id, tenantId);
   },
 };
@@ -236,11 +236,11 @@ export const storefrontCache = {
     return CacheService.set("storefront", "data", data, tenantId, CacheService.STOREFRONT_TTL);
   },
 
-  async del(tenantId: string): Promise<"OK"> {
+  async del(tenantId: string): Promise<number> {
     return CacheService.del("storefront", "data", tenantId);
   },
 
-  async invalidate(tenantId: string): Promise<"OK"> {
+  async invalidate(tenantId: string): Promise<number> {
     return CacheService.invalidate("storefront", "data", tenantId);
   },
 };
@@ -254,11 +254,11 @@ export const reviewCache = {
     return CacheService.set("review", productId, data, tenantId, CacheService.PRODUCT_TTL);
   },
 
-  async del(productId: string, tenantId?: string): Promise<"OK"> {
+  async del(productId: string, tenantId?: string): Promise<number> {
     return CacheService.del("review", productId, tenantId);
   },
 
-  async invalidate(productId: string, tenantId?: string): Promise<"OK"> {
+  async invalidate(productId: string, tenantId?: string): Promise<number> {
     return CacheService.invalidate("review", productId, tenantId);
   },
 };
@@ -272,11 +272,11 @@ export const settingsCache = {
     return CacheService.set("settings", "data", data, tenantId, CacheService.SETTINGS_TTL);
   },
 
-  async del(tenantId: string): Promise<"OK"> {
+  async del(tenantId: string): Promise<number> {
     return CacheService.del("settings", "data", tenantId);
   },
 
-  async invalidate(tenantId: string): Promise<"OK"> {
+  async invalidate(tenantId: string): Promise<number> {
     return CacheService.invalidate("settings", "data", tenantId);
   },
 };
@@ -293,6 +293,6 @@ export async function invalidateAllForTenant(tenantId: string): Promise<void> {
   const pattern = `*:${tenantId}`;
   const keys = await client.keys(pattern);
   if (keys.length > 0) {
-    await client.del(...keys);
+    await Promise.all(keys.map(k => client.del(k)));
   }
 }
