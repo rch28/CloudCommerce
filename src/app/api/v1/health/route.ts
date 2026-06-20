@@ -3,8 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { testQueueConnection } from "@/lib/queue/connection";
 import { getAllQueueHealth } from "@/lib/queue/monitoring";
 
-export const dynamic = "force-dynamic";
-
 export async function GET() {
   const checks: Record<string, unknown> = {};
 

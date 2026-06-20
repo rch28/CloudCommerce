@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { generateSalesReport, computeReportTotals } from "@/lib/services/reports";
 import type { NextRequest } from "next/server";
 
-export const dynamic = "force-dynamic";
-
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const tenantId = req.headers.get("x-tenant-id") || searchParams.get("tenantId") || "t-1";

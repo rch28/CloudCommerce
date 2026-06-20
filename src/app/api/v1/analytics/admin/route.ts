@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { getAdminAnalytics, getTimeSeriesData } from "@/lib/services/analytics";
 import type { NextRequest } from "next/server";
 
-export const dynamic = "force-dynamic";
-
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const range = (searchParams.get("range") || "month") as any;

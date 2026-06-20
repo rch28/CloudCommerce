@@ -1,10 +1,7 @@
 import { notFound } from "next/navigation";
 import { getPageBySlug } from "@/lib/services/cms";
 import { getSettingsBySlug } from "@/lib/services/settings";
-import { STOREFRONT_REVALIDATE } from "@/lib/storefront";
 import PageRenderer from "@/components/storefront/page-renderer";
-
-export const revalidate = STOREFRONT_REVALIDATE;
 
 export function generateStaticParams() {
   return [];

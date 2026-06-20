@@ -4,8 +4,6 @@ import { getProvider } from "@/lib/payments";
 import { handleError } from "@/lib/api-helpers";
 import type { NextRequest } from "next/server";
 
-export const dynamic = "force-dynamic";
-
 export async function GET(req: NextRequest) {
   const tenantId = req.headers.get("x-tenant-id") || "t-1";
   const payments = await listPayments(tenantId);

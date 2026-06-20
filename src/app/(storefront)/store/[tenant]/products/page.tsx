@@ -3,11 +3,8 @@ import Link from "next/link";
 import { productRepo } from "@/lib/services/products";
 import { categoryRepo } from "@/lib/services/categories";
 import { getSettingsBySlug } from "@/lib/services/settings";
-import { STOREFRONT_REVALIDATE } from "@/lib/storefront";
 import ProductCard from "@/components/storefront/product-card";
 import ProductFilters from "@/components/storefront/product-filters";
-
-export const revalidate = STOREFRONT_REVALIDATE;
 
 export function generateStaticParams() {
   return [];

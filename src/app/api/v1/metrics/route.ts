@@ -3,8 +3,6 @@ import { getAggregateMetrics, getAllQueueHealth } from "@/lib/queue/monitoring";
 import { redisClient } from "@/lib/redis";
 import { getWsMetrics } from "@/lib/ws-metrics";
 
-export const dynamic = "force-dynamic";
-
 export async function GET() {
   const queueMetrics = await getAggregateMetrics();
   const queueHealth = await getAllQueueHealth();

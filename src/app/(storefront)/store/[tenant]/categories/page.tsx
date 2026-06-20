@@ -3,9 +3,6 @@ import Link from "next/link";
 import { categoryRepo } from "@/lib/services/categories";
 import { productRepo } from "@/lib/services/products";
 import { getSettingsBySlug } from "@/lib/services/settings";
-import { CATEGORY_PAGE_REVALIDATE } from "@/lib/storefront";
-
-export const revalidate = CATEGORY_PAGE_REVALIDATE;
 
 export function generateStaticParams() {
   return [];

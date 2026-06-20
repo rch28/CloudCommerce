@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { PLANS } from "@/lib/features";
 
-export const dynamic = "force-dynamic";
-
 export async function GET() {
   const plans = Object.values(PLANS).map((p) => ({
     slug: p.slug,

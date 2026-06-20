@@ -2,11 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { productRepo } from "@/lib/services/products";
 import { getSettingsBySlug } from "@/lib/services/settings";
-import { PRODUCT_DETAIL_REVALIDATE } from "@/lib/storefront";
 import { getInventory } from "@/lib/services/inventory";
 import ProductDetailClient from "./client";
-
-export const revalidate = PRODUCT_DETAIL_REVALIDATE;
 
 export function generateStaticParams() {
   return [];

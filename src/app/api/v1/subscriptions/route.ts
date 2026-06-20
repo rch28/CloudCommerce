@@ -3,8 +3,6 @@ import { getSubscription, subscribe, changePlan, cancelSubscription } from "@/li
 import { getTenantId, handleError } from "@/lib/api-helpers";
 import type { NextRequest } from "next/server";
 
-export const dynamic = "force-dynamic";
-
 export async function GET(req: NextRequest) {
   const tenantId = await getTenantId(req);
   const sub = await getSubscription(tenantId);

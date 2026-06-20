@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { searchService } from "@/lib/services/search";
 import { getSettingsBySlug } from "@/lib/services/settings";
-import { STOREFRONT_REVALIDATE } from "@/lib/storefront";
 import ProductCard from "@/components/storefront/product-card";
-
-export const revalidate = STOREFRONT_REVALIDATE;
 
 export function generateStaticParams() {
   return [];
