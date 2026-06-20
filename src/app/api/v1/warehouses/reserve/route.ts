@@ -8,8 +8,8 @@ export async function POST(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const parsed = reserveStockSchema.parse(body);
     const result = await reserveStock(tenantId, parsed, { userId });

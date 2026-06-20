@@ -15,7 +15,7 @@ export const pageSchema = z.object({
     type: z.enum(["hero", "text", "image", "product_grid", "category_grid", "banner", "cta"]),
     content: z.record(z.string(), z.unknown()),
     styles: z.record(z.string(), z.unknown()).optional(),
-    sortOrder: z.number().default(0),
+    sortOrder: z.coerce.number().default(0),
     isVisible: z.boolean().default(true),
   })).optional(),
 });
@@ -33,7 +33,7 @@ export const bannerSchema = z.object({
   isActive: z.boolean().default(true),
   startsAt: z.string().datetime().optional(),
   endsAt: z.string().datetime().optional(),
-  sortOrder: z.number().default(0),
+  sortOrder: z.coerce.number().default(0),
 });
 
 export type PageInput = z.infer<typeof pageSchema>;

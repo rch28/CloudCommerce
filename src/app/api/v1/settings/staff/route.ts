@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const staff = await listStaff(tenantId);
     return NextResponse.json(staff);
   } catch (e) {
@@ -20,8 +20,8 @@ export async function POST(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const result = await inviteStaff(body, tenantId, userId);
     return NextResponse.json(result, { status: 201 });
@@ -35,8 +35,8 @@ export async function DELETE(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const staffId = request.nextUrl.searchParams.get("staffId");
     if (!staffId) return NextResponse.json({ error: "staffId is required" }, { status: 400 });
     await removeStaff(staffId, tenantId, userId);
@@ -51,8 +51,8 @@ export async function PATCH(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const result = await updateStaffRole(body, tenantId, userId);
     return NextResponse.json(result);

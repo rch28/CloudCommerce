@@ -62,6 +62,14 @@ async function main() {
   });
   console.log(`   Demo merchant tenant: ${demoTenant.id}`);
 
+  // Ensure fallback tenant exists for legacy/default tenantId usage
+  await prisma.tenant.upsert({
+    where: { id: "t-1" },
+    update: {},
+    create: { id: "t-1", name: "Default Tenant", subdomain: "default" },
+  });
+  console.log(`   Fallback tenant: t-1`);
+
   // ---------------------------------------------------------------------------
   // 2. Users
   // ---------------------------------------------------------------------------
@@ -177,6 +185,20 @@ async function main() {
   });
   console.log(`   Demo merchant subscribed to Growth plan`);
 
+  // Create fallback subscription for t-1 tenant
+  await prisma.subscription.upsert({
+    where: { tenantId: "t-1" },
+    update: {},
+    create: {
+      tenantId: "t-1",
+      planId: growthPlan.id,
+      status: "active",
+      currentPeriodStart: now,
+      currentPeriodEnd: periodEnd,
+    },
+  });
+  console.log(`   Fallback tenant subscribed to Growth plan`);
+
   // ---------------------------------------------------------------------------
   // 5. Store
   // ---------------------------------------------------------------------------
@@ -205,6 +227,23 @@ async function main() {
     },
   });
   console.log(`   Store: ${store.name} (${store.slug})`);
+
+  // Create fallback store for t-1 tenant
+  await prisma.store.upsert({
+    where: { slug_tenantId: { slug: "default-store", tenantId: "t-1" } },
+    update: {},
+    create: {
+      tenantId: "t-1",
+      name: "Default Store",
+      slug: "default-store",
+      subdomain: "default",
+      primaryColor: "#7C3AED",
+      secondaryColor: "#8B5CF6",
+      headingFont: "Inter",
+      bodyFont: "Inter",
+    },
+  });
+  console.log(`   Fallback store created for t-1`);
 
   // ---------------------------------------------------------------------------
   // 6. Categories

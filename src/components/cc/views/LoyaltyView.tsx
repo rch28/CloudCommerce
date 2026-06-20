@@ -242,30 +242,28 @@ export default function LoyaltyView() {
   }, []);
 
   const fetchCustomers = useCallback(async () => {
-    const res = await fetch("/api/v1/customers?pageSize=100");
-    if (!res.ok) return;
-    const data = await res.json();
-    const accounts = await Promise.all(
-      (data.items || []).map(async (c: { id: string; name: string; email: string }) => {
-        try {
-          const acc = await loyaltyApi.getAccount({ customerId: c.id });
-          return { ...acc, customer: { name: c.name, email: c.email } };
-        } catch {
-          return null;
-        }
-      }),
-    );
-    setCustomers(accounts.filter(Boolean));
+    try {
+      const data = await loyaltyApi.listCustomers({ pageSize: "100" });
+      const items = (data as any).items || [];
+      const accounts = await Promise.all(
+        items.map(async (c: { id: string; name: string; email: string }) => {
+          try {
+            const acc = await loyaltyApi.getAccount({ customerId: c.id });
+            return { ...acc, customer: { name: c.name, email: c.email } };
+          } catch {
+            return null;
+          }
+        }),
+      );
+      setCustomers(accounts.filter(Boolean));
+    } catch {}
   }, []);
 
   const fetchTransactions = useCallback(async () => {
     try {
       await loyaltyApi.listRules({ limit: "1" });
-      const txRes = await fetch("/api/v1/audit-logs?entityType=loyalty_transaction&limit=100");
-      if (txRes.ok) {
-        const txData = await txRes.json();
-        setTransactions(txData.items || []);
-      }
+      const txData = await loyaltyApi.listAuditLogs({ entityType: "loyalty_transaction", limit: "100" });
+      setTransactions((txData as any).items || []);
     } catch {
       setTransactions([]);
     }

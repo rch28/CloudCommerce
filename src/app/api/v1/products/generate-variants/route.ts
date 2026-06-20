@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const userId = getUserId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const parsed = variantGenerateSchema.parse(body);
     const results = await generateVariants(parsed.productId, parsed.options, parsed.basePrice, parsed.baseSku);

@@ -7,8 +7,8 @@ export async function POST(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const { action, ids } = await request.json();
 
     if (!Array.isArray(ids) || ids.length === 0) {

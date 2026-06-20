@@ -18,12 +18,12 @@ export const categorySchema = z.object({
 export const productOptionValueSchema = z.object({
   label: z.string().min(1).max(100),
   value: z.string().min(1).max(100),
-  sortOrder: z.number().int().min(0).default(0),
+  sortOrder: z.coerce.number().int().min(0).default(0),
 });
 
 export const productOptionSchema = z.object({
   name: z.string().min(1, "Option name required").max(100),
-  sortOrder: z.number().int().min(0).default(0),
+  sortOrder: z.coerce.number().int().min(0).default(0),
   values: z.array(productOptionValueSchema).default([]),
 });
 
@@ -31,18 +31,18 @@ export const productOptionSchema = z.object({
 export const productImageSchema = z.object({
   url: z.string().url("Invalid image URL"),
   alt: z.string().max(200).optional(),
-  sortOrder: z.number().int().min(0).default(0),
+  sortOrder: z.coerce.number().int().min(0).default(0),
 });
 
 // ── Variant ─────────────────────────────────────────
 export const variantSchema = z.object({
   sku: z.string().min(1, "SKU is required").max(50),
   barcode: z.string().max(50).optional(),
-  price: z.number().positive("Price must be positive"),
-  comparePrice: z.number().positive().optional(),
-  costPrice: z.number().positive().optional(),
-  weight: z.number().positive().optional(),
-  quantity: z.number().int().min(0).default(0),
+  price: z.coerce.number().positive("Price must be positive"),
+  comparePrice: z.coerce.number().positive().optional(),
+  costPrice: z.coerce.number().positive().optional(),
+  weight: z.coerce.number().positive().optional(),
+  quantity: z.coerce.number().int().min(0).default(0),
   isDefault: z.boolean().default(false),
   status: z.enum(["active", "inactive"]).default("active"),
 });
@@ -66,27 +66,27 @@ export const productSchema = z.object({
 // ── Inventory ───────────────────────────────────────
 export const inventorySchema = z.object({
   variantId: z.string().min(1),
-  quantity: z.number().int().min(0),
-  reserved: z.number().int().min(0).default(0),
-  lowStockThreshold: z.number().int().min(0).default(10),
-  reorderLevel: z.number().int().min(0).default(5),
+  quantity: z.coerce.number().int().min(0),
+  reserved: z.coerce.number().int().min(0).default(0),
+  lowStockThreshold: z.coerce.number().int().min(0).default(10),
+  reorderLevel: z.coerce.number().int().min(0).default(5),
 });
 
 export const stockAdjustSchema = z.object({
   variantId: z.string().min(1),
-  change: z.number().int(),
+  change: z.coerce.number().int(),
   reason: z.string().min(1).max(500),
 });
 
 export const stockReserveSchema = z.object({
   variantId: z.string().min(1),
-  quantity: z.number().int().min(1),
+  quantity: z.coerce.number().int().min(1),
   orderId: z.string().optional(),
 });
 
 export const stockReleaseSchema = z.object({
   variantId: z.string().min(1),
-  quantity: z.number().int().min(1),
+  quantity: z.coerce.number().int().min(1),
   orderId: z.string().optional(),
 });
 
@@ -96,7 +96,7 @@ export const variantGenerateSchema = z.object({
     name: z.string().min(1).max(100),
     values: z.array(z.string().min(1)).min(1),
   })).min(1),
-  basePrice: z.number().positive(),
+  basePrice: z.coerce.number().positive(),
   baseSku: z.string().min(1).max(50),
 });
 
@@ -162,7 +162,7 @@ export const updateStaffRoleSchema = z.object({
 export const createApiKeySchema = z.object({
   name: z.string().min(1).max(100),
   scopes: z.array(z.string()).default(["read"]),
-  expiresInDays: z.number().int().min(1).max(365).optional(),
+  expiresInDays: z.coerce.number().int().min(1).max(365).optional(),
 });
 
 // ── Existing schemas (unchanged) ─────────────────────
@@ -201,8 +201,8 @@ export const loginSchema = z.object({
 
 export const cartItemSchema = z.object({
   variantId: z.string().min(1),
-  quantity: z.number().int().min(1),
-  price: z.number().positive(),
+  quantity: z.coerce.number().int().min(1),
+  price: z.coerce.number().positive(),
 });
 
 export const orderSchema = z.object({
@@ -216,7 +216,7 @@ export const orderSchema = z.object({
 export const planSlugEnum = z.enum(["starter", "growth", "enterprise"]);
 export const subscriptionSchema = z.object({
   planSlug: planSlugEnum,
-  trialDays: z.number().int().min(0).max(30).optional(),
+  trialDays: z.coerce.number().int().min(0).max(30).optional(),
 });
 
 export const checkoutSchema = z.object({
@@ -229,7 +229,7 @@ export const checkoutSchema = z.object({
 );
 
 export const paymentSchema = z.object({
-  amount: z.number().positive(),
+  amount: z.coerce.number().positive(),
   currency: z.string().default("usd"),
   provider: z.enum(["stripe", "khalti", "esewa"]),
   description: z.string().optional(),
@@ -325,7 +325,7 @@ export type CouponValidateInput = z.infer<typeof couponValidateSchema>;
 export const reviewImageSchema = z.object({
   url: z.string().url("Invalid image URL"),
   alt: z.string().max(200).optional(),
-  sortOrder: z.number().int().min(0).default(0),
+  sortOrder: z.coerce.number().int().min(0).default(0),
 });
 
 export type ReviewImageInput = z.infer<typeof reviewImageSchema>;
@@ -386,11 +386,11 @@ export const shippingZoneSchema = z.object({
 export type ShippingZoneInput = z.infer<typeof shippingZoneSchema>;
 
 export const shippingMethodConfigSchema = z.object({
-  rate: z.number().min(0).optional(),
-  minWeight: z.number().min(0).optional(),
-  maxWeight: z.number().min(0).optional(),
-  minOrder: z.number().min(0).optional(),
-  maxOrder: z.number().min(0).optional(),
+  rate: z.coerce.number().min(0).optional(),
+  minWeight: z.coerce.number().min(0).optional(),
+  maxWeight: z.coerce.number().min(0).optional(),
+  minOrder: z.coerce.number().min(0).optional(),
+  maxOrder: z.coerce.number().min(0).optional(),
 });
 
 export const shippingMethodSchema = z.object({
@@ -400,7 +400,7 @@ export const shippingMethodSchema = z.object({
   carrier: z.string().optional(),
   carrierConfig: z.record(z.string(), z.unknown()).optional(),
   isActive: z.boolean().default(true),
-  sortOrder: z.number().int().default(0),
+  sortOrder: z.coerce.number().int().default(0),
 });
 export type ShippingMethodInput = z.infer<typeof shippingMethodSchema>;
 
@@ -420,9 +420,9 @@ export const shippingCalculateSchema = z.object({
   }),
   items: z.array(z.object({
     variantId: z.string(),
-    quantity: z.number().int().min(1),
-    weight: z.number().min(0).optional(),
-    price: z.number().min(0),
+    quantity: z.coerce.number().int().min(1),
+    weight: z.coerce.number().min(0).optional(),
+    price: z.coerce.number().min(0),
   })),
 });
 export type ShippingCalculateInput = z.infer<typeof shippingCalculateSchema>;
@@ -472,8 +472,8 @@ export const taxRateSchema = z.object({
 export type TaxRateInput = z.infer<typeof taxRateSchema>;
 
 export const taxCalculateSchema = z.object({
-  amount: z.number().min(0),
-  shipping: z.number().min(0).default(0),
+  amount: z.coerce.number().min(0),
+  shipping: z.coerce.number().min(0).default(0),
   origin: z.object({
     country: z.string(),
     state: z.string().optional(),
@@ -487,8 +487,8 @@ export const taxCalculateSchema = z.object({
   }),
   items: z.array(z.object({
     id: z.string(),
-    quantity: z.number().int().min(1),
-    price: z.number().min(0),
+    quantity: z.coerce.number().int().min(1),
+    price: z.coerce.number().min(0),
     taxCode: z.string().optional(),
   })).optional(),
 });

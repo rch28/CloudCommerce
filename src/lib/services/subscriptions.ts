@@ -34,10 +34,25 @@ function addDays(date: Date, days: number): Date {
 
 export async function getSubscription(tenantId: string) {
   if (process.env.DATABASE_URL) {
-    const sub = await prisma.subscription.findUnique({
+    let sub = await prisma.subscription.findUnique({
       where: { tenantId },
       include: { plan: true, payments: { orderBy: { createdAt: "desc" }, take: 10 } },
     });
+    if (!sub) {
+      const starterPlan = await prisma.plan.findUnique({ where: { slug: "starter" } });
+      if (starterPlan) {
+        sub = await prisma.subscription.create({
+          data: {
+            tenantId,
+            planId: starterPlan.id,
+            status: "active",
+            currentPeriodStart: new Date(),
+            currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          },
+          include: { plan: true, payments: { orderBy: { createdAt: "desc" }, take: 10 } },
+        });
+      }
+    }
     return sub ? { ...sub, planSlug: sub.plan.slug, planName: sub.plan.name, planPrice: Number(sub.plan.price) } : null;
   }
   const sub = mockSubscriptions.find((s) => s.tenantId === tenantId);
@@ -106,8 +121,21 @@ export async function changePlan(tenantId: string, newPlanSlug: string) {
   };
 
   if (process.env.DATABASE_URL) {
-    const sub = await prisma.subscription.findUnique({ where: { tenantId }, include: { plan: true } });
-    if (!sub) throw new Error("No active subscription");
+    let sub = await prisma.subscription.findUnique({ where: { tenantId }, include: { plan: true } });
+    if (!sub) {
+      const starterPlan = await prisma.plan.findUnique({ where: { slug: "starter" } });
+      if (!starterPlan) throw new Error("No plan found");
+      sub = await prisma.subscription.create({
+        data: {
+          tenantId,
+          planId: starterPlan.id,
+          status: "active",
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+        include: { plan: true },
+      });
+    }
     if (sub.status !== "active" && sub.status !== "trialing") throw new Error("Subscription is not active");
 
     const updated = await prisma.subscription.update({
@@ -143,8 +171,20 @@ export async function changePlan(tenantId: string, newPlanSlug: string) {
 
 export async function cancelSubscription(tenantId: string) {
   if (process.env.DATABASE_URL) {
-    const sub = await prisma.subscription.findUnique({ where: { tenantId } });
-    if (!sub) throw new Error("No active subscription");
+    let sub = await prisma.subscription.findUnique({ where: { tenantId } });
+    if (!sub) {
+      const starterPlan = await prisma.plan.findUnique({ where: { slug: "starter" } });
+      if (!starterPlan) throw new Error("No plan found");
+      sub = await prisma.subscription.create({
+        data: {
+          tenantId,
+          planId: starterPlan.id,
+          status: "active",
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+      });
+    }
 
     const updated = await prisma.subscription.update({
       where: { id: sub.id },

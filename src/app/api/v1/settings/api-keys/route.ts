@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const keys = await listApiKeys(tenantId);
     return NextResponse.json(keys);
   } catch (e) {
@@ -20,8 +20,8 @@ export async function POST(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const key = await createApiKey(body, tenantId, userId);
     return NextResponse.json(key, { status: 201 });
@@ -35,8 +35,8 @@ export async function DELETE(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const keyId = request.nextUrl.searchParams.get("keyId");
     if (!keyId) return NextResponse.json({ error: "keyId is required" }, { status: 400 });
     await revokeApiKey(keyId, tenantId, userId);

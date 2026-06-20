@@ -19,8 +19,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   const { id } = await params;
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const banner = await updateBanner(id, body, { userId, tenantId });
     return NextResponse.json(banner);
@@ -35,8 +35,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   const { id } = await params;
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     await deleteBanner(id, { userId, tenantId });
     return NextResponse.json({ success: true });
   } catch (e) {

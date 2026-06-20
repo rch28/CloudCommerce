@@ -7,8 +7,8 @@ import { logAudit } from "@/lib/audit";
 
 export async function POST(request: NextRequest) {
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const parsed = pointsAdjustSchema.parse(body);
 

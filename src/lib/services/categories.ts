@@ -8,13 +8,13 @@ import { categoryCache } from "@/lib/redis";
 interface CategoryRecord {
   id: string; name: string; slug: string; description: string | null;
   image: string | null; parentId: string | null; tenantId: string;
-  status: string; deletedAt: Date | null; createdAt: Date; updatedAt: Date;
+  deletedAt: Date | null; createdAt: Date; updatedAt: Date;
 }
 
 const mockCategories: CategoryRecord[] = [
-  { id: "cat-1", name: "Audio", slug: "audio", description: "Audio equipment", image: null, parentId: null, tenantId: "t-1", status: "active", deletedAt: null, createdAt: new Date(), updatedAt: new Date() },
-  { id: "cat-2", name: "Wearables", slug: "wearables", description: "Wearable devices", image: null, parentId: null, tenantId: "t-1", status: "active", deletedAt: null, createdAt: new Date(), updatedAt: new Date() },
-  { id: "cat-3", name: "Accessories", slug: "accessories", description: "Accessories", image: null, parentId: null, tenantId: "t-1", status: "active", deletedAt: null, createdAt: new Date(), updatedAt: new Date() },
+  { id: "cat-1", name: "Audio", slug: "audio", description: "Audio equipment", image: null, parentId: null, tenantId: "t-1", deletedAt: null, createdAt: new Date(), updatedAt: new Date() },
+  { id: "cat-2", name: "Wearables", slug: "wearables", description: "Wearable devices", image: null, parentId: null, tenantId: "t-1", deletedAt: null, createdAt: new Date(), updatedAt: new Date() },
+  { id: "cat-3", name: "Accessories", slug: "accessories", description: "Accessories", image: null, parentId: null, tenantId: "t-1", deletedAt: null, createdAt: new Date(), updatedAt: new Date() },
 ];
 
 class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, Partial<CategoryInput>> {
@@ -25,12 +25,10 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
     if (process.env.DATABASE_URL) {
       const where: Record<string, unknown> = { tenantId, deletedAt: null };
       if (params.search) where.name = { contains: params.search };
-      if (params.status) where.status = params.status;
       return this.findMany(where, params);
     }
     let items = mockCategories.filter((c) => c.tenantId === tenantId && !c.deletedAt);
     if (params.search) items = items.filter((c) => c.name.toLowerCase().includes(params.search!.toLowerCase()));
-    if (params.status) items = items.filter((c) => c.status === params.status);
     const total = items.length;
     const page = params.page || 1;
     const pageSize = params.pageSize || 20;
@@ -51,11 +49,19 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
   async createOne(data: CategoryInput, meta: AuditMeta): Promise<CategoryRecord> {
     const parsed = categorySchema.parse(data);
     const slug = generateSlug(parsed.slug);
-    const payload = { ...parsed, slug, description: parsed.description ?? null, image: parsed.image ?? null, parentId: parsed.parentId ?? null, status: parsed.status ?? "active", tenantId: meta.tenantId };
+    const { status: _, parentId, ...rest } = parsed;
     if (process.env.DATABASE_URL) {
+      const payload: Record<string, unknown> = {
+        ...rest, slug,
+        description: parsed.description ?? null,
+        image: parsed.image ?? null,
+        tenantId: meta.tenantId,
+        parent: parentId ? { connect: { id: parentId } } : undefined,
+      };
       invalidateStorefrontCache(meta.tenantId);
       return this.create(payload as CategoryInput, meta);
     }
+    const payload = { ...parsed, slug, description: parsed.description ?? null, image: parsed.image ?? null, parentId: parsed.parentId ?? null, tenantId: meta.tenantId };
     const record: CategoryRecord = { id: `cat-${Date.now()}`, ...payload, deletedAt: null, createdAt: new Date(), updatedAt: new Date() };
     mockCategories.push(record);
     return record;
@@ -64,12 +70,23 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
   async updateOne(id: string, data: Partial<CategoryInput>, meta: AuditMeta): Promise<CategoryRecord> {
     const parsed = categorySchema.partial().parse(data);
     const slug = parsed.slug ? generateSlug(parsed.slug) : undefined;
-    const payload = { ...parsed, slug, ...(parsed.description !== undefined ? { description: parsed.description ?? null } : {}), ...(parsed.image !== undefined ? { image: parsed.image ?? null } : {}), ...(parsed.parentId !== undefined ? { parentId: parsed.parentId ?? null } : {}) };
+    const { status: _, ...rest } = parsed;
     if (process.env.DATABASE_URL) {
+      const payload: Record<string, unknown> = { ...rest, slug };
+      if (parsed.description !== undefined) payload.description = parsed.description ?? null;
+      if (parsed.image !== undefined) payload.image = parsed.image ?? null;
+      if (parsed.parentId !== undefined) {
+        delete payload.parentId;
+        payload.parent = parsed.parentId ? { connect: { id: parsed.parentId } } : { disconnect: true };
+      }
       invalidateCategoryCache(id, meta.tenantId);
       invalidateStorefrontCache(meta.tenantId);
       return this.update(id, payload as Partial<CategoryInput>, meta);
     }
+    const payload: Record<string, unknown> = { ...parsed, slug };
+    if (parsed.description !== undefined) payload.description = parsed.description ?? null;
+    if (parsed.image !== undefined) payload.image = parsed.image ?? null;
+    if (parsed.parentId !== undefined) payload.parentId = parsed.parentId ?? null;
     const idx = mockCategories.findIndex((c) => c.id === id);
     if (idx === -1) throw new Error("Category not found");
     Object.assign(mockCategories[idx], payload, { updatedAt: new Date() });
@@ -92,13 +109,13 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
     if (process.env.DATABASE_URL) {
       invalidateCategoryCache(id, meta.tenantId);
       invalidateStorefrontCache(meta.tenantId);
-      const record = await this.model.update({ where: { id }, data: { status: "archived" } });
-      await logAudit({ entityType: "category", entityId: id, action: "updated", changes: { status: "archived" }, userId: meta.userId, tenantId: meta.tenantId });
+      const record = await this.model.update({ where: { id }, data: { deletedAt: new Date() } });
+      await logAudit({ entityType: "category", entityId: id, action: "archived", changes: { deletedAt: new Date().toISOString() }, userId: meta.userId, tenantId: meta.tenantId });
       return record as CategoryRecord;
     }
     const idx = mockCategories.findIndex((c) => c.id === id);
     if (idx === -1) throw new Error("Category not found");
-    mockCategories[idx].status = "archived";
+    mockCategories[idx].deletedAt = new Date();
     return mockCategories[idx];
   }
 
@@ -106,14 +123,13 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
     if (process.env.DATABASE_URL) {
       invalidateCategoryCache(id, meta.tenantId);
       invalidateStorefrontCache(meta.tenantId);
-      const record = await this.model.update({ where: { id }, data: { deletedAt: null, status: "active" } });
-      await logAudit({ entityType: "category", entityId: id, action: "updated", changes: { deletedAt: null, status: "active" }, userId: meta.userId, tenantId: meta.tenantId });
+      const record = await this.model.update({ where: { id }, data: { deletedAt: null } });
+      await logAudit({ entityType: "category", entityId: id, action: "updated", changes: { deletedAt: null }, userId: meta.userId, tenantId: meta.tenantId });
       return record as CategoryRecord;
     }
     const idx = mockCategories.findIndex((c) => c.id === id);
     if (idx === -1) throw new Error("Category not found");
     mockCategories[idx].deletedAt = null;
-    mockCategories[idx].status = "active";
     return mockCategories[idx];
   }
 

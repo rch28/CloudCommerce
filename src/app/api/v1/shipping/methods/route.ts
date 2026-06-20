@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { shippingMethodSchema } from "@/lib/schemas";
 import { listMethods, createMethod } from "@/lib/services/shipping";
-
-function getTenantId(req: NextRequest): string {
-  return req.headers.get("x-tenant-id") || req.nextUrl.searchParams.get("tenantId") || "t-1";
-}
+import { getTenantId } from "@/lib/api-helpers";
 
 export async function GET(request: NextRequest) {
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const methods = await listMethods(tenantId);
     return NextResponse.json(methods);
   } catch {
@@ -18,7 +15,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const body = await request.json();
     const parsed = shippingMethodSchema.parse(body);
     const method = await createMethod(tenantId, parsed);

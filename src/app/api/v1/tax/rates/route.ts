@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   const forbidden = requirePermission(request, "read");
   if (forbidden) return forbidden;
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const sp = request.nextUrl.searchParams;
     const result = await taxService.getTaxRates(tenantId, {
       page: Number(sp.get("page")) || 1,
@@ -21,8 +21,8 @@ export async function POST(request: NextRequest) {
   const forbidden = requirePermission(request, "create");
   if (forbidden) return forbidden;
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const rate = await taxService.createTaxRate(tenantId, body, { userId });
     return NextResponse.json(rate, { status: 201 });

@@ -7,7 +7,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
+import { authApi } from "@/services/auth.service";
 
 export type Role = "merchant" | "admin";
 export type Plan = "Starter" | "Growth" | "Scale";
@@ -38,65 +38,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchSession = useCallback(async () => {
-    try {
-      const res = await fetch("/api/auth/me");
-      const data = await res.json();
+  useEffect(() => {
+    authApi.me().then((data) => {
       if (data.loggedIn && data.user) {
         setSession({
           id: data.user.id,
           name: data.user.name,
           email: data.user.email,
-          role: data.user.role,
+          role: data.user.role as Role,
         });
       } else {
         setSession(null);
       }
-    } catch {
+    }).catch(() => {
       setSession(null);
-    } finally {
+    }).finally(() => {
       setLoading(false);
-    }
+    });
   }, []);
 
-  useEffect(() => {
-    fetchSession();
-  }, [fetchSession]);
-
   const signIn = useCallback(async (email: string, password: string) => {
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Login failed");
+    const data = await authApi.login({ email, password });
     setSession({
       id: data.user.id,
       name: data.user.name,
       email: data.user.email,
-      role: data.user.role,
+      role: data.user.role as Role,
     });
   }, []);
 
   const signUp = useCallback(async (data: { email: string; password: string; name: string; role: Role }) => {
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error || "Registration failed");
+    const result = await authApi.register(data);
     setSession({
       id: result.user.id,
       name: result.user.name,
       email: result.user.email,
-      role: result.user.role,
+      role: result.user.role as Role,
     });
   }, []);
 
   const signOut = useCallback(async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await authApi.logout();
     setSession(null);
     window.location.href = "/";
   }, []);
@@ -105,8 +87,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession((prev) => prev ? { ...prev, role } : null);
   }, []);
 
+  const refresh = useCallback(async () => {
+    try {
+      const data = await authApi.me();
+      if (data.loggedIn && data.user) {
+        setSession({
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role as Role,
+        });
+      } else {
+        setSession(null);
+      }
+    } catch {
+      setSession(null);
+    }
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ session, loading, signIn, signUp, signOut, setRole, refresh: fetchSession }}>
+    <AuthContext.Provider value={{ session, loading, signIn, signUp, signOut, setRole, refresh }}>
       {children}
     </AuthContext.Provider>
   );

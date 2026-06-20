@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMethod, updateMethod, deleteMethod } from "@/lib/services/shipping";
-
-function getTenantId(req: NextRequest): string {
-  return req.headers.get("x-tenant-id") || "t-1";
-}
+import { getTenantId } from "@/lib/api-helpers";
 
 export async function GET(
   request: NextRequest,
@@ -11,7 +8,7 @@ export async function GET(
 ) {
   try {
     const params = await paramsPromise;
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const method = await getMethod(params.id, tenantId);
     if (!method) return NextResponse.json({ error: "Method not found" }, { status: 404 });
     return NextResponse.json(method);
@@ -26,7 +23,7 @@ export async function PUT(
 ) {
   try {
     const params = await paramsPromise;
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const body = await request.json();
     const method = await updateMethod(params.id, tenantId, body);
     return NextResponse.json(method);
@@ -42,7 +39,7 @@ export async function DELETE(
 ) {
   try {
     const params = await paramsPromise;
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     await deleteMethod(params.id, tenantId);
     return NextResponse.json({ success: true });
   } catch (e) {

@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const provider = getStorageProvider();
 
     const formData = await request.formData();
@@ -52,8 +52,8 @@ export async function DELETE(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const provider = getStorageProvider();
     const { url } = await request.json();
 

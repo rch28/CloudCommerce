@@ -18,10 +18,10 @@ const styles: Record<string, string> = {
 };
 
 export default function Badge({ status }: BadgeProps) {
-  const cls = styles[status] || styles.draft;
+  const cls = styles[status] || (status ? styles.draft : "");
   return (
     <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${cls}`}>
-      {status.replace("_", " ")}
+      {status?.replace("_", " ") ?? ""}
     </span>
   );
 }

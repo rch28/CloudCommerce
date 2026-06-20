@@ -98,12 +98,12 @@ export default function CategoryForm({ open, onOpenChange, category, categories,
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Name <span className="text-red-500">*</span></Label>
               <Input id="name" className="border-border bg-background text-[#F8FAFC]" {...form.register("name")} />
               {errors.name && <p className="text-xs text-rose-400">{errors.name}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="slug">Slug</Label>
+              <Label htmlFor="slug">Slug <span className="text-red-500">*</span></Label>
               <Input id="slug" className="border-border bg-background text-[#F8FAFC]" {...form.register("slug")} />
               {errors.slug && <p className="text-xs text-rose-400">{errors.slug}</p>}
             </div>

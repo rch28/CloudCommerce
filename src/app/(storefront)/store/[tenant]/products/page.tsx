@@ -34,11 +34,13 @@ export default async function ProductsPage({
   const { tenant } = await params;
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
+  const store = await getSettingsBySlug(tenant);
+  const tenantId = store.tenantId;
 
-  const catResult = await categoryRepo.list(tenant);
+  const catResult = await categoryRepo.list(tenantId);
   const categories = catResult.items;
 
-  const productsResult = await productRepo.list(tenant, {
+  const productsResult = await productRepo.list(tenantId, {
     status: "active", pageSize: 12,
     ...(sp.category ? { categoryId: sp.category } : {}),
     ...(sp.minPrice ? { minPrice: Number(sp.minPrice) } : {}),

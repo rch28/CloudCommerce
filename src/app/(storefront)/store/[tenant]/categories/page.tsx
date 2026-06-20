@@ -25,11 +25,13 @@ export async function generateMetadata({ params }: { params: Promise<{ tenant: s
 
 export default async function CategoriesPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const catResult = await categoryRepo.list(tenant);
+  const store = await getSettingsBySlug(tenant);
+  const tenantId = store.tenantId;
+  const catResult = await categoryRepo.list(tenantId);
   const categories = catResult.items;
 
   const productCounts: Record<string, number> = {};
-  const allProducts = await productRepo.list(tenant, { status: "active", pageSize: 1000 });
+  const allProducts = await productRepo.list(tenantId, { status: "active", pageSize: 1000 });
   for (const p of allProducts.items as any[]) {
     if (p.categoryId) productCounts[p.categoryId] = (productCounts[p.categoryId] || 0) + 1;
   }

@@ -6,7 +6,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const forbidden = requirePermission(request, "read");
   if (forbidden) return forbidden;
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const { id } = await params;
     const rate = await taxService.getTaxRate(tenantId, id);
     if (!rate) return NextResponse.json({ error: "Tax rate not found" }, { status: 404 });
@@ -18,8 +18,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const forbidden = requirePermission(request, "update");
   if (forbidden) return forbidden;
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const { id } = await params;
     const body = await request.json();
     const rate = await taxService.updateTaxRate(tenantId, id, body, { userId });
@@ -31,8 +31,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   const forbidden = requirePermission(request, "delete");
   if (forbidden) return forbidden;
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const { id } = await params;
     await taxService.deleteTaxRate(tenantId, id, { userId });
     return NextResponse.json({ success: true });

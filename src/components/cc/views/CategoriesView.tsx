@@ -56,7 +56,7 @@ export default function CategoriesView() {
   const handleSave = useCallback(async (data: { name: string; slug?: string; description?: string; image?: string; parentId?: string; status?: string }) => {
     try {
       if (editing) {
-        await categoriesApi.update(editing.id, data);
+        await categoriesApi.patch(editing.id, data);
       } else {
         await categoriesApi.create(data);
       }

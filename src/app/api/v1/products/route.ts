@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const sp = request.nextUrl.searchParams;
     const query = sp.get("search") || sp.get("q") || "";
 
@@ -51,8 +51,8 @@ export async function POST(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const product = await productRepo.createOne(body, { userId, tenantId });
     return NextResponse.json(product, { status: 201 });

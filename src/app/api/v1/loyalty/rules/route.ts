@@ -5,7 +5,7 @@ import { createRewardRule, getRewardRules } from "@/lib/services/loyalty";
 
 export async function GET(request: NextRequest) {
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const sp = request.nextUrl.searchParams;
     const page = Math.max(1, Number(sp.get("page")) || 1);
     const limit = Math.min(100, Math.max(1, Number(sp.get("limit")) || 20));
@@ -25,8 +25,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const parsed = rewardRuleSchema.parse(body);
 

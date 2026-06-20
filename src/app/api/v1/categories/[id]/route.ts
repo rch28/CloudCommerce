@@ -19,8 +19,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   const { id } = await params;
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const category = await categoryRepo.updateOne(id, body, { userId, tenantId });
     return NextResponse.json(category);
@@ -35,14 +35,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   const { id } = await params;
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
-    const { action } = await request.json();
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
+    const body = await request.json();
 
     let category;
-    if (action === "archive") category = await categoryRepo.archive(id, { userId, tenantId });
-    else if (action === "restore") category = await categoryRepo.restore(id, { userId, tenantId });
-    else return NextResponse.json({ error: "Invalid action. Use 'archive' or 'restore'." }, { status: 400 });
+    if (body.action === "archive") category = await categoryRepo.archive(id, { userId, tenantId });
+    else if (body.action === "restore") category = await categoryRepo.restore(id, { userId, tenantId });
+    else category = await categoryRepo.updateOne(id, body, { userId, tenantId });
 
     return NextResponse.json(category);
   } catch (e) {
@@ -56,8 +56,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   const { id } = await params;
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     await categoryRepo.remove(id, { userId, tenantId });
     return NextResponse.json({ success: true });
   } catch (e) {

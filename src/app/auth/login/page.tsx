@@ -3,6 +3,8 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Zap } from "lucide-react";
+import { authApi } from "@/services/auth.service";
+import { ApiError } from "@/lib/axios";
 
 function LoginForm() {
   const router = useRouter();
@@ -19,21 +21,12 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Login failed");
-        return;
-      }
+      const data = await authApi.login({ email, password });
       const dest = redirectTo || (data.user.role === "admin" ? "/admin" : "/merchant/dashboard");
       router.push(dest);
       router.refresh();
-    } catch {
-      setError("Connection error. Please try again.");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.data?.error || err.message : "Connection error. Please try again.");
     } finally {
       setLoading(false);
     }

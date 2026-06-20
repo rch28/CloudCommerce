@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 import { getSubscription, subscribe, changePlan, cancelSubscription } from "@/lib/services/subscriptions";
-import { handleError } from "@/lib/api-helpers";
+import { getTenantId, handleError } from "@/lib/api-helpers";
 import type { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const tenantId = req.headers.get("x-tenant-id") || "t-1";
+  const tenantId = await getTenantId(req);
   const sub = await getSubscription(tenantId);
   return NextResponse.json(sub);
 }
 
 export async function POST(req: NextRequest) {
-  const tenantId = req.headers.get("x-tenant-id") || "t-1";
+  const tenantId = await getTenantId(req);
   try {
     const body = await req.json();
     const { action, planSlug, trialDays } = body;
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const tenantId = req.headers.get("x-tenant-id") || "t-1";
+  const tenantId = await getTenantId(req);
   try {
     const body = await req.json();
     const { planSlug } = body;

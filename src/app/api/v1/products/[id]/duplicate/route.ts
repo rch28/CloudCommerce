@@ -8,8 +8,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const { id } = await params;
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const product = await productRepo.duplicate(id, { userId, tenantId });
     return NextResponse.json(product, { status: 201 });
   } catch (e) {

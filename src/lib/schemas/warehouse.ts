@@ -9,10 +9,10 @@ export const warehouseSchema = z.object({
   state: z.string().optional(),
   country: z.string().default("US"),
   zip: z.string().optional(),
-  latitude: z.number().min(-90).max(90).optional(),
-  longitude: z.number().min(-180).max(180).optional(),
+  latitude: z.coerce.number().min(-90).max(90).optional(),
+  longitude: z.coerce.number().min(-180).max(180).optional(),
   isActive: z.boolean().default(true),
-  sortOrder: z.number().int().min(0).default(0),
+  sortOrder: z.coerce.number().int().min(0).default(0),
 });
 
 export const warehouseUpdateSchema = warehouseSchema.partial();
@@ -21,7 +21,7 @@ export const stockTransferSchema = z.object({
   fromWarehouseId: z.string().min(1, "Source warehouse is required"),
   toWarehouseId: z.string().min(1, "Destination warehouse is required"),
   variantId: z.string().min(1, "Variant is required"),
-  quantity: z.number().int().positive("Quantity must be positive"),
+  quantity: z.coerce.number().int().positive("Quantity must be positive"),
   referenceType: z.string().optional(),
   referenceId: z.string().optional(),
   notes: z.string().optional(),
@@ -30,13 +30,13 @@ export const stockTransferSchema = z.object({
 export const warehouseInventorySchema = z.object({
   warehouseId: z.string().min(1),
   variantId: z.string().min(1),
-  quantity: z.number().int().min(0).default(0),
-  lowStockThreshold: z.number().int().min(0).default(10),
+  quantity: z.coerce.number().int().min(0).default(0),
+  lowStockThreshold: z.coerce.number().int().min(0).default(10),
 });
 
 export const allocateInventoryItemSchema = z.object({
   variantId: z.string().min(1),
-  quantity: z.number().int().positive(),
+  quantity: z.coerce.number().int().positive(),
 });
 
 export const allocateInventorySchema = z.object({
@@ -51,19 +51,19 @@ export const allocateInventorySchema = z.object({
 export const reserveStockSchema = z.object({
   warehouseId: z.string().min(1),
   variantId: z.string().min(1),
-  quantity: z.number().int().positive(),
+  quantity: z.coerce.number().int().positive(),
 });
 
 export const releaseStockSchema = z.object({
   warehouseId: z.string().min(1),
   variantId: z.string().min(1),
-  quantity: z.number().int().positive(),
+  quantity: z.coerce.number().int().positive(),
 });
 
 export const confirmDeductionSchema = z.object({
   warehouseId: z.string().min(1),
   variantId: z.string().min(1),
-  quantity: z.number().int().positive(),
+  quantity: z.coerce.number().int().positive(),
 });
 
 export type WarehouseInput = z.infer<typeof warehouseSchema>;

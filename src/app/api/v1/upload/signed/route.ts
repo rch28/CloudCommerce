@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const provider = getStorageProvider();
     const { filename, mimeType, path } = await request.json();
 

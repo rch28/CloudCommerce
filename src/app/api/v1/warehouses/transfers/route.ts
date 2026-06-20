@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const sp = request.nextUrl.searchParams;
     const params = {
       page: parseInt(sp.get("page") ?? "1", 10),
@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const result = await createTransfer(tenantId, body, { userId });
     return NextResponse.json(result, { status: 201 });

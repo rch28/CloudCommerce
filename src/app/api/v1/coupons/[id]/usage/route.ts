@@ -12,7 +12,7 @@ export async function GET(
 
   try {
     const params = await paramsPromise;
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const sp = request.nextUrl.searchParams;
     const page = Number(sp.get("page")) || 1;
     const pageSize = Number(sp.get("pageSize")) || 20;

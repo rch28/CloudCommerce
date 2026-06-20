@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { promotionsApi } from "@/services/promotions.service";
 
 interface Props {
   mode?: "coupon" | "promotion";
@@ -42,8 +43,8 @@ export default function CouponFormView({ mode = "coupon", id }: Props) {
   // Load existing data for edit mode
   useEffect(() => {
     if (!id) return;
-    const endpoint = isPromotion ? `/api/v1/promotions/${id}` : `/api/v1/coupons/${id}`;
-    fetch(endpoint).then((res) => res.ok && res.json()).then((data) => {
+    const loader = isPromotion ? promotionsApi.getPromotion(id) : promotionsApi.getCoupon(id);
+    loader.then((data) => {
       if (isPromotion) {
         setForm((prev) => ({
           ...prev,
@@ -86,10 +87,6 @@ export default function CouponFormView({ mode = "coupon", id }: Props) {
     setError("");
 
     try {
-      const endpoint = isEditing
-        ? (isPromotion ? `/api/v1/promotions/${id}` : `/api/v1/coupons/${id}`)
-        : (isPromotion ? "/api/v1/promotions" : "/api/v1/coupons");
-      const method = isEditing ? "PATCH" : "POST";
       const body = isPromotion ? {
         name: form.name,
         description: form.description || undefined,
@@ -119,15 +116,18 @@ export default function CouponFormView({ mode = "coupon", id }: Props) {
         isActive: form.isActive,
       };
 
-      const res = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to create");
+      if (isEditing) {
+        if (isPromotion) {
+          await promotionsApi.updatePromotion(id!, body);
+        } else {
+          await promotionsApi.updateCoupon(id!, body);
+        }
+      } else {
+        if (isPromotion) {
+          await promotionsApi.createPromotion(body);
+        } else {
+          await promotionsApi.createCoupon(body);
+        }
       }
 
       router.push("/merchant/promotions");
@@ -149,7 +149,7 @@ export default function CouponFormView({ mode = "coupon", id }: Props) {
         {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Name</label>
+            <label className="block text-sm font-medium mb-1">Name <span className="text-red-500">*</span></label>
             <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-3 py-2 border rounded-md text-sm" />
           </div>
           <div>
@@ -166,7 +166,7 @@ export default function CouponFormView({ mode = "coupon", id }: Props) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Discount Value</label>
+              <label className="block text-sm font-medium mb-1">Discount Value <span className="text-red-500">*</span></label>
               <input type="number" step="0.01" value={form.discountValue} onChange={(e) => setForm({ ...form, discountValue: e.target.value })} required className="w-full px-3 py-2 border rounded-md text-sm" />
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function CouponFormView({ mode = "coupon", id }: Props) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Start Date</label>
+              <label className="block text-sm font-medium mb-1">Start Date <span className="text-red-500">*</span></label>
               <input type="datetime-local" value={form.startsAt} onChange={(e) => setForm({ ...form, startsAt: e.target.value })} required className="w-full px-3 py-2 border rounded-md text-sm" />
             </div>
             <div>
@@ -207,7 +207,7 @@ export default function CouponFormView({ mode = "coupon", id }: Props) {
       {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">{error}</div>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Coupon Code</label>
+            <label className="block text-sm font-medium mb-1">Coupon Code <span className="text-red-500">*</span></label>
           <input
             type="text"
             value={form.code}
@@ -227,7 +227,7 @@ export default function CouponFormView({ mode = "coupon", id }: Props) {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Value</label>
+              <label className="block text-sm font-medium mb-1">Value <span className="text-red-500">*</span></label>
             <input type="number" step="0.01" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="w-full px-3 py-2 border rounded-md text-sm" />
           </div>
         </div>
@@ -278,7 +278,7 @@ export default function CouponFormView({ mode = "coupon", id }: Props) {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Start Date</label>
+            <label className="block text-sm font-medium mb-1">Start Date <span className="text-red-500">*</span></label>
             <input type="datetime-local" value={form.startsAt} onChange={(e) => setForm({ ...form, startsAt: e.target.value })} required className="w-full px-3 py-2 border rounded-md text-sm" />
           </div>
           <div>

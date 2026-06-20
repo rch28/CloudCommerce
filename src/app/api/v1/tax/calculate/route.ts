@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   const forbidden = requirePermission(request, "read");
   if (forbidden) return forbidden;
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const body = await request.json();
     const result = await taxService.calculateTax(tenantId, body);
     return NextResponse.json(result);

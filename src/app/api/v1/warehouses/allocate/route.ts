@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const body = await request.json();
     const parsed = allocateInventorySchema.parse(body);
     const result = await allocateStock(tenantId, parsed.items, parsed.destination);

@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const settings = await getSettings(tenantId);
     return NextResponse.json(settings);
   } catch (e) {
@@ -20,8 +20,8 @@ export async function PUT(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const result = await updateSettings(tenantId, body, userId);
     return NextResponse.json(result);

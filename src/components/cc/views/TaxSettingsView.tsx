@@ -414,7 +414,7 @@ export default function TaxSettingsView() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Zone Name</Label>
+              <Label>Zone Name <span className="text-red-500">*</span></Label>
               <Input
                 value={editingZone?.name ?? ""}
                 onChange={(e) => setEditingZone((prev) => ({ ...prev!, name: e.target.value }))}
@@ -486,7 +486,7 @@ export default function TaxSettingsView() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Rate Name</Label>
+              <Label>Rate Name <span className="text-red-500">*</span></Label>
               <Input
                 value={editingRate?.name ?? ""}
                 onChange={(e) => setEditingRate((prev) => ({ ...prev!, name: e.target.value }))}
@@ -494,7 +494,7 @@ export default function TaxSettingsView() {
               />
             </div>
             <div>
-              <Label>Tax Zone</Label>
+              <Label>Tax Zone <span className="text-red-500">*</span></Label>
               <select
                 value={editingRate?.zoneId ?? ""}
                 onChange={(e) => setEditingRate((prev) => ({ ...prev!, zoneId: e.target.value }))}
@@ -519,7 +519,7 @@ export default function TaxSettingsView() {
               </select>
             </div>
             <div>
-              <Label>Rate (decimal, e.g. 0.08 for 8%)</Label>
+              <Label>Rate (decimal, e.g. 0.08 for 8%) <span className="text-red-500">*</span></Label>
               <Input
                 type="number"
                 step="0.0001"

@@ -8,8 +8,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   const { variantId } = await params;
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const variant = await variantRepo.updateOne(variantId, body, { userId, tenantId });
     return NextResponse.json(variant);
@@ -24,8 +24,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   const { variantId } = await params;
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     await variantRepo.remove(variantId, { userId, tenantId });
     return NextResponse.json({ success: true });
   } catch (e) {

@@ -37,8 +37,8 @@ export async function PATCH(
 
   try {
     const params = await paramsPromise;
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const parsed = promotionSchema.partial().parse(body);
 
@@ -107,8 +107,8 @@ export async function DELETE(
 
   try {
     const params = await paramsPromise;
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
 
     const promotion = await prisma.promotion.update({
       where: { id: params.id },

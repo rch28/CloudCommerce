@@ -41,8 +41,12 @@ export async function getSettingsBySlug(slug: string): Promise<StoreRecord> {
 
 export async function getSettings(tenantId: string): Promise<StoreRecord> {
   if (process.env.DATABASE_URL) {
-    const store = await (prisma as any).store.findFirst({ where: { tenantId } });
-    if (!store) throw new Error("Store not found");
+    let store = await (prisma as any).store.findFirst({ where: { tenantId } });
+    if (!store) {
+      store = await (prisma as any).store.create({
+        data: { tenantId, name: "My Store", slug: `store-${tenantId}`, subdomain: `${tenantId}-store` },
+      });
+    }
     return store as unknown as StoreRecord;
   }
   if (!mockStore[tenantId]) mockStore[tenantId] = defaultStore(tenantId);

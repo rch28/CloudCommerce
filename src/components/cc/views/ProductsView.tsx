@@ -246,12 +246,12 @@ export default function ProductsView() {
             render: (item: Record<string, unknown>) => {
               const p = item as unknown as ProductData;
               const v = p.variants?.find((x) => x.isDefault) ?? p.variants?.[0];
-              const price = v?.price ?? 0;
-              const compare = v?.comparePrice ?? null;
+              const price = Number(v?.price ?? 0);
+              const compare = v?.comparePrice != null ? Number(v.comparePrice) : null;
               return (
                 <div className="font-medium text-[#F8FAFC]">
                   ${price.toFixed(2)}
-                  {compare && compare > price && (
+                  {compare != null && compare > price && (
                     <span className="ml-1.5 text-xs text-muted-foreground line-through">${compare.toFixed(2)}</span>
                   )}
                 </div>

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const entityType = request.nextUrl.searchParams.get("entityType") || undefined;
     const page = Number(request.nextUrl.searchParams.get("page")) || 1;
     const pageSize = Number(request.nextUrl.searchParams.get("pageSize")) || 20;

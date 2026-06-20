@@ -285,7 +285,7 @@ export default function InventoryView() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Change amount</Label>
+              <Label>Change amount <span className="text-red-500">*</span></Label>
               <Input
                 type="number"
                 className="h-10 border-border bg-background text-[#F8FAFC]"
@@ -294,7 +294,7 @@ export default function InventoryView() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Reason</Label>
+              <Label>Reason <span className="text-red-500">*</span></Label>
               <Input
                 className="h-10 border-border bg-background text-[#F8FAFC]"
                 placeholder="e.g. Received from supplier"

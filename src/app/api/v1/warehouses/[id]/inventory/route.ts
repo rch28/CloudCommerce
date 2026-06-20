@@ -4,7 +4,7 @@ import { getTenantId, getUserId, requirePermission, handleError } from "@/lib/ap
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const { id } = await params;
     const sp = request.nextUrl.searchParams;
     const result = await getWarehouseInventory(tenantId, id, {
@@ -22,8 +22,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const { id: warehouseId } = await params;
     const body = await request.json();
 

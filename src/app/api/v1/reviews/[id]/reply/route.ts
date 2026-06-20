@@ -12,8 +12,8 @@ export async function POST(
 
   try {
     const params = await paramsPromise;
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
 
     const body = await request.json();
     const parsed = reviewReplySchema.parse(body);

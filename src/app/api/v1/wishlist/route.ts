@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/get-session";
+import { getTenantId } from "@/lib/api-helpers";
 import { wishlistAddSchema } from "@/lib/schemas";
 import { addItem, getWishlist } from "@/lib/services/wishlist";
 
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!tenantId) {
-      return NextResponse.json({ error: "Bad Request: missing tenant identification" }, { status: 400 });
+      tenantId = await getTenantId(request);
     }
 
     const result = await getWishlist(tenantId, { customerId: customerId ?? undefined, sessionId });

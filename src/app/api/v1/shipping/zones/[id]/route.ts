@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getZone, updateZone, deleteZone } from "@/lib/services/shipping";
-
-function getTenantId(req: NextRequest): string {
-  return req.headers.get("x-tenant-id") || "t-1";
-}
+import { getTenantId } from "@/lib/api-helpers";
 
 export async function GET(
   request: NextRequest,
@@ -11,7 +8,7 @@ export async function GET(
 ) {
   try {
     const params = await paramsPromise;
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const zone = await getZone(params.id, tenantId);
     if (!zone) return NextResponse.json({ error: "Zone not found" }, { status: 404 });
     return NextResponse.json(zone);
@@ -26,7 +23,7 @@ export async function PUT(
 ) {
   try {
     const params = await paramsPromise;
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const body = await request.json();
     const zone = await updateZone(params.id, tenantId, body);
     return NextResponse.json(zone);
@@ -42,7 +39,7 @@ export async function DELETE(
 ) {
   try {
     const params = await paramsPromise;
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     await deleteZone(params.id, tenantId);
     return NextResponse.json({ success: true });
   } catch (e) {

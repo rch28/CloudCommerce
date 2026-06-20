@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const sp = request.nextUrl.searchParams;
     const result = await getBanners(tenantId, {
       search: sp.get("search") || undefined,
@@ -25,8 +25,8 @@ export async function POST(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const banner = await createBanner(body, { userId, tenantId });
     return NextResponse.json(banner, { status: 201 });

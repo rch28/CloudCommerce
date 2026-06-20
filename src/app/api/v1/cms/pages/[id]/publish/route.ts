@@ -8,8 +8,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const { id } = await params;
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const { publish } = await request.json();
     const page = await publishPage(id, publish ?? true, { userId, tenantId });
     return NextResponse.json(page);

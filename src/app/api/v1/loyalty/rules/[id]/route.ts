@@ -6,7 +6,7 @@ import { getRewardRule, updateRewardRule, deleteRewardRule } from "@/lib/service
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const tenantId = getTenantId(_request);
+    const tenantId = await getTenantId(_request);
     const rule = await getRewardRule(tenantId, id);
     if (!rule) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(rule);
@@ -18,8 +18,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const parsed = rewardRuleSchema.partial().parse(body);
     const rule = await updateRewardRule(tenantId, id, parsed, { userId });
@@ -32,8 +32,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const tenantId = getTenantId(_request);
-    const userId = getUserId(_request);
+    const tenantId = await getTenantId(_request);
+    const userId = await getUserId(_request);
     await deleteRewardRule(tenantId, id, { userId });
     return NextResponse.json({ success: true });
   } catch (e) {

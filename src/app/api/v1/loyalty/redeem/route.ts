@@ -5,7 +5,7 @@ import { redeemPoints } from "@/lib/services/loyalty";
 
 export async function POST(request: NextRequest) {
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const body = await request.json();
     const parsed = redeemPointsSchema.parse(body);
 

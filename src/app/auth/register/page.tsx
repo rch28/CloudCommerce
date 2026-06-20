@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Zap, Building2, ShoppingBag, ShieldCheck } from "lucide-react";
+import { authApi } from "@/services/auth.service";
+import { ApiError } from "@/lib/axios";
 
 const ROLES = [
   { id: "merchant", label: "Merchant", desc: "Manage your store and products", icon: ShoppingBag },
@@ -25,21 +27,12 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name, role }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Registration failed");
-        return;
-      }
+      await authApi.register({ email, password, name, role });
       const dest = role === "admin" ? "/admin" : "/merchant";
       router.push(dest);
       router.refresh();
-    } catch {
-      setError("Connection error. Please try again.");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.data?.error || err.message : "Connection error. Please try again.");
     } finally {
       setLoading(false);
     }

@@ -44,10 +44,10 @@ function Section({ icon: Icon, title, children }: { icon: any; title: string; ch
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <Label variant="muted" size="sm">{label}</Label>
+      <Label variant="muted" size="sm">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</Label>
       {children}
     </div>
   );
@@ -277,7 +277,7 @@ export default function SettingsView() {
             className="space-y-4"
           >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Store Name">
+              <Field label="Store Name" required>
                 <Input
                   value={store.name}
                   onChange={(e) => setStore({ ...store, name: e.target.value })}
@@ -312,7 +312,7 @@ export default function SettingsView() {
             onSubmit={(e) => { e.preventDefault(); saveSection("branding", branding); }}
             className="space-y-4"
           >
-            <Field label="Primary Color">
+            <Field label="Primary Color" required>
               <div className="flex flex-wrap gap-2">
                 {PRESET_COLORS.map((c) => (
                   <button
@@ -333,7 +333,7 @@ export default function SettingsView() {
                 />
               </div>
             </Field>
-            <Field label="Secondary Color">
+            <Field label="Secondary Color" required>
               <div className="flex flex-wrap gap-2">
                 {PRESET_COLORS.map((c) => (
                   <button
@@ -492,7 +492,7 @@ export default function SettingsView() {
             onSubmit={(e) => { e.preventDefault(); saveSection("domains", domains); }}
             className="space-y-4"
           >
-            <Field label="Subdomain">
+            <Field label="Subdomain" required>
               <div className="flex overflow-hidden rounded-md border border-border">
                 <Input
                   value={domains.subdomain}
@@ -529,7 +529,7 @@ export default function SettingsView() {
             <p className="mb-3 text-sm font-medium text-[#F8FAFC]">Invite Staff Member</p>
             <div className="flex flex-wrap items-end gap-3">
               <div className="flex-1">
-                <Label variant="muted" size="xs">Email</Label>
+                <Label variant="muted" size="xs">Email <span className="text-red-500">*</span></Label>
                 <Input
                   type="email"
                   placeholder="colleague@example.com"
@@ -666,7 +666,7 @@ export default function SettingsView() {
               <p className="mb-3 text-sm font-medium text-[#F8FAFC]">Create API Key</p>
               <div className="flex flex-wrap items-end gap-3">
                 <div className="flex-1">
-                  <Label variant="muted" size="xs">Key Name</Label>
+                  <Label variant="muted" size="xs">Key Name <span className="text-red-500">*</span></Label>
                   <Input
                     placeholder="e.g. Production"
                     value={keyName}

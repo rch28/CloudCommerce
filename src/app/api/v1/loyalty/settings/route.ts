@@ -19,7 +19,7 @@ function getRedis() {
 
 export async function GET(request: NextRequest) {
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const r = getRedis();
 
     let settings = null;
@@ -40,8 +40,8 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const parsed = loyaltySettingsSchema.parse(body);
 

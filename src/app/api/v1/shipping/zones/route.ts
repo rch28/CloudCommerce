@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { shippingZoneSchema } from "@/lib/schemas";
 import { listZones, createZone } from "@/lib/services/shipping";
-
-function getTenantId(req: NextRequest): string {
-  return req.headers.get("x-tenant-id") || req.nextUrl.searchParams.get("tenantId") || "t-1";
-}
+import { getTenantId } from "@/lib/api-helpers";
 
 export async function GET(request: NextRequest) {
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const zones = await listZones(tenantId);
     return NextResponse.json(zones);
   } catch {
@@ -18,7 +15,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const body = await request.json();
     const parsed = shippingZoneSchema.parse(body);
     const zone = await createZone(tenantId, parsed);

@@ -4,7 +4,7 @@ import { getTenantId, handleError } from "@/lib/api-helpers";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ variantId: string }> }) {
   try {
-    const tenantId = getTenantId(_request);
+    const tenantId = await getTenantId(_request);
     const { variantId } = await params;
     const result = await getVariantStock(tenantId, variantId);
     return NextResponse.json(result);

@@ -432,11 +432,11 @@ export default function WarehousesView() {
               </DialogHeader>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2 col-span-2 sm:col-span-1">
-                  <Label>Name</Label>
+                  <Label>Name <span className="text-red-500">*</span></Label>
                   <Input className="h-10 border-border bg-background text-[#F8FAFC]" value={formData.name} onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))} />
                 </div>
                 <div className="space-y-2 col-span-2 sm:col-span-1">
-                  <Label>Code</Label>
+                  <Label>Code <span className="text-red-500">*</span></Label>
                   <Input className="h-10 border-border bg-background text-[#F8FAFC]" value={formData.code} onChange={(e) => setFormData((p) => ({ ...p, code: e.target.value }))} placeholder="WH-XXX" />
                 </div>
                 <div className="space-y-2 col-span-2 sm:col-span-1">
@@ -665,21 +665,21 @@ export default function WarehousesView() {
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>From Warehouse</Label>
+                  <Label>From Warehouse <span className="text-red-500">*</span></Label>
                   <select className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-[#F8FAFC]" value={transferData.fromWarehouseId} onChange={(e) => setTransferData((p) => ({ ...p, fromWarehouseId: e.target.value }))}>
                     <option value="">Select source</option>
                     {warehouses.map((wh) => <option key={wh.id} value={wh.id}>{wh.name} ({wh.code})</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label>To Warehouse</Label>
+                  <Label>To Warehouse <span className="text-red-500">*</span></Label>
                   <select className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-[#F8FAFC]" value={transferData.toWarehouseId} onChange={(e) => setTransferData((p) => ({ ...p, toWarehouseId: e.target.value }))}>
                     <option value="">Select destination</option>
                     {warehouses.filter((w) => w.id !== transferData.fromWarehouseId).map((wh) => <option key={wh.id} value={wh.id}>{wh.name} ({wh.code})</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Variant ID</Label>
+                  <Label>Variant ID <span className="text-red-500">*</span></Label>
                   <Input className="h-10 border-border bg-background text-[#F8FAFC]" value={transferData.variantId} onChange={(e) => setTransferData((p) => ({ ...p, variantId: e.target.value }))} placeholder="v-xxx" />
                 </div>
                 <div className="space-y-2">

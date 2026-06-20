@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
+    const tenantId = await getTenantId(request);
     const search = request.nextUrl.searchParams.get("search") || undefined;
     const categories = await categoryRepo.list(tenantId, { search });
     return NextResponse.json(categories);
@@ -21,8 +21,8 @@ export async function POST(request: NextRequest) {
   if (forbidden) return forbidden;
 
   try {
-    const tenantId = getTenantId(request);
-    const userId = getUserId(request);
+    const tenantId = await getTenantId(request);
+    const userId = await getUserId(request);
     const body = await request.json();
     const category = await categoryRepo.createOne(body, { userId, tenantId });
     return NextResponse.json(category, { status: 201 });

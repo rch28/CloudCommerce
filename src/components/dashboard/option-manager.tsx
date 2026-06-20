@@ -170,7 +170,7 @@ export default function OptionManager({ productId, onVariantsGenerated }: Option
           <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Generate Variants</h4>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <Label className="text-[11px] text-muted-foreground">Base Price ($)</Label>
+              <Label className="text-[11px] text-muted-foreground">Base Price ($) <span className="text-red-500">*</span></Label>
               <Input
                 type="number" step="0.01"
                 className="h-8 border-border bg-card text-[#F8FAFC]"
@@ -179,7 +179,7 @@ export default function OptionManager({ productId, onVariantsGenerated }: Option
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[11px] text-muted-foreground">Base SKU</Label>
+              <Label className="text-[11px] text-muted-foreground">Base SKU <span className="text-red-500">*</span></Label>
               <Input
                 className="h-8 border-border bg-card text-[#F8FAFC]"
                 placeholder="e.g. PROD-BASE"

@@ -13,9 +13,10 @@ export function generateStaticParams() {
 
 export default async function StoreHomePage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
-  const [result, store] = await Promise.all([
-    productRepo.list(tenant, { status: "active", pageSize: 50 }),
-    getSettingsBySlug(tenant).catch(() => null),
+  const store = await getSettingsBySlug(tenant).catch(() => null);
+  const tenantId = store?.tenantId || tenant;
+  const [result] = await Promise.all([
+    productRepo.list(tenantId, { status: "active", pageSize: 50 }),
   ]);
   const products = result.items;
   const brandColor = store?.primaryColor || "#7C3AED";

@@ -11,10 +11,6 @@ export async function GET() {
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    if (session.role !== "customer") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     const user = await prisma.user.findUnique({
       where: { id: session.id },
       select: userSelect,
@@ -36,10 +32,6 @@ export async function PUT(req: Request) {
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    if (session.role !== "customer") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     const body = await req.json();
     const parsed = profileUpdateSchema.safeParse(body);
     if (!parsed.success) {

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Store, Zap } from "lucide-react";
+import { authApi } from "@/services/auth.service";
 
 const features = [
   {
@@ -59,8 +60,7 @@ export default function MarketingPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
+    authApi.me()
       .then((d) => {
         if (d.loggedIn && d.user) {
           setSession({ role: d.user.role, name: d.user.name });

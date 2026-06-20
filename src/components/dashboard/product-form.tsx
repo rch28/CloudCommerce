@@ -146,12 +146,12 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Basic Information</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Product Name</Label>
+                <Label htmlFor="name">Product Name <span className="text-red-500">*</span></Label>
                 <Input id="name" className="border-border bg-background text-[#F8FAFC]" {...form.register("name", { onChange: (e) => { if (!product) { const slug = generateSlug(e.target.value); form.setValue("slug", slug); } } })} />
                 {errors.name && <p className="text-xs text-rose-400">{errors.name}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="slug">Slug</Label>
+                <Label htmlFor="slug">Slug <span className="text-red-500">*</span></Label>
                 <Input id="slug" className="border-border bg-background text-[#F8FAFC] font-mono text-xs" {...form.register("slug")} />
                 {errors.slug && <p className="text-xs text-rose-400">{errors.slug}</p>}
               </div>
@@ -210,7 +210,7 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Pricing</h3>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label>Price ($)</Label>
+                <Label>Price ($) <span className="text-red-500">*</span></Label>
                 <Controller control={form.control} name="variants.0.price" render={({ field: f }) => (
                   <Input type="number" step="0.01" className="border-border bg-background text-[#F8FAFC]" value={f.value || ""} onChange={(e) => f.onChange(parseFloat(e.target.value) || 0)} />
                 )} />
@@ -308,12 +308,12 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
                   </div>
                   <div className="grid grid-cols-6 gap-3">
                     <div className="space-y-1">
-                      <Label className="text-[11px]">SKU</Label>
+                      <Label className="text-[11px]">SKU <span className="text-red-500">*</span></Label>
                       <Input className="h-8 border-border bg-card text-[#F8FAFC]" {...form.register(`variants.${index}.sku`)} />
                       {errors[`variants.${index}.sku`] && <p className="text-[10px] text-rose-400">{errors[`variants.${index}.sku`]}</p>}
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[11px]">Price</Label>
+                      <Label className="text-[11px]">Price <span className="text-red-500">*</span></Label>
                       <Controller control={form.control} name={`variants.${index}.price`} render={({ field: f }) => (
                         <Input type="number" step="0.01" className="h-8 border-border bg-card text-[#F8FAFC]" value={f.value || ""} onChange={(e) => f.onChange(parseFloat(e.target.value) || 0)} />
                       )} />

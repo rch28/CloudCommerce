@@ -9,4 +9,6 @@ export const loyaltyApi = {
   deleteRule: (id: string) => requests.delete(`/loyalty/rules/${id}`),
   getSettings: () => requests.get<any>("/loyalty/settings"),
   updateSettings: (data: any) => requests.put<any>("/loyalty/settings", data),
+  listCustomers: (params?: Record<string, string>) => requests.get<any[]>("/customers", { params }),
+  listAuditLogs: (params?: Record<string, string>) => requests.get<any[]>("/audit-logs", { params }),
 };
