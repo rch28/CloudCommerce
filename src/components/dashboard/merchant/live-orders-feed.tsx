@@ -4,7 +4,10 @@ import { ShoppingCart, CreditCard, Truck, XCircle, Clock } from "lucide-react";
 import { useOrderWebSocket } from "@/hooks/useOrderWebSocket";
 import Badge from "@/components/cc/Badge";
 
-const eventConfig: Record<string, { icon: typeof ShoppingCart; color: string; bg: string }> = {
+const eventConfig: Record<
+  string,
+  { icon: typeof ShoppingCart; color: string; bg: string }
+> = {
   "order.created": {
     icon: ShoppingCart,
     color: "text-sky-400",
@@ -41,7 +44,11 @@ function subscribeToNow(cb: () => void) {
 }
 
 function RelativeTime({ timestamp }: { timestamp: string }) {
-  const now = useSyncExternalStore(subscribeToNow, () => Date.now(), () => 0);
+  const now = useSyncExternalStore(
+    subscribeToNow,
+    () => Date.now(),
+    () => 0,
+  );
   const date = new Date(timestamp);
   const diff = now - date.getTime();
   const seconds = Math.floor(diff / 1000);
@@ -56,7 +63,10 @@ function RelativeTime({ timestamp }: { timestamp: string }) {
   else label = date.toLocaleDateString();
 
   return (
-    <span className="text-xs text-muted-foreground" title={date.toLocaleString()}>
+    <span
+      className="text-xs text-muted-foreground"
+      title={date.toLocaleString()}
+    >
       {label}
     </span>
   );
@@ -73,7 +83,7 @@ export default function LiveOrdersFeed() {
   const { events, connected, error, clearEvents } = useOrderWebSocket();
 
   return (
-    <div className="rounded-lg border border-border bg-card">
+    <div className="rounded-lg border border-slate-800 bg-slate-900/60">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-foreground">Live Orders</h3>
@@ -107,7 +117,9 @@ export default function LiveOrdersFeed() {
         {events.length === 0 && !error && (
           <div className="flex flex-col items-center justify-center py-10 text-center">
             <ShoppingCart className="mb-2 h-8 w-8 text-muted-foreground/40" />
-            <p className="text-sm text-muted-foreground">Waiting for orders...</p>
+            <p className="text-sm text-muted-foreground">
+              Waiting for orders...
+            </p>
             <p className="text-xs text-muted-foreground/60 mt-1">
               Real-time orders will appear here
             </p>
@@ -139,10 +151,12 @@ export default function LiveOrdersFeed() {
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {eventLabel[evt.event] ?? evt.event} &middot;{" "}
-                      {evt.data.customerName} &middot; ${evt.data.total.toFixed(2)}
+                      {evt.data.customerName} &middot; $
+                      {evt.data.total.toFixed(2)}
                     </p>
                     <p className="text-xs text-muted-foreground/60 mt-0.5">
-                      {evt.data.itemCount} item{evt.data.itemCount !== 1 ? "s" : ""}
+                      {evt.data.itemCount} item
+                      {evt.data.itemCount !== 1 ? "s" : ""}
                     </p>
                   </div>
                   <div className="shrink-0">

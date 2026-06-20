@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const session = await getSessionUser();
 
     const body = await request.json();
-    const { tenantId, addressId, address: inlineAddress, notes, couponCode } = body;
+    const { tenantId, addressId, address: inlineAddress, notes, couponCode, shippingMethodId, shippingPrice } = body;
 
     if (!tenantId) {
       return NextResponse.json({ error: "tenantId is required" }, { status: 400 });
@@ -52,6 +52,8 @@ export async function POST(request: NextRequest) {
       address,
       notes: parsed.data.notes,
       couponCode,
+      shippingMethodId,
+      shippingPrice,
     });
 
     return NextResponse.json({ order: result }, { status: 201 });

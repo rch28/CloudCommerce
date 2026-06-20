@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const session = await getSessionUser();
 
     const body = await request.json();
-    const { tenantId, addressId, address: inlineAddress, notes } = body;
+    const { tenantId, addressId, address: inlineAddress, notes, shippingMethodId, shippingPrice } = body;
 
     if (!tenantId) {
       return NextResponse.json({ error: "tenantId is required" }, { status: 400 });
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
       const orderNumber = `CC-${String(lastNum + 1).padStart(5, "0")}`;
 
       const subtotal = cart.items.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
-      const shipping = subtotal >= 100 ? 0 : 10;
+      const shipping = shippingPrice !== undefined ? shippingPrice : (subtotal >= 100 ? 0 : 10);
       const tax = Math.round(subtotal * 0.08 * 100) / 100;
       const total = Math.round((subtotal + shipping + tax) * 100) / 100;
 

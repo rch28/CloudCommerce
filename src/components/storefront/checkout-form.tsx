@@ -8,6 +8,7 @@ import {
   CheckCircle,
   Plus,
   ChevronRight,
+  Truck,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -47,9 +48,17 @@ const emptyAddress: AddressForm = {
   country: "US",
 };
 
+interface ShippingOption {
+  methodId: string;
+  methodName: string;
+  carrier: string | null;
+  type: string;
+  price: number;
+}
+
 export default function CheckoutForm({ tenant }: CheckoutFormProps) {
-  const { items, pricing, isAuthenticated } = useCart();
-  const [step, setStep] = useState<"address" | "review">("address");
+  const { items, isAuthenticated } = useCart();
+  const [step, setStep] = useState<"address" | "shipping" | "review">("address");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -58,6 +67,16 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
   const [showNewAddress, setShowNewAddress] = useState(false);
   const [address, setAddress] = useState<AddressForm>(emptyAddress);
   const [notes, setNotes] = useState("");
+
+  const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
+  const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
+  const [shippingLoading, setShippingLoading] = useState(false);
+
+  const selectedAddr = getSelectedAddress();
+  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const shippingCost = selectedShipping?.price ?? 0;
+  const tax = Math.round(subtotal * 0.08 * 100) / 100;
+  const total = subtotal + shippingCost + tax;
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -114,9 +133,17 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
 
     const selectedAddr = getSelectedAddress();
 
+    if (!selectedShipping) {
+      setError("Please select a shipping method");
+      setLoading(false);
+      return;
+    }
+
     const body: Record<string, unknown> = {
       tenantId: tenant,
       notes: notes || undefined,
+      shippingMethodId: selectedShipping.methodId,
+      shippingPrice: selectedShipping.price,
     };
 
     if (isAuthenticated && selectedAddressId && !showNewAddress) {
@@ -297,11 +324,124 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
           <button
             type="button"
             disabled={!canContinueToReview()}
-            onClick={() => setStep("review")}
+            onClick={async () => {
+              setShippingLoading(true);
+              setError("");
+              try {
+                const addr = getSelectedAddress();
+                if (!addr) { setShippingLoading(false); return; }
+                const shippingItems = items.map((i) => ({
+                  variantId: i.variantId,
+                  quantity: i.quantity,
+                  price: i.price,
+                  weight: undefined,
+                }));
+                const res = await fetch("/api/v1/shipping/calculate", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    address: { country: addr.country, state: addr.state, city: addr.city, zip: addr.zip },
+                    items: shippingItems,
+                  }),
+                });
+                if (res.ok) {
+                  const data = await res.json();
+                  setShippingOptions(data.options || []);
+                  if (data.options?.length > 0) setSelectedShipping(data.options[0]);
+                }
+              } catch {}
+              setShippingLoading(false);
+              setStep("shipping");
+            }}
             className="flex items-center gap-2 rounded-lg bg-[#7C3AED] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Continue to Review
-            <ChevronRight size={16} />
+            {shippingLoading ? <Loader2 size={16} className="animate-spin" /> : <>Continue <ChevronRight size={16} /></>}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === "shipping") {
+    return (
+      <div className="mx-auto max-w-2xl space-y-6">
+        <div className="rounded-xl border border-border bg-card p-6">
+          <h2 className="text-lg font-semibold text-[#F8FAFC] mb-4 flex items-center gap-2">
+            <Truck size={18} className="text-[#7C3AED]" />
+            Shipping Method
+          </h2>
+
+          {selectedAddr && (
+            <div className="mb-4 rounded-lg bg-[#09090B] p-3 text-sm">
+              <p className="text-muted-foreground">Shipping to</p>
+              <p className="text-[#F8FAFC] font-medium">{selectedAddr.line1}, {selectedAddr.city}, {selectedAddr.state} {selectedAddr.zip}</p>
+            </div>
+          )}
+
+          {shippingOptions.length === 0 ? (
+            <div className="py-8 text-center">
+              <p className="text-muted-foreground text-sm">No shipping options available for this address</p>
+              <button
+                onClick={() => setStep("address")}
+                className="mt-4 text-sm text-[#7C3AED] hover:text-[#8B5CF6] transition-colors"
+              >
+                &larr; Change address
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {shippingOptions.map((opt) => (
+                <button
+                  key={opt.methodId}
+                  type="button"
+                  onClick={() => setSelectedShipping(opt)}
+                  className={`w-full rounded-lg border p-4 text-left transition-colors ${
+                    selectedShipping?.methodId === opt.methodId
+                      ? "border-[#7C3AED] bg-[#7C3AED]/5"
+                      : "border-border hover:border-muted-foreground/50"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-start gap-3">
+                      <div className={`mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 ${
+                        selectedShipping?.methodId === opt.methodId
+                          ? "border-[#7C3AED] bg-[#7C3AED]"
+                          : "border-muted-foreground"
+                      }`}>
+                        {selectedShipping?.methodId === opt.methodId && (
+                          <CheckCircle size={14} className="text-white" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-[#F8FAFC] text-sm">{opt.methodName}</p>
+                        {opt.carrier && <p className="text-xs text-muted-foreground">{opt.carrier}</p>}
+                      </div>
+                    </div>
+                    <span className="text-sm font-bold text-[#F8FAFC]">
+                      {opt.price === 0 ? "Free" : `$${opt.price.toFixed(2)}`}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => setStep("address")}
+            className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-[#F8FAFC] hover:bg-card transition-colors"
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            disabled={!selectedShipping}
+            onClick={() => setStep("review")}
+            className="flex-1 rounded-lg bg-[#7C3AED] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Continue to Review <ChevronRight size={16} className="inline" />
           </button>
         </div>
       </div>
@@ -366,29 +506,35 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
             />
           </div>
 
+          {selectedShipping && (
+            <div>
+              <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Shipping Method</h3>
+              <div className="rounded-lg border border-border bg-[#09090B] p-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-[#F8FAFC]">{selectedShipping.methodName}</span>
+                  <span className="text-muted-foreground">{selectedShipping.price === 0 ? "Free" : `$${selectedShipping.price.toFixed(2)}`}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="border-t border-border pt-4">
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between text-muted-foreground">
                 <span>Subtotal</span>
-                <span>${pricing.subtotal.toFixed(2)}</span>
+                <span>${subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-muted-foreground">
                 <span>Shipping</span>
-                <span>{pricing.shipping === 0 ? "Free" : `$${pricing.shipping.toFixed(2)}`}</span>
+                <span>{shippingCost === 0 ? "Free" : `$${shippingCost.toFixed(2)}`}</span>
               </div>
-              {pricing.discounts > 0 && (
-                <div className="flex justify-between text-emerald-400">
-                  <span>Discount</span>
-                  <span>-${pricing.discounts.toFixed(2)}</span>
-                </div>
-              )}
               <div className="flex justify-between text-muted-foreground">
                 <span>Tax (8%)</span>
-                <span>${pricing.tax.toFixed(2)}</span>
+                <span>${tax.toFixed(2)}</span>
               </div>
               <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-[#F8FAFC]">
                 <span>Total</span>
-                <span>${pricing.total.toFixed(2)}</span>
+                <span>${total.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -419,7 +565,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
           {loading ? (
             <Loader2 size={16} className="mx-auto animate-spin" />
           ) : (
-            `Place Order — $${pricing.total.toFixed(2)}`
+            `Place Order — $${total.toFixed(2)}`
           )}
         </button>
       </div>

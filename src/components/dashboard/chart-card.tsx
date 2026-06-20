@@ -10,7 +10,7 @@ interface ChartCardProps {
 
 export default function ChartCard({ title, description, action, children, className }: ChartCardProps) {
   return (
-    <div className={`rounded-xl border border-border bg-[#0a1022] p-5 ${className ?? ""}`}>
+    <div className={`rounded-xl border border-slate-800 bg-slate-900/60 p-5 ${className ?? ""}`}>
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h3 className="font-semibold text-[#F8FAFC]">{title}</h3>

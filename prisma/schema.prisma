@@ -34,6 +34,8 @@ model Tenant {
   reviews          Review[]
   reports          Report[]
   wishlists        Wishlist[]
+  shippingZones    ShippingZone[]
+  shippingMethods  ShippingMethod[]
 }
 
 model User {
@@ -713,4 +715,57 @@ model WishlistItem {
 
   @@unique([wishlistId, variantId])
   @@index([wishlistId])
+}
+
+model ShippingZone {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  countries String[]
+  states    String[]
+  regions   String[]
+  zipCodes  String[]
+  zipRanges Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant  Tenant          @relation(fields: [tenantId], references: [id])
+  rates   ShippingRate[]
+
+  @@index([tenantId])
+}
+
+model ShippingMethod {
+  id            String   @id @default(cuid())
+  tenantId      String
+  name          String
+  type          String   // flat | weight_based | price_based | free
+  configuration Json     // { rate?: number; minWeight?: number; maxWeight?: number; minOrder?: number; maxOrder?: number }
+  carrier       String?  // null for built-in, "ups" | "fedex" | "dhl" | "shippo" for future providers
+  carrierConfig Json?    // provider-specific config (API keys, account numbers, etc.)
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id])
+  rates  ShippingRate[]
+
+  @@index([tenantId])
+  @@index([type])
+}
+
+model ShippingRate {
+  id        String   @id @default(cuid())
+  zoneId    String
+  methodId  String
+  price     Decimal  @default(0)
+  createdAt DateTime @default(now())
+
+  zone   ShippingZone   @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  method ShippingMethod @relation(fields: [methodId], references: [id], onDelete: Cascade)
+
+  @@unique([zoneId, methodId])
+  @@index([zoneId])
+  @@index([methodId])
 }

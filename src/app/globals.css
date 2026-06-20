@@ -35,30 +35,30 @@
 .dark {
   --background: #09090B;
   --foreground: #F8FAFC;
-  --card: #18181B;
+  --card: #0a1022;
   --card-foreground: #F8FAFC;
-  --popover: #18181B;
+  --popover: #0a1022;
   --popover-foreground: #F8FAFC;
   --primary: #7C3AED;
   --primary-foreground: #F8FAFC;
-  --secondary: #18181B;
+  --secondary: #0a1022;
   --secondary-foreground: #F8FAFC;
-  --muted: #18181B;
+  --muted: #0a1022;
   --muted-foreground: #A1A1AA;
-  --accent: #18181B;
+  --accent: #0a1022;
   --accent-foreground: #F8FAFC;
   --destructive: hsl(0 62.8% 30.6%);
   --destructive-foreground: #F8FAFC;
-  --border: #27272A;
-  --input: #27272A;
+  --border: #020617;
+  --input: #020617;
   --ring: #7C3AED;
   --sidebar-background: #111827;
   --sidebar-foreground: #F8FAFC;
   --sidebar-primary: #7C3AED;
   --sidebar-primary-foreground: #F8FAFC;
-  --sidebar-accent: #1E293B;
+  --sidebar-accent: #020617;
   --sidebar-accent-foreground: #F8FAFC;
-  --sidebar-border: #1E293B;
+  --sidebar-border: #020617;
   --sidebar-ring: #7C3AED;
 }
 

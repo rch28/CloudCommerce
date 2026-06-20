@@ -27,6 +27,8 @@ export interface CheckoutParams {
   address?: Omit<OrderAddressData, "id" | "orderId">;
   notes?: string;
   couponCode?: string;
+  shippingMethodId?: string;
+  shippingPrice?: number;
 }
 
 interface OrderResult {
@@ -138,7 +140,7 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
 
     const orderNumber = await generateOrderNumber();
     const subtotal = cart.items.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
-    const shipping = subtotal >= 100 ? 0 : 10;
+    const shipping = params.shippingPrice !== undefined ? params.shippingPrice : (subtotal >= 100 ? 0 : 10);
     const tax = Math.round(subtotal * 0.08 * 100) / 100;
 
     let discountAmount = 0;

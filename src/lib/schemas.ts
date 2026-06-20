@@ -371,6 +371,62 @@ export const voteSchema = z.object({
 
 export type VoteInput = z.infer<typeof voteSchema>;
 
+// ── Shipping ──────────────────────────────────────────
+export const shippingZoneSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  countries: z.array(z.string()).default(["US"]),
+  states: z.array(z.string()).default([]),
+  regions: z.array(z.string()).default([]),
+  zipCodes: z.array(z.string()).default([]),
+  zipRanges: z.array(z.object({
+    start: z.string(),
+    end: z.string(),
+  })).optional(),
+});
+export type ShippingZoneInput = z.infer<typeof shippingZoneSchema>;
+
+export const shippingMethodConfigSchema = z.object({
+  rate: z.number().min(0).optional(),
+  minWeight: z.number().min(0).optional(),
+  maxWeight: z.number().min(0).optional(),
+  minOrder: z.number().min(0).optional(),
+  maxOrder: z.number().min(0).optional(),
+});
+
+export const shippingMethodSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  type: z.enum(["flat", "weight_based", "price_based", "free"]),
+  configuration: shippingMethodConfigSchema.default({}),
+  carrier: z.string().optional(),
+  carrierConfig: z.record(z.unknown()).optional(),
+  isActive: z.boolean().default(true),
+  sortOrder: z.number().int().default(0),
+});
+export type ShippingMethodInput = z.infer<typeof shippingMethodSchema>;
+
+export const shippingRateSchema = z.object({
+  zoneId: z.string().min(1),
+  methodId: z.string().min(1),
+  price: z.coerce.number().min(0),
+});
+export type ShippingRateInput = z.infer<typeof shippingRateSchema>;
+
+export const shippingCalculateSchema = z.object({
+  address: z.object({
+    country: z.string(),
+    state: z.string(),
+    city: z.string().optional(),
+    zip: z.string().optional(),
+  }),
+  items: z.array(z.object({
+    variantId: z.string(),
+    quantity: z.number().int().min(1),
+    weight: z.number().min(0).optional(),
+    price: z.number().min(0),
+  })),
+});
+export type ShippingCalculateInput = z.infer<typeof shippingCalculateSchema>;
+
 // ── Wishlist ──────────────────────────────────────────
 export const wishlistAddSchema = z.object({
   variantId: z.string().min(1, "Variant is required"),

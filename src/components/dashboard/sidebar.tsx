@@ -14,6 +14,7 @@ import {
   Zap,
   Tag,
   X,
+  Truck,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ const merchantNav: NavItem[] = [
   { id: "categories", label: "Categories", path: "/merchant/categories", icon: Tag },
   { id: "orders", label: "Orders", path: "/merchant/orders", icon: ShoppingCart },
   { id: "inventory", label: "Inventory", path: "/merchant/inventory", icon: Boxes },
+  { id: "shipping", label: "Shipping", path: "/merchant/shipping", icon: Truck },
   { id: "customers", label: "Customers", path: "/merchant/customers", icon: Users },
   { id: "storefront", label: "Storefront", path: "/merchant/storefront", icon: Store },
   { id: "analytics", label: "Analytics", path: "/merchant/analytics", icon: BarChart3 },

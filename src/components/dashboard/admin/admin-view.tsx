@@ -109,7 +109,7 @@ export default function AdminDashboardView() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        <div className="overflow-hidden rounded-xl border border-border bg-card lg:col-span-3">
+        <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 lg:col-span-3">
           <div className="border-b border-border px-5 py-4">
             <h3 className="font-semibold text-[#F8FAFC]">Recent Merchants</h3>
           </div>
