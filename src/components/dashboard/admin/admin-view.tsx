@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Building2, Store, DollarSign, ShoppingCart, TrendingUp, CircleCheck, AlertCircle, UserPlus, CreditCard } from "lucide-react";
 import {
   BarChart,
@@ -16,14 +16,88 @@ import StatsCard from "@/components/dashboard/stats-card";
 import ChartCard from "@/components/dashboard/chart-card";
 import ErrorState from "@/components/dashboard/error-state";
 import Badge from "@/components/cc/Badge";
-import { revenueData, merchantGrowthData, activityData, adminMetrics, merchants } from "@/data/mock";
+
+interface Merchant {
+  id: string;
+  name: string;
+  subdomain: string;
+  plan: string;
+  orders: number;
+  status: "active" | "trialing" | "past_due";
+  revenue: number;
+}
+
+interface Activity {
+  id: string;
+  type: "merchant_joined" | "store_launched" | "payment_received" | "plan_upgraded" | "alert";
+  message: string;
+  time: string;
+  user?: string;
+}
+
+interface AdminMetrics {
+  totalMerchants: number;
+  activeStores: number;
+  platformRevenue: number;
+  ordersToday: number;
+  merchantChange: number;
+  storeChange: number;
+  revenueChange: number;
+  ordersChange: number;
+}
+
+interface DashboardData {
+  adminMetrics: AdminMetrics;
+  merchants: Merchant[];
+  activity: Activity[];
+  revenueData: Array<{ month: string; revenue: number; orders: number }>;
+  merchantGrowthData: Array<{ month: string; merchants: number; active: number }>;
+}
 
 export default function AdminDashboardView() {
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  useEffect(() => {
+    fetch("/api/v1/admin/stats")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) throw new Error(d.error);
+        setData(d);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, []);
+
   if (error) {
-    return <ErrorState onRetry={() => setError(false)} />;
+    return <ErrorState onRetry={() => { setError(false); setLoading(true); fetch("/api/v1/admin/stats").then(r => r.json()).then(d => { setData(d); setLoading(false); }).catch(() => { setError(true); setLoading(false); }); }} />;
   }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-28 animate-pulse rounded-xl bg-slate-800/50" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="h-72 animate-pulse rounded-xl bg-slate-800/50 lg:col-span-2" />
+          <div className="h-72 animate-pulse rounded-xl bg-slate-800/50" />
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+          <div className="h-80 animate-pulse rounded-xl bg-slate-800/50 lg:col-span-3" />
+          <div className="h-80 animate-pulse rounded-xl bg-slate-800/50 lg:col-span-2" />
+        </div>
+      </div>
+    );
+  }
+
+  const { adminMetrics, merchants, activity, revenueData, merchantGrowthData } = data!;
 
   const activityIcon = (type: string) => {
     switch (type) {
@@ -71,40 +145,52 @@ export default function AdminDashboardView() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <ChartCard title="Platform Revenue" description="Monthly revenue" className="lg:col-span-2">
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272A" vertical={false} />
-              <XAxis dataKey="month" stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="#A1A1AA" fontSize={12} tickFormatter={(v) => `$${v / 1000}k`} tickLine={false} axisLine={false} />
-              <Tooltip
-                contentStyle={{ background: "#18181B", border: "1px solid #27272A", borderRadius: 8, color: "#F8FAFC" }}
-                cursor={{ fill: "#7C3AED11" }}
-              />
-              <Bar dataKey="revenue" fill="#7C3AED" radius={[6, 6, 0, 0]} barSize={36} />
-            </BarChart>
-          </ResponsiveContainer>
+          {revenueData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={revenueData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272A" vertical={false} />
+                <XAxis dataKey="month" stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="#A1A1AA" fontSize={12} tickFormatter={(v) => `$${v / 1000}k`} tickLine={false} axisLine={false} />
+                <Tooltip
+                  contentStyle={{ background: "#18181B", border: "1px solid #27272A", borderRadius: 8, color: "#F8FAFC" }}
+                  cursor={{ fill: "#7C3AED11" }}
+                />
+                <Bar dataKey="revenue" fill="#7C3AED" radius={[6, 6, 0, 0]} barSize={36} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">
+              No revenue data yet
+            </div>
+          )}
         </ChartCard>
 
         <ChartCard title="Merchant Growth" description="Active merchants">
-          <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={merchantGrowthData}>
-              <defs>
-                <linearGradient id="growthGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#7C3AED" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
-              <XAxis dataKey="month" stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
-              <Tooltip
-                contentStyle={{ background: "#18181B", border: "1px solid #27272A", borderRadius: 8, color: "#F8FAFC" }}
-                cursor={{ stroke: "#27272A" }}
-              />
-              <Area type="monotone" dataKey="active" stroke="#7C3AED" strokeWidth={2.5} fill="url(#growthGrad)" name="Active" />
-              <Area type="monotone" dataKey="merchants" stroke="#06b6d4" strokeWidth={2} fill="none" strokeDasharray="4 4" name="Total" />
-            </AreaChart>
-          </ResponsiveContainer>
+          {merchantGrowthData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={merchantGrowthData}>
+                <defs>
+                  <linearGradient id="growthGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#7C3AED" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272A" />
+                <XAxis dataKey="month" stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
+                <Tooltip
+                  contentStyle={{ background: "#18181B", border: "1px solid #27272A", borderRadius: 8, color: "#F8FAFC" }}
+                  cursor={{ stroke: "#27272A" }}
+                />
+                <Area type="monotone" dataKey="active" stroke="#7C3AED" strokeWidth={2.5} fill="url(#growthGrad)" name="Active" />
+                <Area type="monotone" dataKey="merchants" stroke="#06b6d4" strokeWidth={2} fill="none" strokeDasharray="4 4" name="Total" />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">
+              No growth data yet
+            </div>
+          )}
         </ChartCard>
       </div>
 
@@ -113,54 +199,66 @@ export default function AdminDashboardView() {
           <div className="border-b border-border px-5 py-4">
             <h3 className="font-semibold text-[#F8FAFC]">Recent Merchants</h3>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="px-5 py-3.5 font-medium">Merchant</th>
-                  <th className="px-5 py-3.5 font-medium">Domain</th>
-                  <th className="px-5 py-3.5 font-medium">Plan</th>
-                  <th className="px-5 py-3.5 font-medium">Orders</th>
-                  <th className="px-5 py-3.5 font-medium">Status</th>
-                  <th className="px-5 py-3.5 text-right font-medium">Revenue</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {merchants.map((m) => (
-                  <tr key={m.id} className="transition-colors hover:bg-[#1E293B]">
-                    <td className="px-5 py-4 font-medium text-[#F8FAFC]">{m.name}</td>
-                    <td className="px-5 py-4 text-muted-foreground">{m.subdomain}.cloudcommerce.com</td>
-                    <td className="px-5 py-4 font-medium text-[#8B5CF6]">{m.plan}</td>
-                    <td className="px-5 py-4 text-muted-foreground">{m.orders.toLocaleString()}</td>
-                    <td className="px-5 py-4"><Badge status={m.status} /></td>
-                    <td className="px-5 py-4 text-right font-semibold text-[#F8FAFC]">${m.revenue.toLocaleString()}</td>
+          {merchants.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
+                  <tr>
+                    <th className="px-5 py-3.5 font-medium">Merchant</th>
+                    <th className="px-5 py-3.5 font-medium">Domain</th>
+                    <th className="px-5 py-3.5 font-medium">Plan</th>
+                    <th className="px-5 py-3.5 font-medium">Orders</th>
+                    <th className="px-5 py-3.5 font-medium">Status</th>
+                    <th className="px-5 py-3.5 text-right font-medium">Revenue</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {merchants.map((m) => (
+                    <tr key={m.id} className="transition-colors hover:bg-[#1E293B]">
+                      <td className="px-5 py-4 font-medium text-[#F8FAFC]">{m.name}</td>
+                      <td className="px-5 py-4 text-muted-foreground">{m.subdomain}.cloudcommerce.com</td>
+                      <td className="px-5 py-4 font-medium text-[#8B5CF6]">{m.plan}</td>
+                      <td className="px-5 py-4 text-muted-foreground">{m.orders.toLocaleString()}</td>
+                      <td className="px-5 py-4"><Badge status={m.status} /></td>
+                      <td className="px-5 py-4 text-right font-semibold text-[#F8FAFC]">${m.revenue.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
+              No merchants yet
+            </div>
+          )}
         </div>
 
         <ChartCard title="Recent Activity" className="lg:col-span-2">
-          <div className="space-y-0">
-            {activityData.slice(0, 7).map((a) => (
-              <div
-                key={a.id}
-                className="flex items-start gap-3 border-b border-border/40 py-3 last:border-0"
-              >
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#1E293B]">
-                  {activityIcon(a.type)}
+          {activity.length > 0 ? (
+            <div className="space-y-0">
+              {activity.map((a) => (
+                <div
+                  key={a.id}
+                  className="flex items-start gap-3 border-b border-border/40 py-3 last:border-0"
+                >
+                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#1E293B]">
+                    {activityIcon(a.type)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-[#F8FAFC]">
+                      {a.message}{a.user ? ` — ` : ""}
+                      {a.user && <span className="font-medium text-[#8B5CF6]">{a.user}</span>}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{a.time}</p>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm text-[#F8FAFC]">
-                    {a.message}{a.user ? ` — ` : ""}
-                    {a.user && <span className="font-medium text-[#8B5CF6]">{a.user}</span>}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{a.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
+              No recent activity
+            </div>
+          )}
         </ChartCard>
       </div>
     </div>

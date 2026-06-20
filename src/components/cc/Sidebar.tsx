@@ -12,6 +12,7 @@ import {
   Zap,
   X,
   FileText,
+  ExternalLink,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -86,21 +87,19 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
-          {!isAdmin && (
+          <p className="px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+            {isAdmin ? "Merchant Management" : "Merchant"}
+          </p>
+          {merchantNav.map((item) => <NavButton key={item.id} item={item} />)}
+
+          {isAdmin && (
             <>
-              <p className="px-3 pb-2 pt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
-                Merchant
+              <p className="px-3 pb-2 pt-5 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+                Platform
               </p>
-              {merchantNav.map((item) => <NavButton key={item.id} item={item} />)}
+              {platformNav.map((item) => <NavButton key={item.id} item={item} />)}
             </>
           )}
-
-          <p className="px-3 pb-2 pt-5 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
-            {isAdmin ? "Platform" : "Account"}
-          </p>
-          {(isAdmin ? platformNav : platformNav.filter((p) => p.id === "settings")).map((item) => (
-            <NavButton key={item.id} item={item} />
-          ))}
         </nav>
 
         <div className="m-3 rounded-xl border border-violet-800/40 bg-gradient-to-br from-violet-900/40 to-slate-900 p-4">
@@ -110,6 +109,13 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500" />
           </div>
           <p className="mt-2 text-[11px] text-slate-500">7,500 / 10,000 orders this month</p>
+          <button
+            onClick={() => window.open(`/store/demo`, "_blank")}
+            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-violet-500/30 px-3 py-1.5 text-xs font-medium text-violet-400 transition-colors hover:bg-violet-500/10"
+          >
+            <ExternalLink size={12} />
+            View Storefront
+          </button>
         </div>
       </aside>
     </>

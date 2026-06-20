@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { Plus, Pencil, Trash2, Truck, Globe, GripVertical } from "lucide-react";
 import PageHeader from "@/components/dashboard/page-header";
 
@@ -103,20 +103,19 @@ export default function ShippingPage() {
     price: string;
   } | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([
+  async function loadData() {
+    const [z, m] = await Promise.all([
       fetch("/api/v1/shipping/zones").then((r) => (r.ok ? r.json() : [])),
       fetch("/api/v1/shipping/methods").then((r) => (r.ok ? r.json() : [])),
-    ]).then(([z, m]) => {
-      if (!cancelled) {
-        setZones(z);
-        setMethods(m);
-      }
+    ]);
+    setZones(z);
+    setMethods(m);
+  }
+
+  useEffect(() => {
+    startTransition(() => {
+      loadData();
     });
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   async function saveZone() {

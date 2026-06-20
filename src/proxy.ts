@@ -42,7 +42,7 @@ function isPublic(pathname: string): boolean {
 }
 
 function isProtected(pathname: string): boolean {
-  return PROTECTED_PATHS.some((p) => pathname.startsWith(`/${p}`));
+  return PROTECTED_PATHS.some((p) => pathname.startsWith(p));
 }
 
 const AUTH_SKIP_PATHS = ["/auth/login", "/auth/register", "/api/auth/", "/api/v1/auth/customer/", "/api/v1/account/"];

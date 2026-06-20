@@ -7,6 +7,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
+import { useRouter } from "next/navigation";
 
 export type Role = "merchant" | "admin";
 export type Plan = "Starter" | "Growth" | "Scale";
@@ -97,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     setSession(null);
+    window.location.href = "/";
   }, []);
 
   const setRole = useCallback((role: Role) => {

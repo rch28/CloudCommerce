@@ -16,6 +16,7 @@ import {
   X,
   Truck,
   FileText,
+  ExternalLink,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -99,26 +100,31 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
-          {!isAdmin && (
+          <p className="px-3 pb-1.5 pt-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+            {isAdmin ? "Merchant Management" : "Merchant"}
+          </p>
+          {merchantNav.map((item) => <NavButton key={item.id} item={item} />)}
+
+          {isAdmin && (
             <>
-              <p className="px-3 pb-1.5 pt-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/50">
-                Merchant
+              <p className="px-3 pb-1.5 pt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/50">
+                Platform
               </p>
-              {merchantNav.map((item) => <NavButton key={item.id} item={item} />)}
+              {platformNav.map((item) => <NavButton key={item.id} item={item} />)}
             </>
           )}
-
-          <p className="px-3 pb-1.5 pt-5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/50">
-            {isAdmin ? "Platform" : "Account"}
-          </p>
-          {(isAdmin ? platformNav : platformNav.filter((p) => p.id === "settings")).map((item) => (
-            <NavButton key={item.id} item={item} />
-          ))}
         </nav>
 
         <div className="mx-3 mb-3 mt-auto rounded-xl border border-[#7C3AED]/20 bg-gradient-to-br from-[#7C3AED]/10 to-transparent p-4">
           <p className="text-sm font-semibold text-[#F8FAFC]">{session?.plan || "Starter"} Plan</p>
           <p className="mt-1 text-xs text-muted-foreground">Logged in as {isAdmin ? "Admin" : "Merchant"}</p>
+          <button
+            onClick={() => window.open(`/store/demo`, "_blank")}
+            className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-[#7C3AED]/30 px-3 py-1.5 text-xs font-medium text-[#7C3AED] transition-colors hover:bg-[#7C3AED]/10"
+          >
+            <ExternalLink size={12} />
+            View Storefront
+          </button>
         </div>
       </aside>
     </>

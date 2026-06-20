@@ -1,7 +1,10 @@
+"use client";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Building2, Store, Zap } from "lucide-react";
 
 const features = [
   {
@@ -52,23 +55,51 @@ const stats = [
 ];
 
 export default function MarketingPage() {
+  const [session, setSession] = useState<{ role: string; name: string } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.loggedIn && d.user) {
+          setSession({ role: d.user.role, name: d.user.name });
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-3">
             <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-              CC
+              <Zap size={16} />
             </div>
             <span className="text-lg font-semibold">CloudCommerce</span>
           </div>
           <nav className="flex items-center gap-4">
-            <Link href="/auth/login">
-              <Button variant="ghost" size="sm">Sign In</Button>
-            </Link>
-            <Link href="/auth/register">
-              <Button size="sm">Get Started</Button>
-            </Link>
+            {loading ? null : session ? (
+              <>
+                <Link href={session.role === "admin" ? "/admin" : "/merchant/dashboard"}>
+                  <Button variant="outline" size="sm">
+                    <Building2 size={14} className="mr-1.5" />
+                    {session.role === "admin" ? "Admin Dashboard" : "Merchant Dashboard"}
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/auth/login">
+                  <Button variant="ghost" size="sm">Sign In</Button>
+                </Link>
+                <Link href="/auth/register">
+                  <Button size="sm">Get Started</Button>
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </header>
@@ -87,12 +118,23 @@ export default function MarketingPage() {
           manage hundreds of stores from a single codebase.
         </p>
         <div className="mt-10 flex items-center justify-center gap-4">
-          <Link href="/auth/register">
-            <Button size="lg">Start Building</Button>
-          </Link>
-          <Link href="/auth/login">
-            <Button variant="outline" size="lg">View Demo</Button>
-          </Link>
+          {session ? (
+            <Link href={session.role === "admin" ? "/admin" : "/merchant/dashboard"}>
+              <Button size="lg">
+                <Store size={16} className="mr-2" />
+                Go to Dashboard
+              </Button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/auth/register">
+                <Button size="lg">Start Building</Button>
+              </Link>
+              <Link href="/auth/login">
+                <Button variant="outline" size="lg">View Demo</Button>
+              </Link>
+            </>
+          )}
         </div>
       </section>
 
@@ -157,12 +199,20 @@ export default function MarketingPage() {
           Create an account and launch your first store in minutes.
         </p>
         <div className="mt-8 flex items-center justify-center gap-4">
-          <Link href="/auth/register">
-            <Button size="lg">Create Account</Button>
-          </Link>
-          <Link href="/auth/login">
-            <Button variant="outline" size="lg">Sign In</Button>
-          </Link>
+          {session ? (
+            <Link href={session.role === "admin" ? "/admin" : "/merchant/dashboard"}>
+              <Button size="lg">Go to Dashboard</Button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/auth/register">
+                <Button size="lg">Create Account</Button>
+              </Link>
+              <Link href="/auth/login">
+                <Button variant="outline" size="lg">Sign In</Button>
+              </Link>
+            </>
+          )}
         </div>
       </section>
 
@@ -170,8 +220,16 @@ export default function MarketingPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 text-sm text-muted-foreground">
           <span>&copy; {new Date().getFullYear()} CloudCommerce</span>
           <div className="flex items-center gap-6">
-            <Link href="/auth/login" className="hover:text-foreground">Sign In</Link>
-            <Link href="/auth/register" className="hover:text-foreground">Register</Link>
+            {session ? (
+              <Link href={session.role === "admin" ? "/admin" : "/merchant/dashboard"} className="hover:text-foreground">
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link href="/auth/login" className="hover:text-foreground">Sign In</Link>
+                <Link href="/auth/register" className="hover:text-foreground">Register</Link>
+              </>
+            )}
           </div>
         </div>
       </footer>
