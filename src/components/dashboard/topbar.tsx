@@ -53,13 +53,7 @@ export default function Topbar({ onMenu, onSearchOpen }: TopbarProps) {
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
         <NotificationDropdown />
 
-        {session && (
-          <button className="hidden items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-[#7C3AED]/30 hover:text-[#F8FAFC] sm:flex">
-            <Building2 size={14} />
-            <span>{session.storeName}</span>
-            <ChevronDown size={12} />
-          </button>
-        )}
+     */}
 
         {session ? (
           <div className="relative">
