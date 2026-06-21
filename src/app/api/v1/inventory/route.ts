@@ -17,9 +17,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(result);
     }
 
-    const filter: { lowStock?: boolean; outOfStock?: boolean } = {};
+    const filter: { lowStock?: boolean; outOfStock?: boolean; search?: string } = {};
     if (sp.get("lowStock") === "true") filter.lowStock = true;
     if (sp.get("outOfStock") === "true") filter.outOfStock = true;
+    const search = sp.get("search");
+    if (search) filter.search = search;
 
     const inventory = await listInventory(tenantId, Object.keys(filter).length > 0 ? filter : undefined);
     return NextResponse.json(inventory);

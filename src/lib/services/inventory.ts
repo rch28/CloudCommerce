@@ -49,29 +49,52 @@ async function addLog(params: {
   mockLogs.push(log);
 }
 
-export async function listInventory(tenantId: string, filter?: { lowStock?: boolean; outOfStock?: boolean }) {
+export async function listInventory(tenantId: string, filter?: { lowStock?: boolean; outOfStock?: boolean; search?: string }) {
   if (process.env.DATABASE_URL) {
-    const where: Record<string, unknown> = { tenantId };
-    if (filter?.lowStock) {
-      where.quantity = { lte: prisma.inventory.fields.lowStockThreshold };
-    }
+    const conditions: Record<string, unknown>[] = [{ tenantId }];
+
     if (filter?.outOfStock) {
-      where.quantity = 0;
+      conditions.push({ quantity: 0 });
     }
-    const items = await prisma.inventory.findMany({
+    if (filter?.search) {
+      conditions.push({
+        OR: [
+          { variant: { sku: { contains: filter.search } } },
+          { variant: { product: { name: { contains: filter.search } } } },
+        ],
+      });
+    }
+
+    const where = conditions.length > 1 ? { AND: conditions } : conditions[0];
+
+    let items = await prisma.inventory.findMany({
       where,
       include: { variant: { include: { product: { select: { id: true, name: true, slug: true } } } } },
       orderBy: { updatedAt: "desc" },
-    });
-    return (items as unknown as InventoryRecord[]).map((item) => ({
+    }) as unknown as InventoryRecord[];
+
+    let result = items.map((item) => ({
       ...item,
       available: computeAvailable(item),
       status: statusLabel(item.quantity, item.lowStockThreshold),
     }));
+
+    if (filter?.lowStock) {
+      result = result.filter((i) => i.status === "low_stock");
+    }
+
+    return result;
   }
   let result = mockInventory.filter((i) => i.tenantId === tenantId);
   if (filter?.lowStock) result = result.filter((i) => i.quantity <= i.lowStockThreshold && i.quantity > 0);
   if (filter?.outOfStock) result = result.filter((i) => i.quantity === 0);
+  if (filter?.search) {
+    const q = filter.search.toLowerCase();
+    result = result.filter((i) =>
+      i.variant?.sku.toLowerCase().includes(q) ||
+      i.variant?.product.name.toLowerCase().includes(q)
+    );
+  }
   return result.map((item) => ({
     ...item,
     available: computeAvailable(item),

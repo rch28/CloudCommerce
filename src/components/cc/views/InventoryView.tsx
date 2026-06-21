@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { AlertTriangle, Package, Loader2, RefreshCw, History, Archive, RotateCcw } from "lucide-react";
+import { AlertTriangle, Package, Loader2, RefreshCw, History, Archive, RotateCcw, Search } from "lucide-react";
 import { inventoryApi } from "@/services/inventory.service";
 import DataTable from "@/components/dashboard/data-table";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,7 @@ export default function InventoryView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "low_stock" | "out_of_stock">("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [adjustOpen, setAdjustOpen] = useState<string | null>(null);
   const [adjustChange, setAdjustChange] = useState(1);
@@ -51,40 +52,34 @@ export default function InventoryView() {
   const [historyLogs, setHistoryLogs] = useState<StockLog[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const params = new URLSearchParams();
-        if (filter === "low_stock") params.set("lowStock", "true");
-        if (filter === "out_of_stock") params.set("outOfStock", "true");
-        const data = await inventoryApi.list(Object.fromEntries(params));
-        if (!cancelled) setItems(data);
-      } catch (e: unknown) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Unknown error");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [filter]);
-
-  const fetchInventory = async () => {
+  const fetchItems = async (f: string, q: string) => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams();
-      if (filter === "low_stock") params.set("lowStock", "true");
-      if (filter === "out_of_stock") params.set("outOfStock", "true");
-      const data = await inventoryApi.list(Object.fromEntries(params));
-      setItems(data);
+      const p = new URLSearchParams();
+      if (f === "low_stock") p.set("lowStock", "true");
+      if (f === "out_of_stock") p.set("outOfStock", "true");
+      if (q.trim()) p.set("search", q.trim());
+      const res = await fetch(`/api/v1/inventory?${p.toString()}`);
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      if (Array.isArray(data)) setItems(data);
+      else setItems(data.items ?? []);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchItems(filter, searchQuery);
+  }, [filter]);
+
+  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+    fetchItems(filter, val);
   };
 
   const handleAdjust = async () => {
@@ -95,7 +90,7 @@ export default function InventoryView() {
       setAdjustOpen(null);
       setAdjustChange(1);
       setAdjustReason("");
-      await fetchInventory();
+      await fetchItems(filter, searchQuery);
     } catch {
       // silent
     } finally {
@@ -125,7 +120,7 @@ export default function InventoryView() {
       <div className="flex flex-col items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/5 px-4 py-12 text-center">
         <AlertTriangle size={32} className="text-rose-400" />
         <p className="mt-3 text-sm font-medium text-rose-400">{error}</p>
-        <Button onClick={fetchInventory} variant="outline" size="sm" className="mt-4 border-border text-muted-foreground">
+        <Button onClick={() => fetchItems(filter, searchQuery)} variant="outline" size="sm" className="mt-4 border-border text-muted-foreground">
           <RefreshCw size={14} className="mr-1" /> Retry
         </Button>
       </div>
@@ -149,9 +144,21 @@ export default function InventoryView() {
         <span className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-400">
           <Package size={15} /> {items.length} variants tracked
         </span>
-        <Button onClick={fetchInventory} variant="ghost" size="icon" className="ml-auto h-8 w-8 text-muted-foreground">
+        <Button onClick={() => fetchItems(filter, searchQuery)} variant="ghost" size="icon" className="ml-auto h-8 w-8 text-muted-foreground">
           <RefreshCw size={14} />
         </Button>
+      </div>
+
+      {/* Search */}
+      <div className="relative flex items-center">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="text"
+          placeholder="Search by product name or SKU..."
+          value={searchQuery}
+          onChange={onSearchChange}
+          className="w-full rounded-lg border border-border bg-background pl-10 pr-3 py-2.5 text-xs text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+        />
       </div>
 
       {/* Filter tabs */}
@@ -284,8 +291,7 @@ export default function InventoryView() {
             },
           ]}
           data={items as unknown as Record<string, unknown>[]}
-          searchable
-          searchKeys={["variant.product.name", "variant.sku"]}
+          searchable={false}
           pageSize={15}
         />
       )}

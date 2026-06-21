@@ -53,8 +53,6 @@ export default function Topbar({ onMenu, onSearchOpen }: TopbarProps) {
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
         <NotificationDropdown />
 
-     */}
-
         {session ? (
           <div className="relative">
             <button
