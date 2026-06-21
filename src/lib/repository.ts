@@ -42,14 +42,16 @@ export abstract class BaseRepository<T, CreateInput, UpdateInput> {
     const pageSize = Math.min(100, Math.max(1, params.pageSize || 20));
     const skip = (page - 1) * pageSize;
 
+    const finalWhere = where.deletedAt !== undefined ? where : { ...where, deletedAt: null };
+
     const [items, total] = await Promise.all([
       this.model.findMany({
-        where: { ...where, deletedAt: null },
+        where: finalWhere,
         orderBy: params.orderBy ? { [params.orderBy]: params.order || "desc" } : { createdAt: "desc" },
         skip,
         take: pageSize,
       }),
-      this.model.count({ where: { ...where, deletedAt: null } }),
+      this.model.count({ where: finalWhere }),
     ]);
 
     return { items: items as T[], total, page, pageSize, totalPages: Math.ceil(total / pageSize) };

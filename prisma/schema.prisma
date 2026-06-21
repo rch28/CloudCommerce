@@ -144,6 +144,7 @@ model Category {
   image       String?
   parentId    String?
   tenantId    String
+  status      String    @default("active")
   deletedAt   DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

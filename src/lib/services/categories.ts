@@ -8,27 +8,42 @@ import { categoryCache } from "@/lib/redis";
 interface CategoryRecord {
   id: string; name: string; slug: string; description: string | null;
   image: string | null; parentId: string | null; tenantId: string;
-  deletedAt: Date | null; createdAt: Date; updatedAt: Date;
+  status: string; deletedAt: Date | null; createdAt: Date; updatedAt: Date;
 }
 
 const mockCategories: CategoryRecord[] = [
-  { id: "cat-1", name: "Audio", slug: "audio", description: "Audio equipment", image: null, parentId: null, tenantId: "t-1", deletedAt: null, createdAt: new Date(), updatedAt: new Date() },
-  { id: "cat-2", name: "Wearables", slug: "wearables", description: "Wearable devices", image: null, parentId: null, tenantId: "t-1", deletedAt: null, createdAt: new Date(), updatedAt: new Date() },
-  { id: "cat-3", name: "Accessories", slug: "accessories", description: "Accessories", image: null, parentId: null, tenantId: "t-1", deletedAt: null, createdAt: new Date(), updatedAt: new Date() },
+  { id: "cat-1", name: "Audio", slug: "audio", description: "Audio equipment", image: null, parentId: null, tenantId: "t-1", status: "active", deletedAt: null, createdAt: new Date(), updatedAt: new Date() },
+  { id: "cat-2", name: "Wearables", slug: "wearables", description: "Wearable devices", image: null, parentId: null, tenantId: "t-1", status: "active", deletedAt: null, createdAt: new Date(), updatedAt: new Date() },
+  { id: "cat-3", name: "Accessories", slug: "accessories", description: "Accessories", image: null, parentId: null, tenantId: "t-1", status: "active", deletedAt: null, createdAt: new Date(), updatedAt: new Date() },
 ];
 
 class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, Partial<CategoryInput>> {
   protected entityType = "category" as const;
   protected modelName = "category";
 
-  async list(tenantId: string, params: PaginateParams & { search?: string; status?: string } = {}): Promise<PaginatedResult<CategoryRecord>> {
+  async list(tenantId: string, params: PaginateParams & { search?: string; status?: string; categoryId?: string } = {}): Promise<PaginatedResult<CategoryRecord>> {
     if (process.env.DATABASE_URL) {
-      const where: Record<string, unknown> = { tenantId, deletedAt: null };
+      const where: Record<string, unknown> = { tenantId };
+      if (params.status === "archived") {
+        where.deletedAt = { not: null };
+      } else {
+        where.deletedAt = null;
+        if (params.status && params.status !== "all") {
+          where.status = params.status;
+        }
+      }
       if (params.search) where.name = { contains: params.search };
+      if (params.categoryId) where.OR = [{ id: params.categoryId }, { parentId: params.categoryId }];
       return this.findMany(where, params);
     }
     let items = mockCategories.filter((c) => c.tenantId === tenantId && !c.deletedAt);
+    if (params.status === "archived") {
+      items = mockCategories.filter((c) => c.tenantId === tenantId && c.deletedAt);
+    } else if (params.status && params.status !== "all") {
+      items = items.filter((c) => c.status === params.status);
+    }
     if (params.search) items = items.filter((c) => c.name.toLowerCase().includes(params.search!.toLowerCase()));
+    if (params.categoryId) items = items.filter((c) => c.id === params.categoryId || c.parentId === params.categoryId);
     const total = items.length;
     const page = params.page || 1;
     const pageSize = params.pageSize || 20;
@@ -49,14 +64,15 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
   async createOne(data: CategoryInput, meta: AuditMeta): Promise<CategoryRecord> {
     const parsed = categorySchema.parse(data);
     const slug = generateSlug(parsed.slug);
-    const { status: _, parentId, ...rest } = parsed;
+    const { parentId, ...rest } = parsed;
     if (process.env.DATABASE_URL) {
       const payload: Record<string, unknown> = {
         ...rest, slug,
         description: parsed.description ?? null,
         image: parsed.image ?? null,
+        status: parsed.status ?? "active",
         tenantId: meta.tenantId,
-        parent: parentId ? { connect: { id: parentId } } : undefined,
+        parentId: parentId ?? null,
       };
       invalidateStorefrontCache(meta.tenantId);
       return this.create(payload as CategoryInput, meta);
@@ -70,7 +86,7 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
   async updateOne(id: string, data: Partial<CategoryInput>, meta: AuditMeta): Promise<CategoryRecord> {
     const parsed = categorySchema.partial().parse(data);
     const slug = parsed.slug ? generateSlug(parsed.slug) : undefined;
-    const { status: _, ...rest } = parsed;
+    const { ...rest } = parsed;
     if (process.env.DATABASE_URL) {
       const payload: Record<string, unknown> = { ...rest, slug };
       if (parsed.description !== undefined) payload.description = parsed.description ?? null;
@@ -109,13 +125,14 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
     if (process.env.DATABASE_URL) {
       invalidateCategoryCache(id, meta.tenantId);
       invalidateStorefrontCache(meta.tenantId);
-      const record = await this.model.update({ where: { id }, data: { deletedAt: new Date() } });
-      await logAudit({ entityType: "category", entityId: id, action: "archived", changes: { deletedAt: new Date().toISOString() }, userId: meta.userId, tenantId: meta.tenantId });
+      const record = await this.model.update({ where: { id }, data: { deletedAt: new Date(), status: "archived" } });
+      await logAudit({ entityType: "category", entityId: id, action: "archived", changes: { deletedAt: new Date().toISOString(), status: "archived" }, userId: meta.userId, tenantId: meta.tenantId });
       return record as CategoryRecord;
     }
     const idx = mockCategories.findIndex((c) => c.id === id);
     if (idx === -1) throw new Error("Category not found");
     mockCategories[idx].deletedAt = new Date();
+    mockCategories[idx].status = "archived";
     return mockCategories[idx];
   }
 
@@ -123,13 +140,14 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
     if (process.env.DATABASE_URL) {
       invalidateCategoryCache(id, meta.tenantId);
       invalidateStorefrontCache(meta.tenantId);
-      const record = await this.model.update({ where: { id }, data: { deletedAt: null } });
-      await logAudit({ entityType: "category", entityId: id, action: "updated", changes: { deletedAt: null }, userId: meta.userId, tenantId: meta.tenantId });
+      const record = await this.model.update({ where: { id }, data: { deletedAt: null, status: "active" } });
+      await logAudit({ entityType: "category", entityId: id, action: "updated", changes: { deletedAt: null, status: "active" }, userId: meta.userId, tenantId: meta.tenantId });
       return record as CategoryRecord;
     }
     const idx = mockCategories.findIndex((c) => c.id === id);
     if (idx === -1) throw new Error("Category not found");
     mockCategories[idx].deletedAt = null;
+    mockCategories[idx].status = "active";
     return mockCategories[idx];
   }
 

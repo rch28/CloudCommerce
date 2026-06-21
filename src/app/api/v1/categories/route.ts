@@ -8,8 +8,17 @@ export async function GET(request: NextRequest) {
 
   try {
     const tenantId = await getTenantId(request);
-    const search = request.nextUrl.searchParams.get("search") || undefined;
-    const categories = await categoryRepo.list(tenantId, { search });
+    const sp = request.nextUrl.searchParams;
+    const search = sp.get("search") || undefined;
+    const status = sp.get("status") || undefined;
+    const categoryId = sp.get("categoryId") || undefined;
+    const categories = await categoryRepo.list(tenantId, {
+      search,
+      status,
+      categoryId,
+      page: Number(sp.get("page")) || 1,
+      pageSize: Number(sp.get("pageSize")) || 10,
+    });
     return NextResponse.json(categories);
   } catch (e) {
     return handleError(e);
