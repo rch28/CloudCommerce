@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DollarSign, ShoppingCart, Package, Boxes, Activity } from "lucide-react";
 import {
   AreaChart,
@@ -14,15 +14,67 @@ import {
 } from "recharts";
 import StatsCard from "@/components/dashboard/stats-card";
 import ChartCard from "@/components/dashboard/chart-card";
+import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import ErrorState from "@/components/dashboard/error-state";
 import LiveOrdersFeed from "@/components/dashboard/merchant/live-orders-feed";
-import { revenueData, orderChartData, merchantMetrics } from "@/data/mock";
+
+interface DashboardStats {
+  revenue: number;
+  orders: number;
+  products: number;
+  inventory: number;
+  revenueChange: number;
+  ordersChange: number;
+  productsChange: number;
+  inventoryChange: number;
+  revenueData: Array<{ month: string; revenue: number; orders: number }>;
+  orderChartData: Array<{ day: string; orders: number }>;
+}
 
 export default function MerchantDashboardView() {
+  const [data, setData] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  if (error) {
-    return <ErrorState onRetry={() => setError(false)} />;
+  const fetchStats = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await fetch("/api/v1/dashboard/stats");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const json = await res.json();
+      setData(json);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <LoadingSkeleton key={i} variant="card" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <LoadingSkeleton variant="chart" />
+          </div>
+          <LoadingSkeleton variant="chart" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return <ErrorState onRetry={fetchStats} />;
   }
 
   return (
@@ -30,29 +82,29 @@ export default function MerchantDashboardView() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatsCard
           label="Total Revenue"
-          value={`$${(merchantMetrics.revenue / 1000).toFixed(1)}k`}
-          change={merchantMetrics.revenueChange}
+          value={`$${(data.revenue / 1000).toFixed(1)}k`}
+          change={data.revenueChange}
           icon={DollarSign}
           accent="#7C3AED"
         />
         <StatsCard
           label="Orders"
-          value={merchantMetrics.orders.toLocaleString()}
-          change={merchantMetrics.ordersChange}
+          value={data.orders.toLocaleString()}
+          change={data.ordersChange}
           icon={ShoppingCart}
           accent="#06b6d4"
         />
         <StatsCard
           label="Products"
-          value={merchantMetrics.products.toString()}
-          change={merchantMetrics.productsChange}
+          value={data.products.toString()}
+          change={data.productsChange}
           icon={Package}
           accent="#22c55e"
         />
         <StatsCard
           label="Inventory Items"
-          value={merchantMetrics.inventory.toString()}
-          change={merchantMetrics.inventoryChange}
+          value={data.inventory.toString()}
+          change={data.inventoryChange}
           icon={Boxes}
           accent="#f59e0b"
         />
@@ -70,7 +122,7 @@ export default function MerchantDashboardView() {
           }
         >
           <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={revenueData}>
+            <AreaChart data={data.revenueData}>
               <defs>
                 <linearGradient id="merchantRev" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.4} />
@@ -91,7 +143,7 @@ export default function MerchantDashboardView() {
 
         <ChartCard title="Orders This Week" description="Daily order volume">
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={orderChartData}>
+            <BarChart data={data.orderChartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#27272A" vertical={false} />
               <XAxis dataKey="day" stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
