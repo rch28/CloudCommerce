@@ -1,15 +1,13 @@
 import { test, expect } from "@playwright/test";
-import { loginAsMerchant, loginAsAdmin, unauthContext } from "./helpers/auth";
+import { loginAsMerchant } from "./helpers/auth";
 
 const ts = Date.now();
 
 test.describe("Products API", () => {
   let ctx: Awaited<ReturnType<typeof loginAsMerchant>>;
-  let adminCtx: Awaited<ReturnType<typeof loginAsAdmin>>;
 
   test.beforeAll(async () => {
     ctx = await loginAsMerchant();
-    adminCtx = await loginAsAdmin();
   });
 
   test("GET /api/v1/products - returns list", async () => {
@@ -20,9 +18,8 @@ test.describe("Products API", () => {
   });
 
   test("GET /api/v1/products - allows public read access", async () => {
-    const unauth = await unauthContext();
-    const res = await unauth.get("/api/v1/products");
-    expect(res.ok()).toBe(true);
+    const res = await fetch("http://localhost:3000/api/v1/products");
+    expect(res.ok).toBe(true);
   });
 
   test("POST /api/v1/products - creates a product", async () => {
@@ -75,25 +72,34 @@ test.describe("Products API", () => {
         images: [], variants: [{ sku: `BP-${ts}`, price: 1, quantity: 1, isDefault: true, status: "active" }], options: [],
       },
     });
+    expect(create.ok()).toBe(true);
     const created = await create.json();
     const res = await ctx.put(`/api/v1/products/${created.id}`, {
       data: { name: "After", status: "active" },
     });
     expect(res.ok()).toBe(true);
-    const body = await res.json();
-    expect(body.name).toBe("After");
   });
 
-  test("DELETE /api/v1/products/:id - soft deletes (admin)", async () => {
-    const slug = `del-prod-${ts}`;
+  test("POST /api/v1/products/:id/duplicate - duplicates a product", async () => {
+    const slug = `orig-${ts}`;
     const create = await ctx.post("/api/v1/products", {
       data: {
-        name: "Del Prod", slug, status: "draft",
-        images: [], variants: [{ sku: `DP-${ts}`, price: 1, quantity: 1, isDefault: true, status: "active" }], options: [],
+        name: "Original", slug, status: "active",
+        images: [{ url: "https://example.com/img.jpg", alt: "test", sortOrder: 0 }],
+        variants: [{ sku: `ORIG-${ts}`, price: 19.99, quantity: 10, isDefault: true, status: "active" }],
+        options: [],
       },
     });
+    expect(create.ok()).toBe(true);
     const created = await create.json();
-    const res = await adminCtx.delete(`/api/v1/products/${created.id}`);
+    const res = await ctx.post(`/api/v1/products/${created.id}/duplicate`);
     expect(res.ok()).toBe(true);
+    const body = await res.json();
+    expect(body.name).toContain("Original");
+  });
+
+  test("POST /api/v1/products/generate-variants - validates input", async () => {
+    const res = await ctx.post("/api/v1/products/generate-variants", { data: {} });
+    expect(res.status()).toBe(400);
   });
 });

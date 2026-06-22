@@ -2,26 +2,29 @@ import { request } from "@playwright/test";
 
 const BASE = "http://localhost:3000";
 
-export async function loginAsMerchant() {
+async function loginWithRetry(email: string, password: string, role: string) {
   const ctx = await request.newContext({
     baseURL: BASE,
-    extraHTTPHeaders: { "x-user-role": "merchant" },
+    extraHTTPHeaders: { "x-user-role": role },
   });
-  await ctx.post("/api/auth/login", {
-    data: { email: "merchant@demo.com", password: "merchant123" },
-  });
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await ctx.post("/api/auth/login", { data: { email, password } });
+      if (res.ok()) return ctx;
+    } catch {
+      if (attempt < 2) await new Promise((r) => setTimeout(r, 1000));
+      else throw new Error(`Login failed for ${email} after 3 attempts`);
+    }
+  }
   return ctx;
 }
 
+export async function loginAsMerchant() {
+  return loginWithRetry("merchant@demo.com", "merchant123", "merchant");
+}
+
 export async function loginAsAdmin() {
-  const ctx = await request.newContext({
-    baseURL: BASE,
-    extraHTTPHeaders: { "x-user-role": "admin" },
-  });
-  await ctx.post("/api/auth/login", {
-    data: { email: "admin@cloudcommerce.com", password: "admin123" },
-  });
-  return ctx;
+  return loginWithRetry("admin@cloudcommerce.com", "admin123", "admin");
 }
 
 export async function unauthContext() {

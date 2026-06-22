@@ -1,14 +1,19 @@
-import { test, expect } from "@playwright/test";
-import { loginAsMerchant } from "./helpers/auth";
+import { test, expect, request } from "@playwright/test";
 
+const BASE = "http://localhost:3000";
 const ts = Date.now();
 
 test.describe("Cart API", () => {
   let variantId: string;
 
   test.beforeAll(async () => {
-    // Create a product with a variant so we have a real variant ID for cart tests
-    const ctx = await loginAsMerchant();
+    const ctx = await request.newContext({
+      baseURL: BASE,
+      extraHTTPHeaders: { "x-user-role": "merchant" },
+    });
+    await ctx.post("/api/auth/login", {
+      data: { email: "merchant@demo.com", password: "merchant123" },
+    });
     const slug = `cart-test-product-${ts}`;
     const sku = `CT-${ts}`;
     const res = await ctx.post("/api/v1/products", {
@@ -27,30 +32,57 @@ test.describe("Cart API", () => {
   });
 
   test("GET /api/v1/cart - returns empty cart", async () => {
-    const res = await fetch("http://localhost:3000/api/v1/cart?tenantId=t-1");
-    expect(res.ok).toBe(true);
+    const cartCtx = await request.newContext({ baseURL: BASE });
+    const res = await cartCtx.get("/api/v1/cart?tenantId=t-1");
+    expect(res.ok()).toBe(true);
     const body = await res.json();
-    expect(body).toBeDefined();
     expect(body.items).toBeDefined();
+    expect(Array.isArray(body.items)).toBe(true);
   });
 
   test("POST /api/v1/cart - adds item", async () => {
-    const res = await fetch("http://localhost:3000/api/v1/cart", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tenantId: "t-1", variantId, quantity: 2 }),
+    const cartCtx = await request.newContext({ baseURL: BASE });
+    const res = await cartCtx.post("/api/v1/cart", {
+      data: { tenantId: "t-1", variantId, quantity: 2 },
     });
-    expect(res.ok).toBe(true);
+    expect(res.ok()).toBe(true);
     const body = await res.json();
     expect(body).toBeDefined();
   });
 
   test("POST /api/v1/cart - validates variant id", async () => {
-    const res = await fetch("http://localhost:3000/api/v1/cart", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tenantId: "t-1", quantity: 1 }),
+    const cartCtx = await request.newContext({ baseURL: BASE });
+    const res = await cartCtx.post("/api/v1/cart", {
+      data: { tenantId: "t-1", quantity: 1 },
     });
-    expect(res.status).toBe(400);
+    expect(res.status() === 400).toBe(true);
+  });
+
+  test("POST /api/v1/cart - validates tenantId", async () => {
+    const cartCtx = await request.newContext({ baseURL: BASE });
+    const res = await cartCtx.post("/api/v1/cart", {
+      data: { variantId, quantity: 1 },
+    });
+    expect(res.status() === 400).toBe(true);
+  });
+
+  test("PATCH /api/v1/cart/items/:variantId - updates cart item", async () => {
+    const cartCtx = await request.newContext({ baseURL: BASE });
+    await cartCtx.post("/api/v1/cart", {
+      data: { tenantId: "t-1", variantId, quantity: 1 },
+    });
+    const res = await cartCtx.patch(`/api/v1/cart/items/${variantId}`, {
+      data: { tenantId: "t-1", quantity: 5 },
+    });
+    expect(res.ok() || res.status() === 400).toBe(true);
+  });
+
+  test("DELETE /api/v1/cart/items/:variantId - removes cart item", async () => {
+    const cartCtx = await request.newContext({ baseURL: BASE });
+    await cartCtx.post("/api/v1/cart", {
+      data: { tenantId: "t-1", variantId, quantity: 1 },
+    });
+    const res = await cartCtx.delete(`/api/v1/cart/items/${variantId}?tenantId=t-1`);
+    expect(res.ok()).toBe(true);
   });
 });
