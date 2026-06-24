@@ -24,14 +24,18 @@ interface PageHeaderProps {
   actions?: ReactNode;
 }
 
-export default function PageHeader({ title, description, actions }: PageHeaderProps) {
+export default function PageHeader({
+  title,
+  description,
+  actions,
+}: PageHeaderProps) {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
 
   return (
     <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div className="space-y-1">
-        <nav className="flex items-center gap-1 text-sm text-muted-foreground">
+        {/* <nav className="flex items-center gap-1 text-sm text-muted-foreground">
           <Link href="/merchant/dashboard" className="transition-colors hover:text-[#F8FAFC]">
             <Home size={14} />
           </Link>
@@ -52,11 +56,17 @@ export default function PageHeader({ title, description, actions }: PageHeaderPr
               </span>
             );
           })}
-        </nav>
-        <h1 className="text-xl font-bold tracking-tight text-[#F8FAFC] sm:text-2xl">{title}</h1>
-        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        </nav> */}
+        <h1 className="text-xl font-bold tracking-tight text-[#F8FAFC] sm:text-2xl">
+          {title}
+        </h1>
+        {description && (
+          <p className="text-sm text-muted-foreground">{description}</p>
+        )}
       </div>
-      {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+      {actions && (
+        <div className="flex shrink-0 items-center gap-2">{actions}</div>
+      )}
     </div>
   );
 }
