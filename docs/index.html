@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudCommerce — Open-Source Multi-Tenant E-Commerce Platform</title>
+<meta name="description" content="Comprehensive documentation for CloudCommerce, the open-source multi-tenant e-commerce platform built with Next.js, TypeScript, and PostgreSQL.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CSS CUSTOM PROPERTIES
+   ============================================================ */
+:root {
+  --bg-deepest: #0a0a0f;
+  --bg-dark: #0f0f1a;
+  --bg-card: #12121a;
+  --bg-elevated: #1a1a2e;
+  --bg-glass: rgba(18, 18, 26, 0.85);
+  --border-subtle: #1e1e3a;
+  --border-mid: #2a2a4a;
+  --border-glow: rgba(74, 222, 255, 0.15);
+  --cyan: #4adeff;
+  --cyan-dark: #06b6d4;
+  --cyan-glow: rgba(74, 222, 255, 0.3);
+  --gold: #f59e0b;
+  --gold-light: #fbbf24;
+  --gold-glow: rgba(245, 158, 11, 0.25);
+  --text-heading: #ffffff;
+  --text-body: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --sidebar-width: 280px;
+  --header-height: 0px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
+  --shadow-glow-cyan: 0 0 30px rgba(74, 222, 255, 0.08);
+  --shadow-glow-gold: 0 0 30px rgba(245, 158, 11, 0.06);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 2rem;
+  font-size: 16px;
+}
+body {
+  font-family: var(--font-body);
+  background: var(--bg-deepest);
+  color: var(--text-body);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+::selection {
+  background: var(--cyan);
+  color: var(--bg-deepest);
+}
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--cyan-dark); }
+
+/* Grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--bg-dark);
+  border-right: 1px solid var(--border-subtle);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform var(--transition);
+}
+.sidebar-header {
+  padding: 1.25rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  text-decoration: none;
+}
+.sidebar-logo svg {
+  flex-shrink: 0;
+}
+.sidebar-logo span {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+}
+.sidebar-logo span span {
+  color: var(--cyan);
+}
+.search-box {
+  position: relative;
+}
+.search-box input {
+  width: 100%;
+  padding: 0.5rem 0.75rem 0.5rem 2rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-body);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.search-box input:focus {
+  border-color: var(--cyan-dark);
+  box-shadow: 0 0 0 2px var(--border-glow);
+}
+.search-box input::placeholder { color: var(--text-dim); }
+.search-box .search-icon {
+  position: absolute;
+  left: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+  pointer-events: none;
+}
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem 0;
+}
+.sidebar-nav::-webkit-scrollbar { width: 4px; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
+
+.nav-section {
+  margin-bottom: 0.25rem;
+}
+.nav-section-title {
+  padding: 0.5rem 1.25rem 0.25rem;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+.nav-link {
+  display: block;
+  padding: 0.35rem 1.25rem 0.35rem 1.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: all var(--transition);
+  line-height: 1.4;
+}
+.nav-link:hover {
+  color: var(--text-body);
+  background: rgba(74, 222, 255, 0.04);
+}
+.nav-link.active {
+  color: var(--cyan);
+  border-left-color: var(--cyan);
+  background: rgba(74, 222, 255, 0.06);
+}
+.nav-link.active-sub {
+  color: var(--text-body);
+  border-left-color: var(--cyan-dark);
+}
+
+/* Mobile toggle */
+.mobile-toggle {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1100;
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  color: var(--text-heading);
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition);
+}
+.mobile-toggle:hover {
+  background: var(--bg-elevated);
+}
+.mobile-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Main content */
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  min-width: 0;
+  position: relative;
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero {
+  position: relative;
+  padding: 6rem 3rem 5rem;
+  overflow: hidden;
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 20%, rgba(6, 182, 212, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 80%, rgba(245, 158, 11, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(74, 222, 255, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 70% 60% at 20% 80%, rgba(6, 182, 212, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+.hero-glow-1 {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(74, 222, 255, 0.06) 0%, transparent 70%);
+  top: -200px;
+  right: -200px;
+  pointer-events: none;
+}
+.hero-glow-2 {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.04) 0%, transparent 70%);
+  bottom: -100px;
+  left: -100px;
+  pointer-events: none;
+}
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 850px;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem 0.3rem 0.6rem;
+  background: rgba(74, 222, 255, 0.08);
+  border: 1px solid rgba(74, 222, 255, 0.15);
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 1.5rem;
+}
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-weight: 800;
+  color: var(--text-heading);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+}
+.hero h1 .accent-cyan { color: var(--cyan); }
+.hero h1 .accent-gold { color: var(--gold); }
+.hero .tagline {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.01em;
+}
+.hero p {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  max-width: 650px;
+  line-height: 1.8;
+  margin-bottom: 2rem;
+}
+.hero-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.6rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--transition);
+  cursor: pointer;
+  border: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--cyan-dark), var(--cyan));
+  color: var(--bg-deepest);
+  box-shadow: 0 2px 20px rgba(74, 222, 255, 0.2);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(74, 222, 255, 0.35);
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--text-body);
+  border: 1px solid var(--border-mid);
+}
+.btn-secondary:hover {
+  border-color: var(--cyan-dark);
+  color: var(--cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(74, 222, 255, 0.1);
+}
+
+/* ============================================================
+   SECTION COMMON
+   ============================================================ */
+section {
+  padding: 5rem 3rem;
+  position: relative;
+}
+section:nth-child(even) {
+  background: rgba(15, 15, 26, 0.5);
+}
+.section-header {
+  margin-bottom: 3rem;
+  max-width: 800px;
+}
+.section-header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+}
+.section-header h2 .highlight {
+  background: linear-gradient(135deg, var(--cyan), var(--cyan-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.section-header h2 .highlight-gold {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+  .section-header p {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+  .feature-section {
+    padding: 1.5rem 3rem 3rem;
+  }
+
+/* ============================================================
+   OVERVIEW
+   ============================================================ */
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  align-items: center;
+}
+.overview-text p {
+  font-size: 1.05rem;
+  line-height: 1.9;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+.overview-text p:last-child { margin-bottom: 0; }
+.overview-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  text-align: center;
+  transition: border-color var(--transition), transform var(--transition);
+}
+.stat-card:hover {
+  border-color: var(--border-glow);
+  transform: translateY(-3px);
+}
+.stat-card .stat-number {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--cyan);
+  line-height: 1.2;
+}
+.stat-card .stat-label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 0.25rem;
+}
+
+/* ============================================================
+   TECH STACK TABLE
+   ============================================================ */
+.tech-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+.tech-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.tech-table thead th {
+  text-align: left;
+  padding: 0.85rem 1.25rem;
+  background: var(--bg-elevated);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-mid);
+}
+.tech-table tbody td {
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-body);
+}
+.tech-table tbody tr:last-child td { border-bottom: none; }
+.tech-table tbody tr:hover td {
+  background: rgba(74, 222, 255, 0.02);
+}
+.tech-table tbody td:first-child {
+  font-weight: 600;
+  color: var(--cyan);
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+/* ============================================================
+   ARCHITECTURE
+   ============================================================ */
+.arch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.arch-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.arch-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--cyan), var(--cyan-dark));
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+.arch-card:hover::before { opacity: 1; }
+.arch-card:hover {
+  border-color: var(--border-glow);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.arch-card h4 {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 0.4rem;
+}
+.arch-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+/* ============================================================
+   FEATURES
+   ============================================================ */
+.features-intro {
+  padding: 5rem 3rem 0;
+}
+.features-intro + .feature-section {
+  padding-top: 0;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+}
+
+.feature-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.75rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(74, 222, 255, 0.08), transparent 50%, rgba(245, 158, 11, 0.04));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  transition: opacity var(--transition);
+  opacity: 0.6;
+}
+.feature-card:hover::before { opacity: 1; }
+.feature-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(74, 222, 255, 0.15);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.3), 0 0 40px rgba(74, 222, 255, 0.04);
+}
+
+.feature-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, rgba(74, 222, 255, 0.1), rgba(74, 222, 255, 0.03));
+  border: 1px solid rgba(74, 222, 255, 0.1);
+  color: var(--cyan);
+  font-size: 1.2rem;
+}
+.feature-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+.feature-card > p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+}
+.feature-bullets {
+  list-style: none;
+  padding: 0;
+}
+.feature-bullets li {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  padding: 0.2rem 0;
+  padding-left: 1.1rem;
+  position: relative;
+  line-height: 1.5;
+}
+.feature-bullets li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--cyan-dark);
+  opacity: 0.5;
+}
+
+/* ============================================================
+   PROJECT STRUCTURE TREE
+   ============================================================ */
+.tree-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  overflow-x: auto;
+}
+.tree-wrap pre {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.8rem;
+  line-height: 1.75;
+  color: var(--text-body);
+}
+.tree-wrap .tree-dir {
+  color: var(--cyan);
+  font-weight: 500;
+}
+.tree-wrap .tree-comment {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* ============================================================
+   COMMANDS TABLE
+   ============================================================ */
+.commands-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+.cmd-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1.25rem;
+  transition: all var(--transition);
+}
+.cmd-item:hover {
+  border-color: var(--border-glow);
+  background: var(--bg-elevated);
+}
+.cmd-code {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.8rem;
+  color: var(--cyan);
+  background: rgba(74, 222, 255, 0.06);
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.cmd-label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.site-footer {
+  padding: 3rem;
+  text-align: center;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-dark);
+}
+.site-footer p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.site-footer .footer-logo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--text-heading);
+  margin-bottom: 0.5rem;
+}
+.site-footer .footer-logo span { color: var(--cyan); }
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(74, 222, 255, 0.1); }
+  50% { box-shadow: 0 0 40px rgba(74, 222, 255, 0.2); }
+}
+
+.animate-in {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.animate-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-content .hero-badge { animation: fadeIn 0.6s 0.1s both; }
+.hero-content h1 { animation: fadeInUp 0.8s 0.2s both; }
+.hero-content .tagline { animation: fadeInUp 0.8s 0.35s both; }
+.hero-content p { animation: fadeInUp 0.8s 0.5s both; }
+.hero-content .hero-buttons { animation: fadeInUp 0.8s 0.65s both; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+  .features-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar-overlay.open {
+    display: block;
+    opacity: 1;
+  }
+  .mobile-toggle {
+    display: flex;
+  }
+  .main-content {
+    margin-left: 0;
+  }
+  .hero {
+    padding: 4rem 1.5rem 3rem;
+    min-height: auto;
+  }
+  section {
+    padding: 3rem 1.5rem;
+  }
+  .features-intro {
+    padding: 3rem 1.5rem 0;
+  }
+  .feature-section {
+    padding: 1.5rem 1.5rem 2rem;
+  }
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  .arch-grid {
+    grid-template-columns: 1fr;
+  }
+  .overview-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 10vw, 3rem);
+  }
+  .tech-table-wrap {
+    margin: 0 -0.75rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  .site-footer {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .overview-stats {
+    grid-template-columns: 1fr;
+  }
+  .hero-buttons .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================================
+   CODE BLOCK COPY BUTTON (JS-enhanced)
+   ============================================================ */
+.code-block {
+  position: relative;
+}
+.copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.7rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all var(--transition);
+  opacity: 0;
+}
+.code-block:hover .copy-btn { opacity: 1; }
+.copy-btn:hover {
+  background: var(--cyan-dark);
+  color: var(--bg-deepest);
+  border-color: var(--cyan-dark);
+}
+.copy-btn.copied {
+  background: var(--cyan-dark);
+  color: var(--bg-deepest);
+}
+</style>
+</head>
+<body>
+
+<!-- Mobile toggle button -->
+<button class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation menu">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <line x1="4" y1="7" x2="20" y2="7" id="menuLine1"/>
+    <line x1="4" y1="12" x2="20" y2="12" id="menuLine2"/>
+    <line x1="4" y1="17" x2="20" y2="17" id="menuLine3"/>
+  </svg>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app-wrapper">
+
+  <!-- ============================================================
+       SIDEBAR
+       ============================================================ -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Documentation navigation">
+    <div class="sidebar-header">
+      <a href="#hero" class="sidebar-logo" aria-label="CloudCommerce home">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect x="2" y="2" width="24" height="24" rx="6" stroke="#4adeff" stroke-width="1.5" fill="rgba(74,222,255,0.06)"/>
+          <path d="M8 16c0-2.5 1.5-4.5 4-5 1.5-3 5.5-3 7 0 2.5 0.5 4 2.5 4 5 0 2.5-2 4.5-4.5 4.5h-6C10 20.5 8 18.5 8 16z" fill="#4adeff" opacity="0.7"/>
+          <path d="M14 13l2 2 3-3" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <span>Cloud<span>Commerce</span></span>
+      </a>
+      <div class="search-box">
+        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="searchInput" placeholder="Search docs..." aria-label="Search documentation">
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav">
+      <!-- Getting Started -->
+      <div class="nav-section">
+        <div class="nav-section-title">Getting Started</div>
+        <a href="#hero" class="nav-link active">Overview</a>
+        <a href="#tech-stack" class="nav-link">Tech Stack</a>
+        <a href="#architecture" class="nav-link">Architecture</a>
+        <a href="#commands" class="nav-link">Quick Commands</a>
+      </div>
+      <!-- Features -->
+      <div class="nav-section">
+        <div class="nav-section-title">Features</div>
+        <a href="#store-management" class="nav-link">Store Management</a>
+        <a href="#product-management" class="nav-link">Product Management</a>
+        <a href="#inventory" class="nav-link">Inventory Management</a>
+        <a href="#cart" class="nav-link">Shopping Cart</a>
+        <a href="#orders" class="nav-link">Order Processing</a>
+        <a href="#payments" class="nav-link">Payment Processing</a>
+        <a href="#customers" class="nav-link">Customer Management</a>
+        <a href="#reviews" class="nav-link">Reviews &amp; Ratings</a>
+        <a href="#wishlists" class="nav-link">Wishlists</a>
+        <a href="#discounts" class="nav-link">Discounts &amp; Promotions</a>
+        <a href="#cms" class="nav-link">CMS</a>
+        <a href="#analytics" class="nav-link">Analytics &amp; Reporting</a>
+        <a href="#staff" class="nav-link">Staff Management</a>
+        <a href="#api-webhooks" class="nav-link">API &amp; Webhooks</a>
+        <a href="#shipping" class="nav-link">Shipping</a>
+        <a href="#tax" class="nav-link">Tax Calculation</a>
+        <a href="#loyalty" class="nav-link">Loyalty Program</a>
+        <a href="#warehouse" class="nav-link">Warehouse Management</a>
+        <a href="#realtime" class="nav-link">Real-time System</a>
+        <a href="#notifications" class="nav-link">Notifications</a>
+        <a href="#background-jobs" class="nav-link">Background Processing</a>
+        <a href="#uploads" class="nav-link">File Uploads &amp; Storage</a>
+        <a href="#search" class="nav-link">Search</a>
+        <a href="#auth" class="nav-link">Authentication &amp; Authorization</a>
+        <a href="#security" class="nav-link">Security</a>
+        <a href="#deployment" class="nav-link">Deployment &amp; Infrastructure</a>
+        <a href="#developer-experience" class="nav-link">Developer Experience</a>
+      </div>
+      <!-- Reference -->
+      <div class="nav-section">
+        <div class="nav-section-title">Reference</div>
+        <a href="#project-structure" class="nav-link">Project Structure</a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <main class="main-content">
+
+    <!-- HERO -->
+    <section id="hero" class="hero">
+      <div class="hero-glow-1"></div>
+      <div class="hero-glow-2"></div>
+      <div class="hero-content">
+        <div class="hero-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          v2.0.0 — Open Source
+        </div>
+        <h1>
+          Cloud<br>
+          <span class="accent-cyan">Commerce</span>
+        </h1>
+        <p class="tagline">The Open-Source Multi-Tenant E-Commerce Platform</p>
+        <p>Deploy hundreds of stores from a single codebase. Enterprise-grade features, SaaS-ready architecture, complete ownership of your data. Built for SaaS providers, agencies, and enterprises who need to manage hundreds of stores from one deployment.</p>
+        <div class="hero-buttons">
+          <a href="https://github.com/anomalyco/cloudcommerce" class="btn btn-primary" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            Get Started
+          </a>
+          <a href="https://github.com/anomalyco/cloudcommerce" class="btn btn-secondary" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            View on GitHub
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- OVERVIEW -->
+    <section id="overview">
+      <div class="section-header">
+        <h2>What is <span class="highlight">CloudCommerce</span>?</h2>
+      </div>
+      <div class="overview-grid">
+        <div class="overview-text">
+          <p>CloudCommerce is a comprehensive multi-tenant e-commerce platform engineered for scale. From a single deployment you can provision, customize, and operate hundreds of independent storefronts — each with its own domain, branding, product catalog, payment configuration, and customer base.</p>
+          <p>Built with modern tooling — Next.js 16, React 19, TypeScript 6, Prisma 7, and PostgreSQL — the platform delivers enterprise-grade features out of the box: real-time order tracking, Redis-powered caching, BullMQ background jobs, WebSocket push, pluggable payment/storage/shipping providers, and a full REST API.</p>
+          <p>Every tenant is isolated at the data layer. Every operation is audited. Every component is built for extensibility. Whether you're launching a SaaS, running a digital agency, or building the next great marketplace, CloudCommerce gives you complete ownership of your infrastructure and data.</p>
+        </div>
+        <div class="overview-stats">
+          <div class="stat-card"><div class="stat-number">100+</div><div class="stat-label">Tenant Stores</div></div>
+          <div class="stat-card"><div class="stat-number">36</div><div class="stat-label">API Resource Modules</div></div>
+          <div class="stat-card"><div class="stat-number">32</div><div class="stat-label">Service Modules</div></div>
+          <div class="stat-card"><div class="stat-number">5</div><div class="stat-label">Payment Providers</div></div>
+          <div class="stat-card"><div class="stat-number">48</div><div class="stat-label">UI Primitives</div></div>
+          <div class="stat-card"><div class="stat-number">48</div><div class="stat-label">BullMQ Queues</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TECH STACK -->
+    <section id="tech-stack">
+      <div class="section-header">
+        <h2><span class="highlight">Tech Stack</span></h2>
+        <p>The platform is built on a modern, type-safe foundation optimized for developer experience and production performance.</p>
+      </div>
+      <div class="tech-table-wrap">
+        <table class="tech-table">
+          <thead><tr><th>Layer</th><th>Technology</th></tr></thead>
+          <tbody>
+            <tr><td>Framework</td><td>Next.js 16 (App Router, Turbopack)</td></tr>
+            <tr><td>Language</td><td>TypeScript 6 (strict mode)</td></tr>
+            <tr><td>UI Library</td><td>React 19 with React Compiler</td></tr>
+            <tr><td>Styling</td><td>Tailwind CSS 4 + PostCSS</td></tr>
+            <tr><td>Components</td><td>shadcn/ui (48 primitives via Radix UI)</td></tr>
+            <tr><td>ORM</td><td>Prisma 7 + PostgreSQL 16</td></tr>
+            <tr><td>Validation</td><td>Zod 4</td></tr>
+            <tr><td>Forms</td><td>React Hook Form 7</td></tr>
+            <tr><td>State / Data</td><td>TanStack Query 5</td></tr>
+            <tr><td>Payments</td><td>Stripe 22, Khalti, eSewa</td></tr>
+            <tr><td>Caching</td><td>Redis (Upstash / Redis Cloud / localhost)</td></tr>
+            <tr><td>Background Jobs</td><td>BullMQ 5 + ioredis</td></tr>
+            <tr><td>Real-time</td><td>WebSocket (ws library) on port 3001</td></tr>
+            <tr><td>File Storage</td><td>Cloudflare R2 / AWS S3 / Local</td></tr>
+            <tr><td>Image Processing</td><td>sharp</td></tr>
+            <tr><td>Charts</td><td>recharts</td></tr>
+            <tr><td>Testing</td><td>Vitest 4 + Playwright 1.61</td></tr>
+            <tr><td>Linting</td><td>ESLint 9 (flat config)</td></tr>
+            <tr><td>Package Manager</td><td>Bun</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section id="architecture">
+      <div class="section-header">
+        <h2><span class="highlight">Architecture</span> Patterns</h2>
+        <p>Designed for scale, isolation, and maintainability from day one.</p>
+      </div>
+      <div class="arch-grid">
+        <div class="arch-card"><h4>Multi-Tenant</h4><p>Subdomain-based routing with <code>tenantId</code> on all data models. Each tenant is fully isolated at the database layer.</p></div>
+        <div class="arch-card"><h4>Repository Pattern</h4><p><code>BaseRepository&lt;T&gt;</code> provides consistent CRUD with automatic audit logging for every mutation.</p></div>
+        <div class="arch-card"><h4>Service Layer</h4><p>Business logic lives in <code>src/lib/services/</code> — 32 service modules called by route handlers, not duplicated.</p></div>
+        <div class="arch-card"><h4>Provider Pattern</h4><p>Pluggable architecture for Payments, Storage, Tax, Shipping, and Email — swap implementations via factory functions.</p></div>
+        <div class="arch-card"><h4>Feature Gating</h4><p>Plan-based controls (Starter / Growth / Enterprise) unlock capabilities per tenant without code changes.</p></div>
+        <div class="arch-card"><h4>Event-Driven</h4><p>Redis Pub/Sub powers real-time order events, notification dispatch, and cross-service communication.</p></div>
+        <div class="arch-card"><h4>Queue-Driven</h4><p>BullMQ handles async work — email delivery, inventory sync, webhook dispatch — with retries and dead-letter queues.</p></div>
+        <div class="arch-card"><h4>Caching Layer</h4><p>Namespaced Redis cache with automatic key invalidation. Supports Upstash, Redis Cloud, and localhost.</p></div>
+        <div class="arch-card"><h4>Soft Deletes</h4><p>Products, Categories, and Variants use <code>deletedAt</code> nullable columns — non-destructive with full audit trail.</p></div>
+        <div class="arch-card"><h4>Pagination</h4><p>Both offset-based and cursor-based pagination available across all list endpoints.</p></div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features-intro">
+      <div class="section-header"><h2>Features</h2><p>Every capability your SaaS e-commerce platform needs, built and ready.</p></div>
+    </section>
+    <section id="store-management" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+          <h3>Store Management</h3>
+          <p>Create and configure unlimited stores with full branding control and custom domains.</p>
+          <ul class="feature-bullets">
+            <li>Custom domains with automatic SSL</li>
+            <li>Branding customization — fonts, colors, logos</li>
+            <li>Subdomain-based routing per tenant</li>
+            <li>Plan-based feature gating</li>
+            <li>Staff management with granular permissions</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="product-management" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+          <h3>Product Management</h3>
+          <p>Full product lifecycle management with variants, images, and SEO metadata.</p>
+          <ul class="feature-bullets">
+            <li>Product variants with SKU tracking</li>
+            <li>Configurable options (size, color, etc.)</li>
+            <li>Product images with gallery support</li>
+            <li>Category tree hierarchy</li>
+            <li>Bulk import / export</li>
+            <li>SEO metadata per product</li>
+            <li>Review and rating aggregation</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="inventory" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9-4-18-3 9H2"/></svg></div>
+          <h3>Inventory Management</h3>
+          <p>Global and per-warehouse tracking with reservations, alerts, and audit trails.</p>
+          <ul class="feature-bullets">
+            <li>Global + per-warehouse inventory counts</li>
+            <li>Stock reservations for active carts</li>
+            <li>Low-stock thresholds and automated alerts</li>
+            <li>Full audit trail (who changed what and when)</li>
+            <li>Inter-warehouse stock transfers</li>
+            <li>Auto-sync via BullMQ inventory worker</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="cart" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
+          <h3>Shopping Cart</h3>
+          <p>Guest and authenticated carts with seamless merge on login.</p>
+          <ul class="feature-bullets">
+            <li>Guest carts stored via localStorage</li>
+            <li>Authenticated carts persisted server-side</li>
+            <li>Automatic cart merge on login</li>
+            <li>Real-time pricing calculations</li>
+            <li>Cart persistence across sessions</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="orders" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div>
+          <h3>Order Processing</h3>
+          <p>Complete order lifecycle with real-time WebSocket events and discount support.</p>
+          <ul class="feature-bullets">
+            <li>Lifecycle: pending → payment → processing → shipped → delivered → cancelled / refunded</li>
+            <li>Guest checkout and account orders</li>
+            <li>Order items with variant snapshots</li>
+            <li>Discount and promotion application</li>
+            <li>Real-time events via WebSocket</li>
+            <li>Tax calculation at order level</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="payments" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+          <h3>Payment Processing</h3>
+          <p>Multi-provider payment support with a pluggable architecture.</p>
+          <ul class="feature-bullets">
+            <li>Stripe — credit cards, SEPA, iDEAL</li>
+            <li>Khalti — Nepal payment gateway</li>
+            <li>eSewa — Nepal payment gateway</li>
+            <li>Pluggable provider pattern for custom integrations</li>
+            <li>Payment verification and refund processing</li>
+            <li>Webhook handling with retry queue</li>
+            <li>Subscription billing via Stripe</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="customers" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <h3>Customer Management</h3>
+          <p>Full customer profiles with address books, order history, and segmentation.</p>
+          <ul class="feature-bullets">
+            <li>Customer accounts with profiles</li>
+            <li>Address book — multiple addresses per customer</li>
+            <li>Complete order history per customer</li>
+            <li>Customer groups and segments</li>
+            <li>Notification preferences per channel</li>
+            <li>Loyalty account integration</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="reviews" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <h3>Reviews &amp; Ratings</h3>
+          <p>1–5 star product ratings with moderation workflow and verified purchase badges.</p>
+          <ul class="feature-bullets">
+            <li>1–5 star ratings with title, body, and images</li>
+            <li>Verified purchase badge</li>
+            <li>Moderation workflow — pending / approved / hidden</li>
+            <li>Helpfulness votes on reviews</li>
+            <li>Merchant replies to reviews</li>
+            <li>Average rating aggregation per product</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="wishlists" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+          <h3>Wishlists</h3>
+          <p>Per-customer wishlists with sharing and move-to-cart functionality.</p>
+          <ul class="feature-bullets">
+            <li>Authenticated wishlists (1 per customer)</li>
+            <li>Guest wishlists via session cookie</li>
+            <li>Shareable via unique token</li>
+            <li>Move-to-cart in one click</li>
+            <li>Public shared wishlist views</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="discounts" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+          <h3>Discounts &amp; Promotions</h3>
+          <p>Flexible coupon codes and automatic promotions with rule-based conditions.</p>
+          <ul class="feature-bullets">
+            <li>Coupon codes — fixed amount, percentage, free shipping</li>
+            <li>Automatic promotions with conditions</li>
+            <li>Rules: min amount, product, category, customer</li>
+            <li>Stacking with priority levels</li>
+            <li>Usage tracking per coupon / promotion</li>
+            <li>Date range limits and first-order-only offers</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="cms" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+          <h3>CMS — Content Management</h3>
+          <p>Drag-and-drop section blocks for editable storefront pages with SEO metadata.</p>
+          <ul class="feature-bullets">
+            <li>Editable storefront pages via admin</li>
+            <li>Section blocks: hero, text, image, product grid, category grid, banner, CTA</li>
+            <li>Page-level SEO metadata</li>
+            <li>Home page flag support</li>
+            <li>Separate admin editor and storefront renderer per block type</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="analytics" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+          <h3>Analytics &amp; Reporting</h3>
+          <p>Dashboard widgets and exportable reports with plan-tiered depth.</p>
+          <ul class="feature-bullets">
+            <li>Basic analytics on Starter, advanced on Growth+</li>
+            <li>Charts via recharts — line, bar, area</li>
+            <li>Dashboard widgets: metric, chart, area, bar cards</li>
+            <li>Time-based filtering</li>
+            <li>Revenue, orders, customer metric exports</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="staff" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <h3>Staff Management</h3>
+          <p>Role-based access control with granular permissions and audit logging.</p>
+          <ul class="feature-bullets">
+            <li>Roles: owner (full CRUD), staff (CRU), customer (none)</li>
+            <li>Granular permissions: create, read, update, delete, archive, manage</li>
+            <li>Staff invitations via email</li>
+            <li>Activity audit logging per user</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="api-webhooks" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+          <h3>API &amp; Webhooks</h3>
+          <p>Full REST API v1 covering 36 resource modules with outbound webhook delivery.</p>
+          <ul class="feature-bullets">
+            <li>REST API v1 — products, orders, customers, and more</li>
+            <li>API key authentication (Enterprise feature)</li>
+            <li><code>x-tenant-id</code> header for multi-tenant scoping</li>
+            <li>Outbound webhooks with retry queue</li>
+            <li>Webhook event types for all major actions</li>
+            <li>Dead-letter queues for failed deliveries</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="shipping" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+          <h3>Shipping</h3>
+          <p>Multi-method shipping with zone-based rates and carrier extensibility.</p>
+          <ul class="feature-bullets">
+            <li>Flat rate, weight-based, price-based shipping</li>
+            <li>Free shipping (conditional) defaults</li>
+            <li>Zone-based rate calculation — countries, states, zip codes</li>
+            <li>Carrier registration system (extensible for UPS / FedEx / DHL)</li>
+            <li>Per-warehouse shipping configuration</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="tax" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <h3>Tax Calculation</h3>
+          <p>Built-in and third-party tax providers with compound rate support.</p>
+          <ul class="feature-bullets">
+            <li>Built-in zone-based tax (country / state / region)</li>
+            <li>TaxJar third-party provider</li>
+            <li>Avalara third-party provider</li>
+            <li>Compound tax rate support</li>
+            <li>Tax exemption handling</li>
+            <li>Provider factory pattern</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="loyalty" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.94c4.95 0 9-4.05 9-9s-4.05-9-9-9-9 4.05-9 9 4.05 9 9 9z"/><path d="M9.09 9.68a2.27 2.27 0 0 1 3.82 0M9.09 12.05a2.27 2.27 0 0 1 3.82 0M9.09 14.41a2.27 2.27 0 0 1 3.82 0"/></svg></div>
+          <h3>Loyalty Program</h3>
+          <p>Points-based loyalty with tiers, multipliers, and a reward rules engine.</p>
+          <ul class="feature-bullets">
+            <li>Points on purchases, reviews, referrals</li>
+            <li>Tier system — Bronze → Silver → Gold</li>
+            <li>Tier-based point multipliers</li>
+            <li>Points expiration support</li>
+            <li>Reward rules engine (event-driven)</li>
+            <li>Transaction history with balance tracking</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="warehouse" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+          <h3>Warehouse Management</h3>
+          <p>Multi-warehouse support with per-location inventory and inter-warehouse transfers.</p>
+          <ul class="feature-bullets">
+            <li>Multi-warehouse with physical locations</li>
+            <li>Per-warehouse inventory counts</li>
+            <li>Stock reservations per warehouse</li>
+            <li>Inter-warehouse stock transfers</li>
+            <li>Transfer status: pending, completed, cancelled</li>
+            <li>Warehouse geolocation data</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="realtime" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9-4-18-3 9H2"/></svg></div>
+          <h3>Real-time System</h3>
+          <p>WebSocket server with auto-reconnect, heartbeat, and history replay.</p>
+          <ul class="feature-bullets">
+            <li>WebSocket server on port 3001</li>
+            <li>Event types: order.created, .payment_received, .shipped, .cancelled</li>
+            <li>Heartbeat keepalive every 30s</li>
+            <li>Auto-reconnect with exponential backoff</li>
+            <li>History replay on reconnect (last 50 events)</li>
+            <li>Redis Pub/Sub for server-to-server events</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="notifications" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+          <h3>Notifications</h3>
+          <p>Multi-channel notifications via WebSocket and email with per-event preferences.</p>
+          <ul class="feature-bullets">
+            <li>In-app notifications via WebSocket push</li>
+            <li>Email notifications via BullMQ queue</li>
+            <li>Per-channel per-event preferences</li>
+            <li>Inventory alerts — low stock, out of stock</li>
+            <li>Order notifications — created, paid, shipped, cancelled</li>
+            <li>Unread count tracking</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="background-jobs" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+          <h3>Background Processing</h3>
+          <p>BullMQ queues for mail, inventory, notifications, and webhooks with dead-letter management.</p>
+          <ul class="feature-bullets">
+            <li>Mail queue — 5 retries, exponential backoff</li>
+            <li>Inventory queue — 3 retries</li>
+            <li>Notifications queue — 3 retries</li>
+            <li>Webhooks queue — 5 retries</li>
+            <li>Dead-letter queues with 30-day retention</li>
+            <li>Monitoring dashboard with queue metrics</li>
+            <li>Retry failed jobs from dead letter</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="uploads" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/><polyline points="16 16 12 12 8 16"/></svg></div>
+          <h3>File Uploads &amp; Storage</h3>
+          <p>Auto-selecting storage provider with image optimization and tenant isolation.</p>
+          <ul class="feature-bullets">
+            <li>Auto-select: R2 → S3 → Local</li>
+            <li>Image validation — JPEG / PNG / WebP, max 10MB</li>
+            <li>Auto thumbnails: small 150×150, medium 400×400, large 800×800</li>
+            <li>WebP output via sharp</li>
+            <li>Per-tenant upload isolation</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="search" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+          <h3>Search</h3>
+          <p>Cached product search with category filtering and auto-invalidation.</p>
+          <ul class="feature-bullets">
+            <li>Redis-cached product search</li>
+            <li>Category-based search filtering</li>
+            <li>Search result caching with TTL</li>
+            <li>Cache invalidation on product / category updates</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="auth" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <h3>Authentication &amp; Authorization</h3>
+          <p>Custom session-based auth with PBKDF2 hashing and role-based permissions.</p>
+          <ul class="feature-bullets">
+            <li>Custom session-based auth — no third-party</li>
+            <li>PBKDF2 SHA-512 password hashing (100k iterations)</li>
+            <li>httpOnly session cookies (<code>cc_session_token</code>)</li>
+            <li>7-day session expiry with DB storage</li>
+            <li>Roles: owner (full CRUD), staff (CRU), customer (none)</li>
+            <li>CSRF token protection via <code>x-csrf-token</code> header</li>
+            <li>API key authentication for Enterprise plan</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="security" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <h3>Security</h3>
+          <p>Defense-in-depth with CSP, rate limiting, CSRF protection, and secure headers.</p>
+          <ul class="feature-bullets">
+            <li>Content Security Policy headers</li>
+            <li>Rate limiting — 100 req/min/IP, Redis-backed</li>
+            <li>CSRF protection</li>
+            <li>HSTS preload, X-Frame-Options DENY</li>
+            <li>Security headers — X-Content-Type-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy</li>
+            <li>Session cookie security — httpOnly, secure in prod, sameSite=lax</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="deployment" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+          <h3>Deployment &amp; Infrastructure</h3>
+          <p>Dockerized with CI/CD pipelines and one-command cloud deployment scripts.</p>
+          <ul class="feature-bullets">
+            <li>Docker multi-stage build (non-root nextjs user)</li>
+            <li>docker-compose with PostgreSQL 16</li>
+            <li>AWS deployment script (<code>deploy-aws.sh</code>)</li>
+            <li>VPS deployment script (<code>deploy-vps.sh</code>)</li>
+            <li>GitHub CI/CD workflows</li>
+            <li>Redis auto-connect: Upstash → Redis Cloud → localhost</li>
+            <li>Prisma migrations and seed scripts</li>
+            <li>Health check API endpoint</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="developer-experience" class="feature-section">
+      <div class="features-grid">
+        <div class="feature-card animate-in">
+          <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+          <h3>Developer Experience</h3>
+          <p>Modern tooling for fast feedback loops and type-safe development.</p>
+          <ul class="feature-bullets">
+            <li>Bun package manager — fast installs and scripts</li>
+            <li>Turbopack for instant dev builds</li>
+            <li>React Compiler auto-memoization</li>
+            <li>TypeScript strict mode</li>
+            <li>ESLint flat config</li>
+            <li>Vitest unit tests with watch + coverage</li>
+            <li>Playwright E2E tests</li>
+            <li>Prisma Studio for DB management</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJECT STRUCTURE -->
+    <section id="project-structure">
+      <div class="section-header">
+        <h2><span class="highlight">Project</span> Structure</h2>
+        <p>The source tree organized for clarity and scale.</p>
+      </div>
+      <div class="tree-wrap code-block">
+        <button class="copy-btn" data-copy=".tree-wrap pre">Copy</button>
+<pre><span class="tree-dir">src/</span>
+├── <span class="tree-dir">app/</span>             <span class="tree-comment"># Next.js App Router</span>
+│   ├── (dashboard)/    <span class="tree-comment"># admin/, merchant/</span>
+│   ├── (storefront)/   <span class="tree-comment"># store/</span>
+│   ├── api/v1/         <span class="tree-comment"># REST API (36 resource modules)</span>
+│   └── api/auth/       <span class="tree-comment"># login, register, logout, me</span>
+├── <span class="tree-dir">components/</span>
+│   ├── ui/             <span class="tree-comment"># shadcn/ui primitives (48)</span>
+│   ├── cc/views/       <span class="tree-comment"># Page-level view components</span>
+│   ├── dashboard/      <span class="tree-comment"># Dashboard widgets</span>
+│   └── storefront/     <span class="tree-comment"># Storefront components</span>
+├── <span class="tree-dir">contexts/</span>         <span class="tree-comment"># Auth, Cart, Wishlist, App</span>
+├── <span class="tree-dir">hooks/</span>            <span class="tree-comment"># useCart, useWishlist, useOrderWebSocket, useNotifications</span>
+├── <span class="tree-dir">lib/</span>
+│   ├── services/       <span class="tree-comment"># Business logic (32 modules)</span>
+│   ├── payments/       <span class="tree-comment"># Stripe, Khalti, eSewa</span>
+│   ├── security/       <span class="tree-comment"># CSRF, rate limiting</span>
+│   ├── upload/         <span class="tree-comment"># Storage providers</span>
+│   ├── webhooks/       <span class="tree-comment"># Webhook processing</span>
+│   └── queue/          <span class="tree-comment"># BullMQ queue definitions</span>
+├── <span class="tree-dir">workers/</span>          <span class="tree-comment"># BullMQ worker processors</span>
+├── <span class="tree-dir">data/</span>             <span class="tree-comment"># Mock data fallback</span>
+├── proxy.ts           <span class="tree-comment"># CSP, auth, rate-limiting</span>
+└── ws-server.ts       <span class="tree-comment"># WebSocket server</span></pre>
+      </div>
+    </section>
+
+    <!-- QUICK COMMANDS -->
+    <section id="commands">
+      <div class="section-header">
+        <h2><span class="highlight">Quick</span> Commands</h2>
+        <p>All commands use Bun — the only package manager.</p>
+      </div>
+      <div class="commands-grid">
+        <div class="cmd-item"><span class="cmd-code">bun run dev</span><span class="cmd-label">Dev server (port 3000 + WS on 3001)</span></div>
+        <div class="cmd-item"><span class="cmd-code">bun run ws:start</span><span class="cmd-label">Standalone WebSocket server</span></div>
+        <div class="cmd-item"><span class="cmd-code">bun run workers:start</span><span class="cmd-label">BullMQ worker processes</span></div>
+        <div class="cmd-item"><span class="cmd-code">bun run lint</span><span class="cmd-label">Run ESLint</span></div>
+        <div class="cmd-item"><span class="cmd-code">bun run typecheck</span><span class="cmd-label">TypeScript type check (tsc --noEmit)</span></div>
+        <div class="cmd-item"><span class="cmd-code">bun run build</span><span class="cmd-label">Build (includes full typecheck)</span></div>
+        <div class="cmd-item"><span class="cmd-code">bun run test</span><span class="cmd-label">Unit tests via Vitest</span></div>
+        <div class="cmd-item"><span class="cmd-code">bun run test:e2e</span><span class="cmd-label">E2E tests via Playwright</span></div>
+        <div class="cmd-item"><span class="cmd-code">bun run test:watch</span><span class="cmd-label">Unit tests in watch mode</span></div>
+        <div class="cmd-item"><span class="cmd-code">bun run test:coverage</span><span class="cmd-label">Coverage report</span></div>
+        <div class="cmd-item"><span class="cmd-code">bun run db:seed</span><span class="cmd-label">Seed the database</span></div>
+        <div class="cmd-item"><span class="cmd-code">bun run db:reset</span><span class="cmd-label">Reset the database</span></div>
+        <div class="cmd-item"><span class="cmd-code">bun run db:studio</span><span class="cmd-label">Prisma Studio UI</span></div>
+        <div class="cmd-item"><span class="cmd-code">bunx prisma generate</span><span class="cmd-label">Regenerate Prisma client</span></div>
+        <div class="cmd-item"><span class="cmd-code">bunx prisma migrate dev</span><span class="cmd-label">Run database migrations</span></div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+      <div class="footer-logo">Cloud<span>Commerce</span></div>
+      <p>Open-source multi-tenant e-commerce platform. MIT License.</p>
+      <p style="margin-top:0.5rem;font-size:0.75rem;color:var(--text-dim)">Built with Next.js 16 · React 19 · TypeScript 6 · Prisma 7 · PostgreSQL 16</p>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // -- Mobile toggle
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const toggleBtn = document.getElementById('mobileToggle');
+
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  }
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('open');
+    });
+  }
+  if (overlay) {
+    overlay.addEventListener('click', closeSidebar);
+  }
+
+  // Close on escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeSidebar();
+  });
+
+  // Close on link click (mobile)
+  document.querySelectorAll('.nav-link').forEach(function(link) {
+    link.addEventListener('click', function() {
+      if (window.innerWidth <= 768) closeSidebar();
+    });
+  });
+
+  // -- Scroll-based sidebar highlighting (IntersectionObserver)
+  const sections = [];
+  document.querySelectorAll('section[id]').forEach(function(section) {
+    sections.push(section);
+  });
+
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  function updateActiveLink() {
+    let currentId = '';
+    const scrollPos = window.scrollY + 120;
+
+    for (let i = sections.length - 1; i >= 0; i--) {
+      const section = sections[i];
+      if (section.offsetTop <= scrollPos) {
+        currentId = section.id;
+        break;
+      }
+    }
+
+    if (!currentId && sections.length > 0) {
+      currentId = sections[0].id;
+    }
+
+    navLinks.forEach(function(link) {
+      const href = link.getAttribute('href');
+      link.classList.remove('active', 'active-sub');
+      if (href === '#' + currentId) {
+        link.classList.add('active');
+      }
+    });
+  }
+
+  // Throttled scroll listener
+  let ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      window.requestAnimationFrame(function() {
+        updateActiveLink();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+  updateActiveLink();
+
+  // -- Smooth scroll for anchor links (prevent URL hash jumps)
+  document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+    anchor.addEventListener('click', function(e) {
+      const targetId = this.getAttribute('href');
+      if (targetId === '#') return;
+      const target = document.querySelector(targetId);
+      if (target) {
+        e.preventDefault();
+        const offset = 80;
+        const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+        // Update URL hash without jump
+        if (history.pushState) {
+          history.pushState(null, '', targetId);
+        }
+      }
+    });
+  });
+
+  // -- Staggered fade-in on scroll (IntersectionObserver)
+  const animateElems = document.querySelectorAll('.animate-in');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    animateElems.forEach(function(el) {
+      observer.observe(el);
+    });
+  } else {
+    // Fallback: show all
+    animateElems.forEach(function(el) {
+      el.classList.add('visible');
+    });
+  }
+
+  // -- Search
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      const query = this.value.toLowerCase().trim();
+      navLinks.forEach(function(link) {
+        const text = link.textContent.toLowerCase();
+        if (!query) {
+          link.style.display = '';
+        } else {
+          link.style.display = text.includes(query) ? '' : 'none';
+        }
+      });
+    });
+  }
+
+  // -- Copy button for code blocks
+  document.querySelectorAll('.copy-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const container = this.closest('.code-block');
+      if (!container) return;
+      const pre = container.querySelector('pre');
+      if (!pre) return;
+      const text = pre.textContent || '';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(function() {
+            btn.textContent = 'Copy';
+            btn.classList.remove('copied');
+          }, 2000);
+        }).catch(function() {
+          fallbackCopy(text, btn);
+        });
+      } else {
+        fallbackCopy(text, btn);
+      }
+    });
+  });
+
+  function fallbackCopy(text, btn) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    } catch (e) {
+      btn.textContent = 'Failed';
+    }
+    document.body.removeChild(textarea);
+  }
+
+})();
+</script>
+</body>
+</html>
