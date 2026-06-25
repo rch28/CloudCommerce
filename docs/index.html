@@ -30,7 +30,7 @@
   --text-heading: #ffffff;
   --text-body: #e2e8f0;
   --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  --text-dim: #8899b4;
   --sidebar-width: 280px;
   --header-height: 0px;
   --radius-sm: 6px;
@@ -192,7 +192,7 @@ body::after {
   color: var(--text-muted);
   text-decoration: none;
   border-left: 2px solid transparent;
-  transition: all var(--transition);
+  transition: color var(--transition), background var(--transition), border-color var(--transition);
   line-height: 1.4;
 }
 .nav-link:hover {
@@ -204,11 +204,6 @@ body::after {
   border-left-color: var(--cyan);
   background: rgba(74, 222, 255, 0.06);
 }
-.nav-link.active-sub {
-  color: var(--text-body);
-  border-left-color: var(--cyan-dark);
-}
-
 /* Mobile toggle */
 .mobile-toggle {
   display: none;
@@ -217,6 +212,7 @@ body::after {
   left: 1rem;
   z-index: 1100;
   background: var(--bg-glass);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border: 1px solid var(--border-mid);
   border-radius: var(--radius-sm);
@@ -237,11 +233,12 @@ body::after {
 }
 
 .sidebar-overlay {
-  display: none;
+  display: block;
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.5);
   z-index: 999;
+  pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s;
 }
@@ -357,7 +354,7 @@ body::after {
   font-size: 0.9rem;
   font-weight: 600;
   text-decoration: none;
-  transition: all var(--transition);
+  transition: transform var(--transition), box-shadow var(--transition), color var(--transition), border-color var(--transition);
   cursor: pointer;
   border: none;
 }
@@ -416,14 +413,14 @@ section:nth-child(even) {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-  .section-header p {
-    font-size: 1.05rem;
-    color: var(--text-muted);
-    line-height: 1.8;
-  }
-  .feature-section {
-    padding: 1.5rem 3rem 3rem;
-  }
+.section-header p {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+}
+.feature-section {
+  padding: 1.5rem 3rem 3rem;
+}
 
 /* ============================================================
    OVERVIEW
@@ -500,6 +497,7 @@ section:nth-child(even) {
   padding: 0.75rem 1.25rem;
   border-bottom: 1px solid var(--border-subtle);
   color: var(--text-body);
+  transition: background var(--transition);
 }
 .tech-table tbody tr:last-child td { border-bottom: none; }
 .tech-table tbody tr:hover td {
@@ -525,7 +523,7 @@ section:nth-child(even) {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 1.5rem;
-  transition: all var(--transition);
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
   position: relative;
   overflow: hidden;
 }
@@ -579,7 +577,7 @@ section:nth-child(even) {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 2rem 1.75rem;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
@@ -696,7 +694,7 @@ section:nth-child(even) {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   padding: 0.85rem 1.25rem;
-  transition: all var(--transition);
+  transition: transform var(--transition), border-color var(--transition), background var(--transition);
 }
 .cmd-item:hover {
   border-color: var(--border-glow);
@@ -794,10 +792,10 @@ section:nth-child(even) {
   .sidebar.open {
     transform: translateX(0);
   }
-  .sidebar-overlay.open {
-    display: block;
-    opacity: 1;
-  }
+.sidebar-overlay.open {
+  pointer-events: auto;
+  opacity: 1;
+}
   .mobile-toggle {
     display: flex;
   }
@@ -868,7 +866,7 @@ section:nth-child(even) {
   color: var(--text-dim);
   cursor: pointer;
   font-family: var(--font-body);
-  transition: all var(--transition);
+  transition: opacity var(--transition), background var(--transition), color var(--transition), border-color var(--transition);
   opacity: 0;
 }
 .code-block:hover .copy-btn { opacity: 1; }
@@ -975,7 +973,7 @@ section:nth-child(even) {
       <div class="hero-content">
         <div class="hero-badge">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          v2.0.0 — Open Source
+          v0.1.0 — Open Source
         </div>
         <h1>
           Cloud<br>
@@ -1011,9 +1009,9 @@ section:nth-child(even) {
           <div class="stat-card"><div class="stat-number">100+</div><div class="stat-label">Tenant Stores</div></div>
           <div class="stat-card"><div class="stat-number">36</div><div class="stat-label">API Resource Modules</div></div>
           <div class="stat-card"><div class="stat-number">32</div><div class="stat-label">Service Modules</div></div>
-          <div class="stat-card"><div class="stat-number">5</div><div class="stat-label">Payment Providers</div></div>
+          <div class="stat-card"><div class="stat-number">3</div><div class="stat-label">Payment Providers</div></div>
           <div class="stat-card"><div class="stat-number">48</div><div class="stat-label">UI Primitives</div></div>
-          <div class="stat-card"><div class="stat-number">48</div><div class="stat-label">BullMQ Queues</div></div>
+          <div class="stat-card"><div class="stat-number">4</div><div class="stat-label">BullMQ Queues</div></div>
         </div>
       </div>
     </section>
@@ -1530,7 +1528,6 @@ section:nth-child(even) {
             <li>docker-compose with PostgreSQL 16</li>
             <li>AWS deployment script (<code>deploy-aws.sh</code>)</li>
             <li>VPS deployment script (<code>deploy-vps.sh</code>)</li>
-            <li>GitHub CI/CD workflows</li>
             <li>Redis auto-connect: Upstash → Redis Cloud → localhost</li>
             <li>Prisma migrations and seed scripts</li>
             <li>Health check API endpoint</li>
@@ -1566,7 +1563,7 @@ section:nth-child(even) {
         <p>The source tree organized for clarity and scale.</p>
       </div>
       <div class="tree-wrap code-block">
-        <button class="copy-btn" data-copy=".tree-wrap pre">Copy</button>
+        <button class="copy-btn">Copy</button>
 <pre><span class="tree-dir">src/</span>
 ├── <span class="tree-dir">app/</span>             <span class="tree-comment"># Next.js App Router</span>
 │   ├── (dashboard)/    <span class="tree-comment"># admin/, merchant/</span>
@@ -1639,15 +1636,15 @@ section:nth-child(even) {
   const toggleBtn = document.getElementById('mobileToggle');
 
   function closeSidebar() {
-    sidebar.classList.remove('open');
-    overlay.classList.remove('open');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('open');
   }
 
   if (toggleBtn) {
     toggleBtn.addEventListener('click', function(e) {
       e.stopPropagation();
-      sidebar.classList.toggle('open');
-      overlay.classList.toggle('open');
+      if (sidebar) sidebar.classList.toggle('open');
+      if (overlay) overlay.classList.toggle('open');
     });
   }
   if (overlay) {
@@ -1668,8 +1665,10 @@ section:nth-child(even) {
 
   // -- Scroll-based sidebar highlighting (IntersectionObserver)
   const sections = [];
+  const sectionOffsets = [];
   document.querySelectorAll('section[id]').forEach(function(section) {
     sections.push(section);
+    sectionOffsets.push(section.offsetTop);
   });
 
   const navLinks = document.querySelectorAll('.nav-link');
@@ -1679,9 +1678,8 @@ section:nth-child(even) {
     const scrollPos = window.scrollY + 120;
 
     for (let i = sections.length - 1; i >= 0; i--) {
-      const section = sections[i];
-      if (section.offsetTop <= scrollPos) {
-        currentId = section.id;
+      if (sectionOffsets[i] <= scrollPos) {
+        currentId = sections[i].id;
         break;
       }
     }
@@ -1692,7 +1690,7 @@ section:nth-child(even) {
 
     navLinks.forEach(function(link) {
       const href = link.getAttribute('href');
-      link.classList.remove('active', 'active-sub');
+      link.classList.remove('active');
       if (href === '#' + currentId) {
         link.classList.add('active');
       }
@@ -1765,6 +1763,13 @@ section:nth-child(even) {
           link.style.display = text.includes(query) ? '' : 'none';
         }
       });
+      // Hide empty section titles when all their links are hidden
+      document.querySelectorAll('.nav-section').forEach(function(sec) {
+        const visible = Array.from(sec.querySelectorAll('.nav-link')).some(function(l) {
+          return l.style.display !== 'none';
+        });
+        sec.style.display = (!query || visible) ? '' : 'none';
+      });
     });
   }
 
@@ -1801,13 +1806,17 @@ section:nth-child(even) {
     document.body.appendChild(textarea);
     textarea.select();
     try {
-      document.execCommand('copy');
-      btn.textContent = 'Copied!';
-      btn.classList.add('copied');
-      setTimeout(function() {
-        btn.textContent = 'Copy';
-        btn.classList.remove('copied');
-      }, 2000);
+      const success = document.execCommand('copy');
+      if (success) {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      } else {
+        btn.textContent = 'Failed';
+      }
     } catch (e) {
       btn.textContent = 'Failed';
     }
