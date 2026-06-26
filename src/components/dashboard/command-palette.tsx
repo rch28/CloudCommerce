@@ -31,7 +31,10 @@ interface CommandPaletteProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export default function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
+export default function CommandPalette({
+  open,
+  onOpenChange,
+}: CommandPaletteProps) {
   const router = useRouter();
   const { session } = useAuth();
   const isAdmin = session?.role === "admin";
@@ -53,15 +56,38 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
   ];
 
   const quickActions = [
-    { label: "Create Product", icon: Plus, action: () => router.push("/merchant/products") },
-    { label: "View Reports", icon: BarChart3, action: () => router.push(isAdmin ? "/admin" : "/merchant/dashboard") },
-    { label: "New Order", icon: FileText, action: () => router.push("/merchant/orders") },
+    {
+      label: "Create Product",
+      icon: Plus,
+      action: () => {
+        router.push("/merchant/products");
+        onOpenChange(false);
+      },
+    },
+    {
+      label: "View Reports",
+      icon: BarChart3,
+      action: () => {
+        router.push(isAdmin ? "/admin" : "/merchant/dashboard");
+        onOpenChange(false);
+      },
+    },
+    {
+      label: "New Order",
+      icon: FileText,
+      action: () => {
+        (router.push("/merchant/orders"), onOpenChange(false));
+      },
+    },
   ];
 
-  const navigate = useCallback((path: string) => {
-    router.push(path);
-    onOpenChange(false);
-  }, [router, onOpenChange]);
+  const navigate = useCallback(
+    (path: string) => {
+      router.push(path);
+      onOpenChange(false);
+    },
+    [router, onOpenChange],
+  );
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
@@ -100,7 +126,10 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
               {adminItems.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <CommandItem key={item.path} onSelect={() => navigate(item.path)}>
+                  <CommandItem
+                    key={item.path}
+                    onSelect={() => navigate(item.path)}
+                  >
                     <Icon className="mr-2 h-4 w-4" />
                     <span>{item.label}</span>
                   </CommandItem>

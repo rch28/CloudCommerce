@@ -41,7 +41,7 @@ export default function Topbar({ onMenu, onSearchOpen }: TopbarProps) {
 
       <button
         onClick={onSearchOpen}
-        className="hidden w-full max-w-md items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60border border-slate-800 bg-slate-900/60 px-3.5 py-2 text-sm text-muted-foreground transition-colors hover:border-[#7C3AED]/30 sm:flex"
+        className="hidden w-full max-w-md items-center gap-2 rounded-lg border border-slate-800 bg-card  px-3.5 py-2 text-sm text-muted-foreground transition-colors hover:border-[#7C3AED]/30 sm:flex"
       >
         <Search size={15} className="shrink-0" />
         <span className="flex-1 text-left">Search pages, actions...</span>
@@ -57,7 +57,7 @@ export default function Topbar({ onMenu, onSearchOpen }: TopbarProps) {
           <div className="relative">
             <button
               onClick={() => setMenu((m) => !m)}
-              className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60 py-1.5 pl-1.5 pr-2.5 transition-colors hover:border-[#7C3AED]/30"
+              className="flex items-center gap-2 rounded-lg border border-slate-800 bg-card py-1.5 pl-1.5 pr-2.5 transition-colors hover:border-[#7C3AED]/30"
             >
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#7C3AED] text-xs font-bold text-white">
                 {initials}
@@ -74,7 +74,7 @@ export default function Topbar({ onMenu, onSearchOpen }: TopbarProps) {
                   className="fixed inset-0 z-10"
                   onClick={() => setMenu(false)}
                 />
-                <div className="absolute right-0 z-20 mt-2 w-60 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 shadow-2xl shadow-black/40">
+                <div className="absolute right-0 z-20 mt-2 w-60 overflow-hidden rounded-xl border border-slate-800 bg-card shadow-2xl shadow-black/40">
                   <div className="border-b border-border px-4 py-3">
                     <p className="text-sm font-semibold text-[#F8FAFC]">
                       {session.name}
