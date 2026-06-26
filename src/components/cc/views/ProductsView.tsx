@@ -17,6 +17,7 @@ import { categoriesApi } from "@/services/categories.service";
 import Badge from "../Badge";
 import DataTable from "@/components/dashboard/data-table";
 import ProductForm from "@/components/dashboard/product-form";
+import SearchField from "@/components/ui/form-inputs/SearchField";
 
 interface ProductData {
   id: string;
@@ -300,22 +301,13 @@ export default function ProductsView() {
 
       {/* Search + Filter bar */}
       <div className="flex items-center gap-3">
-        <div className="relative flex-1">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Search products by name, SKU, description..."
-            className="w-full rounded-lg border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-[#F8FAFC] outline-none placeholder:text-muted-foreground focus:border-[#7C3AED]"
-          />
-        </div>
+        <SearchField
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          setPage={setPage}
+          placeholder="Search products by name, SKU, description..."
+        />
+
         <select
           value={categoryFilter}
           onChange={(e) => {

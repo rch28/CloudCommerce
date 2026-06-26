@@ -13,6 +13,7 @@ import { categoriesApi } from "@/services/categories.service";
 import Badge from "../Badge";
 import DataTable from "@/components/dashboard/data-table";
 import CategoryForm from "@/components/dashboard/category-form";
+import SearchField from "@/components/ui/form-inputs/SearchField";
 
 interface Category {
   id: string;
@@ -77,8 +78,6 @@ export default function CategoriesView() {
       cancelled = true;
     };
   }, [page, statusFilter, categoryFilter]);
-
-
 
   const filtered = categories.filter((c) => {
     if (statusFilter !== "all" && c.status !== statusFilter) return false;
@@ -222,21 +221,13 @@ export default function CategoriesView() {
 
       <div className="flex items-center gap-3">
         {/* Search input on the left side */}
-        <div className="relative flex flex-1 items-center">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search categories..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              // Reset pagination when searching
-              setPage(1);
-              setSelected(new Set());
-            }}
-            className="w-full rounded-lg border border-border bg-background pl-10 pr-3 py-2.5 text-xs text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
-          />
-        </div>
+        <SearchField
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          setPage={setPage}
+          placeholder="Search categories..."
+        />
+
         <select
           value={statusFilter}
           onChange={(e) => {
