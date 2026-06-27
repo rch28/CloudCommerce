@@ -3,30 +3,39 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Zap } from "lucide-react";
-import { authApi } from "@/services/auth.service";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema } from "@/lib/schemas";
+import { InputField } from "@/components/ui/form-inputs/InputField";
+import { useAuthStore } from "@/stores/auth-store";
+import type { z } from "zod/v4";
 import { ApiError } from "@/lib/axios";
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const signIn = useAuthStore((s) => s.signIn);
+  const [apiError, setApiError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
+  async function handleSubmit(values: LoginFormValues) {
+    setApiError("");
+    setLoading(true);
     try {
-      const data = await authApi.login({ email, password });
-      const dest = redirectTo || (data.user.role === "admin" ? "/admin" : "/merchant/dashboard");
+      const session = await signIn(values.email, values.password);
+      const dest = redirectTo || (session.role === "admin" ? "/admin" : "/merchant/dashboard");
       router.push(dest);
       router.refresh();
     } catch (err) {
-      setError(err instanceof ApiError ? err.data?.error || err.message : "Connection error. Please try again.");
+      setApiError(err instanceof ApiError ? err.data?.error || err.message : "Connection error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -42,32 +51,26 @@ function LoginForm() {
         <p className="mt-1 text-sm text-muted-foreground">Enter your credentials to continue</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="text-sm text-muted-foreground">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-violet-500"
-            placeholder="you@example.com"
-          />
-        </div>
-        <div>
-          <label className="text-sm text-muted-foreground">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-violet-500"
-            placeholder="Enter your password"
-          />
-        </div>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <InputField
+          control={form.control}
+          name="email"
+          label="Email"
+          placeholder="you@example.com"
+          type="email"
+          required
+        />
+        <InputField
+          control={form.control}
+          name="password"
+          label="Password"
+          placeholder="Enter your password"
+          type="password"
+          required
+        />
 
-        {error && (
-          <p className="text-sm text-rose-400">{error}</p>
+        {apiError && (
+          <p className="text-sm text-rose-400">{apiError}</p>
         )}
 
         <button

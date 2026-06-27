@@ -1,36 +1,24 @@
-"use client";
+"use client"
 
-import {
-  type Control,
-  type FieldPath,
-  type FieldValues,
-} from "react-hook-form";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-  FormDescription,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { type Control, type FieldPath, type FieldValues } from "react-hook-form"
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form"
+import { Textarea } from "@/components/ui/textarea"
 
-interface InputFieldProps<
+interface TextareaFieldProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > {
-  control: Control<TFieldValues>;
-  name: TName;
-  label?: string;
-  placeholder?: string;
-  description?: string;
-  className?: string;
-  disabled?: boolean;
-  required?: boolean;
-  type?: string;
+  control: Control<TFieldValues>
+  name: TName
+  label?: string
+  placeholder?: string
+  description?: string
+  className?: string
+  disabled?: boolean
+  required?: boolean
 }
 
-function InputField<
+function TextareaField<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
@@ -42,8 +30,7 @@ function InputField<
   className,
   disabled,
   required,
-  type,
-}: InputFieldProps<TFieldValues, TName>) {
+}: TextareaFieldProps<TFieldValues, TName>) {
   return (
     <FormField
       control={control}
@@ -57,8 +44,7 @@ function InputField<
             </FormLabel>
           )}
           <FormControl>
-            <Input
-              type={type}
+            <Textarea
               placeholder={placeholder}
               disabled={disabled}
               {...field}
@@ -69,7 +55,7 @@ function InputField<
         </FormItem>
       )}
     />
-  );
+  )
 }
 
-export { InputField };
+export { TextareaField }

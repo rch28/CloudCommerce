@@ -3,34 +3,41 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Zap } from "lucide-react";
-import { storefrontApi } from "@/services/storefront.service";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod/v4";
+import { InputField } from "@/components/ui/form-inputs/InputField";
+import { useAuthStore } from "@/stores/auth-store";
+
+const registerSchema = z.object({
+  name: z.string().min(1, "Name is required").max(200),
+  email: z.string().email("Invalid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function CustomerRegisterPage({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = React.use(params);
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const customerSignUp = useAuthStore((s) => s.customerSignUp);
+  const [apiError, setApiError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { name: "", email: "", password: "" },
+  });
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
-
+  async function handleSubmit(values: RegisterFormValues) {
+    setApiError("");
     setLoading(true);
-
     try {
-      await storefrontApi.customerRegister({ email, password, name, tenantId: tenant });
+      await customerSignUp({ ...values, tenantId: tenant });
       router.push(`/store/${tenant}/account`);
       router.refresh();
     } catch (err: any) {
-      setError(err?.response?.data?.error || "Registration failed");
+      setApiError(err?.response?.data?.error || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -47,43 +54,32 @@ export default function CustomerRegisterPage({ params }: { params: Promise<{ ten
           <p className="mt-1 text-sm text-muted-foreground">Register to manage your orders and addresses.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-sm text-muted-foreground">Full name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-violet-500"
-              placeholder="John Doe"
-            />
-          </div>
-          <div>
-            <label className="text-sm text-muted-foreground">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-violet-500"
-              placeholder="you@example.com"
-            />
-          </div>
-          <div>
-            <label className="text-sm text-muted-foreground">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-violet-500"
-              placeholder="At least 6 characters"
-            />
-          </div>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <InputField
+            control={form.control}
+            name="name"
+            label="Full name"
+            placeholder="John Doe"
+            required
+          />
+          <InputField
+            control={form.control}
+            name="email"
+            label="Email"
+            placeholder="you@example.com"
+            type="email"
+            required
+          />
+          <InputField
+            control={form.control}
+            name="password"
+            label="Password"
+            placeholder="At least 6 characters"
+            type="password"
+            required
+          />
 
-          {error && <p className="text-sm text-rose-400">{error}</p>}
+          {apiError && <p className="text-sm text-rose-400">{apiError}</p>}
 
           <button
             type="submit"

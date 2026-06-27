@@ -111,23 +111,6 @@ export default function DataTable({
       <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
           {searchable && (
-            <div className="relative max-w-xs">
-              <Search
-                size={15}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <input
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                placeholder="Search..."
-                className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
-              />
-            </div>
-          )}
-          {searchable && (
             <SearchField
               searchQuery={search}
               setSearchQuery={setSearch}
