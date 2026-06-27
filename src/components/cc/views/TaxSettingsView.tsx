@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { taxApi } from "@/services/tax.service";
 import {
-  Globe, Percent, MapPin, Plus, Pencil, Trash2, Search,
+  Globe, Percent, MapPin, Plus, Pencil, Trash2,
   Loader2, AlertCircle, Settings,
 } from "lucide-react";
 import PageHeader from "@/components/dashboard/page-header";
@@ -14,6 +14,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import SearchField from "@/components/ui/form-inputs/SearchField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -219,15 +220,12 @@ export default function TaxSettingsView() {
       {tab === "zones" && (
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="relative flex-1 max-w-xs">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search zones..."
-                className="w-full rounded-lg border border-border bg-[#09090B] pl-9 pr-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
-              />
-            </div>
+            <SearchField
+              searchQuery={search}
+              setSearchQuery={setSearch}
+              placeholder="Search zones..."
+              className="max-w-xs"
+            />
             <button
               onClick={() => {
                 setEditingZone({ name: "", type: "country", country: "US", zipCodes: [], isActive: true });

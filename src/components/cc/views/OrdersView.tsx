@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
-import { Download, Search } from "lucide-react";
+import { Download } from "lucide-react";
 import Badge from "../Badge";
 import { orders as allOrders } from "@/data/mock";
+import SearchField from "@/components/ui/form-inputs/SearchField";
 
 export default function OrdersView() {
   const [status, setStatus] = useState("all");
@@ -39,15 +40,12 @@ export default function OrdersView() {
         </button>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search orders..."
-          className="w-full rounded-lg border border-slate-800 bg-slate-900 py-2 pl-9 pr-3 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-600"
-        />
-      </div>
+      <SearchField
+        searchQuery={search}
+        setSearchQuery={setSearch}
+        placeholder="Search orders..."
+        className="max-w-sm"
+      />
 
       <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
         <div className="overflow-x-auto">

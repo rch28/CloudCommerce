@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Search, Tag, Percent, Truck, MoreHorizontal } from "lucide-react";
+import { Plus, Tag, Percent, Truck, MoreHorizontal } from "lucide-react";
 import { promotionsApi } from "@/services/promotions.service";
+import SearchField from "@/components/ui/form-inputs/SearchField";
 
 const TABS = ["Coupons", "Promotions", "Usage Analytics"] as const;
 
@@ -132,16 +133,11 @@ export default function PromotionsView() {
 
       {activeTab === "Coupons" && (
         <div className="space-y-4">
-          <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search coupons..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-md bg-background text-sm"
-            />
-          </div>
+          <SearchField
+            searchQuery={search}
+            setSearchQuery={setSearch}
+            placeholder="Search coupons..."
+          />
           <div className="border rounded-lg overflow-hidden">
             <table className="w-full text-sm">
               <thead>

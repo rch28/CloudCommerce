@@ -8,7 +8,7 @@ interface SearchFieldProps {
   className?: string;
   inputClassName?: string;
   setSearchQuery: (value: string) => void;
-  setPage: (page: number) => void;
+  setPage?: (page: number) => void;
 }
 
 const SearchField = ({
@@ -30,7 +30,7 @@ const SearchField = ({
         value={searchQuery}
         onChange={(e) => {
           setSearchQuery(e.target.value);
-          setPage(1);
+          setPage?.(1);
         }}
         placeholder={placeholder}
         className={`w-full rounded-lg border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-[#F8FAFC] outline-none ring-0 hover:ring-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0  placeholder:text-muted-foreground  ${inputClassName}`}
@@ -39,7 +39,7 @@ const SearchField = ({
         <button
           onClick={() => {
             setSearchQuery("");
-            setPage(1);
+            setPage?.(1);
           }}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-red-400 transition-colors hover:text-red-500 cursor-pointer"
         >

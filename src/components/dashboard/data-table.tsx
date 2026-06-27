@@ -1,8 +1,15 @@
 "use client";
 import { useState, useMemo, type ReactNode } from "react";
-import { Search, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Search,
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import EmptyState from "@/components/dashboard/empty-state";
 import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
+import SearchField from "../ui/form-inputs/SearchField";
 
 export interface Column {
   key: string;
@@ -59,7 +66,11 @@ export default function DataTable({
     if (search && searchKeys) {
       const q = search.toLowerCase();
       result = result.filter((item: Record<string, unknown>) =>
-        searchKeys.some((key: string) => String(item[key] ?? "").toLowerCase().includes(q))
+        searchKeys.some((key: string) =>
+          String(item[key] ?? "")
+            .toLowerCase()
+            .includes(q),
+        ),
       );
     }
     if (sortKey && !serverPagination) {
@@ -73,9 +84,12 @@ export default function DataTable({
     return result;
   }, [data, search, sortKey, sortOrder, searchKeys, serverPagination]);
 
-  const totalPages = serverPagination?.totalPages ?? Math.ceil(filtered.length / pageSize);
+  const totalPages =
+    serverPagination?.totalPages ?? Math.ceil(filtered.length / pageSize);
   const activePage = serverPagination?.page ?? page;
-  const displayData = serverPagination ? data : filtered.slice((page - 1) * pageSize, page * pageSize);
+  const displayData = serverPagination
+    ? data
+    : filtered.slice((page - 1) * pageSize, page * pageSize);
   const totalCount = serverPagination?.total ?? filtered.length;
 
   function handleSort(key: string) {
@@ -98,21 +112,40 @@ export default function DataTable({
         <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
           {searchable && (
             <div className="relative max-w-xs">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Search
+                size={15}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
               <input
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
                 placeholder="Search..."
                 className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
               />
             </div>
           )}
-              {filterable && filters && onFilterChange && (
+          {searchable && (
+            <SearchField
+              searchQuery={search}
+              setSearchQuery={setSearch}
+              setPage={setPage}
+              className="max-w-xs"
+              inputClassName="bg-card text-[#F8FAFC] placeholder-muted-foreground focus:border-[#7C3AED]"
+            />
+          )}
+          {filterable && filters && onFilterChange && (
             <div className="flex flex-wrap gap-1.5">
               {filters.map((f: { label: string; value: string }) => (
                 <button
                   key={f.value}
-                  onClick={() => { onFilterChange(f.value); serverPagination?.onPageChange(1); setPage(1); }}
+                  onClick={() => {
+                    onFilterChange(f.value);
+                    serverPagination?.onPageChange(1);
+                    setPage(1);
+                  }}
                   className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                     activeFilter === f.value
                       ? "bg-[#7C3AED] text-white"
@@ -144,9 +177,13 @@ export default function DataTable({
                     >
                       <span className="inline-flex items-center gap-1">
                         {col.label}
-                        {col.sortable && sortKey === col.key && (
-                          sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />
-                        )}
+                        {col.sortable &&
+                          sortKey === col.key &&
+                          (sortOrder === "asc" ? (
+                            <ChevronUp size={13} />
+                          ) : (
+                            <ChevronDown size={13} />
+                          ))}
                       </span>
                     </th>
                   ))}
@@ -154,7 +191,10 @@ export default function DataTable({
               </thead>
               <tbody className="divide-y divide-border/60">
                 {displayData.map((item: Record<string, unknown>, i: number) => (
-                  <tr key={(item.id as string) || String(i)} className="transition-colors hover:bg-[#1E293B]">
+                  <tr
+                    key={(item.id as string) || String(i)}
+                    className="transition-colors hover:bg-[#1E293B]"
+                  >
                     {columns.map((col: Column) => (
                       <td key={col.key} className="px-5 py-4">
                         {col.render(item)}
@@ -174,7 +214,12 @@ export default function DataTable({
               <div className="flex items-center gap-1">
                 <button
                   disabled={activePage <= 1}
-                  onClick={() => { const np = activePage - 1; serverPagination ? serverPagination.onPageChange(np) : setPage(np); }}
+                  onClick={() => {
+                    const np = activePage - 1;
+                    serverPagination
+                      ? serverPagination.onPageChange(np)
+                      : setPage(np);
+                  }}
                   className="rounded-lg p-1.5 transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC] disabled:opacity-40"
                 >
                   <ChevronLeft size={16} />
@@ -186,9 +231,15 @@ export default function DataTable({
                   return (
                     <button
                       key={p}
-                      onClick={() => { serverPagination ? serverPagination.onPageChange(p) : setPage(p); }}
+                      onClick={() => {
+                        serverPagination
+                          ? serverPagination.onPageChange(p)
+                          : setPage(p);
+                      }}
                       className={`min-w-[28px] rounded-lg px-2 py-1 text-sm font-medium transition-colors ${
-                        p === activePage ? "bg-[#7C3AED] text-white" : "hover:bg-[#1E293B] hover:text-[#F8FAFC]"
+                        p === activePage
+                          ? "bg-[#7C3AED] text-white"
+                          : "hover:bg-[#1E293B] hover:text-[#F8FAFC]"
                       }`}
                     >
                       {p}
@@ -197,7 +248,12 @@ export default function DataTable({
                 })}
                 <button
                   disabled={activePage >= totalPages}
-                  onClick={() => { const np = activePage + 1; serverPagination ? serverPagination.onPageChange(np) : setPage(np); }}
+                  onClick={() => {
+                    const np = activePage + 1;
+                    serverPagination
+                      ? serverPagination.onPageChange(np)
+                      : setPage(np);
+                  }}
                   className="rounded-lg p-1.5 transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC] disabled:opacity-40"
                 >
                   <ChevronRight size={16} />

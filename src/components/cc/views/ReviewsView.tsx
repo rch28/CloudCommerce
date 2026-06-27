@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { reviewsApi } from "@/services/reviews.service";
 import { useRouter } from "next/navigation";
-import { Search, Star, Filter, MoreHorizontal } from "lucide-react";
+import { Star, Filter, MoreHorizontal } from "lucide-react";
+import SearchField from "@/components/ui/form-inputs/SearchField";
 
 interface ReviewItem {
   id: string; rating: number; title: string | null; body: string | null; status: string;
@@ -91,16 +92,13 @@ export default function ReviewsView() {
       <h1 className="text-2xl font-bold">Reviews</h1>
 
       <div className="flex gap-4 items-center">
-        <div className="relative flex-1 max-w-md">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search reviews..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-10 pr-4 py-2 border rounded-md bg-background text-sm"
-          />
-        </div>
+        <SearchField
+          searchQuery={search}
+          setSearchQuery={setSearch}
+          setPage={setPage}
+          placeholder="Search reviews..."
+          className="max-w-md"
+        />
         <div className="flex items-center gap-2">
           <Filter size={16} className="text-muted-foreground" />
           <select

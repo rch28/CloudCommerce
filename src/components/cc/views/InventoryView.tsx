@@ -1,12 +1,27 @@
 "use client";
 import { useState, useEffect } from "react";
-import { AlertTriangle, Package, Loader2, RefreshCw, History, Archive, RotateCcw, Search } from "lucide-react";
+import {
+  AlertTriangle,
+  Package,
+  Loader2,
+  RefreshCw,
+  History,
+  Archive,
+  RotateCcw,
+} from "lucide-react";
 import { inventoryApi } from "@/services/inventory.service";
 import DataTable from "@/components/dashboard/data-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import SearchField from "@/components/ui/form-inputs/SearchField";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface InventoryItem {
   id: string;
@@ -39,7 +54,9 @@ export default function InventoryView() {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "low_stock" | "out_of_stock">("all");
+  const [filter, setFilter] = useState<"all" | "low_stock" | "out_of_stock">(
+    "all",
+  );
   const [searchQuery, setSearchQuery] = useState("");
 
   const [adjustOpen, setAdjustOpen] = useState<string | null>(null);
@@ -76,8 +93,7 @@ export default function InventoryView() {
     fetchItems(filter, searchQuery);
   }, [filter]);
 
-  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
+  const onSearchChange = (val: string) => {
     setSearchQuery(val);
     fetchItems(filter, val);
   };
@@ -86,7 +102,11 @@ export default function InventoryView() {
     if (!adjustOpen || !adjustReason.trim()) return;
     setAdjusting(true);
     try {
-      await inventoryApi.update({ variantId: adjustOpen, change: adjustChange, reason: adjustReason });
+      await inventoryApi.update({
+        variantId: adjustOpen,
+        change: adjustChange,
+        reason: adjustReason,
+      });
       setAdjustOpen(null);
       setAdjustChange(1);
       setAdjustReason("");
@@ -113,14 +133,21 @@ export default function InventoryView() {
   };
 
   const lowStockCount = items.filter((i) => i.status === "low_stock").length;
-  const outOfStockCount = items.filter((i) => i.status === "out_of_stock").length;
+  const outOfStockCount = items.filter(
+    (i) => i.status === "out_of_stock",
+  ).length;
 
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/5 px-4 py-12 text-center">
         <AlertTriangle size={32} className="text-rose-400" />
         <p className="mt-3 text-sm font-medium text-rose-400">{error}</p>
-        <Button onClick={() => fetchItems(filter, searchQuery)} variant="outline" size="sm" className="mt-4 border-border text-muted-foreground">
+        <Button
+          onClick={() => fetchItems(filter, searchQuery)}
+          variant="outline"
+          size="sm"
+          className="mt-4 border-border text-muted-foreground"
+        >
           <RefreshCw size={14} className="mr-1" /> Retry
         </Button>
       </div>
@@ -144,22 +171,21 @@ export default function InventoryView() {
         <span className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-400">
           <Package size={15} /> {items.length} variants tracked
         </span>
-        <Button onClick={() => fetchItems(filter, searchQuery)} variant="ghost" size="icon" className="ml-auto h-8 w-8 text-muted-foreground">
+        <Button
+          onClick={() => fetchItems(filter, searchQuery)}
+          variant="ghost"
+          size="icon"
+          className="ml-auto h-8 w-8 text-muted-foreground"
+        >
           <RefreshCw size={14} />
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="relative flex items-center">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Search by product name or SKU..."
-          value={searchQuery}
-          onChange={onSearchChange}
-          className="w-full rounded-lg border border-border bg-background pl-10 pr-3 py-2.5 text-xs text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
-        />
-      </div>
+      <SearchField
+        searchQuery={searchQuery}
+        setSearchQuery={onSearchChange}
+        placeholder="Search by product name or SKU..."
+      />
 
       {/* Filter tabs */}
       <div className="flex gap-1 rounded-lg border border-border bg-background p-1">
@@ -168,10 +194,16 @@ export default function InventoryView() {
             key={tab}
             onClick={() => setFilter(tab)}
             className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-              filter === tab ? "bg-[#7C3AED] text-white" : "text-muted-foreground hover:text-[#F8FAFC]"
+              filter === tab
+                ? "bg-[#7C3AED] text-white"
+                : "text-muted-foreground hover:text-[#F8FAFC]"
             }`}
           >
-            {tab === "all" ? "All" : tab === "low_stock" ? "Low Stock" : "Out of Stock"}
+            {tab === "all"
+              ? "All"
+              : tab === "low_stock"
+                ? "Low Stock"
+                : "Out of Stock"}
           </button>
         ))}
       </div>
@@ -186,10 +218,17 @@ export default function InventoryView() {
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border px-4 py-12 text-center">
           <Package size={32} className="text-muted-foreground/40" />
           <p className="mt-3 text-sm font-medium text-muted-foreground">
-            {filter === "all" ? "No inventory records found" : "No items match the current filter"}
+            {filter === "all"
+              ? "No inventory records found"
+              : "No items match the current filter"}
           </p>
           {filter !== "all" && (
-            <Button onClick={() => setFilter("all")} variant="outline" size="sm" className="mt-3 border-border text-muted-foreground">
+            <Button
+              onClick={() => setFilter("all")}
+              variant="outline"
+              size="sm"
+              className="mt-3 border-border text-muted-foreground"
+            >
               Show all
             </Button>
           )}
@@ -209,8 +248,12 @@ export default function InventoryView() {
                       <Package size={16} className="text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="font-medium text-[#F8FAFC]">{i.variant.product.name}</p>
-                      <p className="text-xs font-mono text-muted-foreground">{i.variant.sku}</p>
+                      <p className="font-medium text-[#F8FAFC]">
+                        {i.variant.product.name}
+                      </p>
+                      <p className="text-xs font-mono text-muted-foreground">
+                        {i.variant.sku}
+                      </p>
                     </div>
                   </div>
                 );
@@ -223,7 +266,9 @@ export default function InventoryView() {
               render: (item: Record<string, unknown>) => {
                 const i = item as unknown as InventoryItem;
                 return (
-                  <span className={`font-semibold ${i.quantity === 0 ? "text-rose-400" : i.status === "low_stock" ? "text-amber-400" : "text-emerald-400"}`}>
+                  <span
+                    className={`font-semibold ${i.quantity === 0 ? "text-rose-400" : i.status === "low_stock" ? "text-amber-400" : "text-emerald-400"}`}
+                  >
                     {i.quantity}
                   </span>
                 );
@@ -234,7 +279,9 @@ export default function InventoryView() {
               label: "Reserved",
               render: (item: Record<string, unknown>) => {
                 const i = item as unknown as InventoryItem;
-                return <span className="text-muted-foreground">{i.reserved}</span>;
+                return (
+                  <span className="text-muted-foreground">{i.reserved}</span>
+                );
               },
             },
             {
@@ -243,7 +290,11 @@ export default function InventoryView() {
               sortable: true,
               render: (item: Record<string, unknown>) => {
                 const i = item as unknown as InventoryItem;
-                return <span className="font-medium text-[#F8FAFC]">{i.available}</span>;
+                return (
+                  <span className="font-medium text-[#F8FAFC]">
+                    {i.available}
+                  </span>
+                );
               },
             },
             {
@@ -251,9 +302,23 @@ export default function InventoryView() {
               label: "Status",
               render: (item: Record<string, unknown>) => {
                 const i = item as unknown as InventoryItem;
-                if (i.quantity === 0) return <span className="text-xs font-medium text-rose-400">Out of stock</span>;
-                if (i.status === "low_stock") return <span className="text-xs font-medium text-amber-400">Low stock</span>;
-                return <span className="text-xs font-medium text-emerald-400">In stock</span>;
+                if (i.quantity === 0)
+                  return (
+                    <span className="text-xs font-medium text-rose-400">
+                      Out of stock
+                    </span>
+                  );
+                if (i.status === "low_stock")
+                  return (
+                    <span className="text-xs font-medium text-amber-400">
+                      Low stock
+                    </span>
+                  );
+                return (
+                  <span className="text-xs font-medium text-emerald-400">
+                    In stock
+                  </span>
+                );
               },
             },
             {
@@ -261,7 +326,11 @@ export default function InventoryView() {
               label: "Threshold",
               render: (item: Record<string, unknown>) => {
                 const i = item as unknown as InventoryItem;
-                return <span className="text-xs text-muted-foreground">{i.lowStockThreshold}</span>;
+                return (
+                  <span className="text-xs text-muted-foreground">
+                    {i.lowStockThreshold}
+                  </span>
+                );
               },
             },
             {
@@ -279,7 +348,11 @@ export default function InventoryView() {
                       <History size={14} />
                     </button>
                     <button
-                      onClick={() => { setAdjustOpen(i.variantId); setAdjustChange(1); setAdjustReason(""); }}
+                      onClick={() => {
+                        setAdjustOpen(i.variantId);
+                        setAdjustChange(1);
+                        setAdjustReason("");
+                      }}
                       className="rounded-lg border border-border p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC]"
                       title="Adjust stock"
                     >
@@ -297,7 +370,12 @@ export default function InventoryView() {
       )}
 
       {/* Stock adjustment dialog */}
-      <Dialog open={!!adjustOpen} onOpenChange={(o) => { if (!o) setAdjustOpen(null); }}>
+      <Dialog
+        open={!!adjustOpen}
+        onOpenChange={(o) => {
+          if (!o) setAdjustOpen(null);
+        }}
+      >
         <DialogContent className="max-w-sm border-border bg-card text-[#F8FAFC]">
           <DialogHeader>
             <DialogTitle>Adjust Stock</DialogTitle>
@@ -307,7 +385,9 @@ export default function InventoryView() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Change amount <span className="text-red-500">*</span></Label>
+              <Label>
+                Change amount <span className="text-red-500">*</span>
+              </Label>
               <Input
                 type="number"
                 className="h-10 border-border bg-background text-[#F8FAFC]"
@@ -316,7 +396,9 @@ export default function InventoryView() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Reason <span className="text-red-500">*</span></Label>
+              <Label>
+                Reason <span className="text-red-500">*</span>
+              </Label>
               <Input
                 className="h-10 border-border bg-background text-[#F8FAFC]"
                 placeholder="e.g. Received from supplier"
@@ -325,15 +407,28 @@ export default function InventoryView() {
               />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => setAdjustOpen(null)} className="border-border text-muted-foreground">
+              <Button
+                variant="outline"
+                onClick={() => setAdjustOpen(null)}
+                className="border-border text-muted-foreground"
+              >
                 Cancel
               </Button>
               <Button
                 onClick={handleAdjust}
-                disabled={adjusting || !adjustReason.trim() || adjustChange === 0}
+                disabled={
+                  adjusting || !adjustReason.trim() || adjustChange === 0
+                }
                 className="bg-[#7C3AED] text-white hover:bg-[#8B5CF6] disabled:opacity-50"
               >
-                {adjusting ? <><Loader2 size={14} className="mr-1 animate-spin" /> Saving...</> : "Save"}
+                {adjusting ? (
+                  <>
+                    <Loader2 size={14} className="mr-1 animate-spin" />{" "}
+                    Saving...
+                  </>
+                ) : (
+                  "Save"
+                )}
               </Button>
             </div>
           </div>
@@ -355,21 +450,30 @@ export default function InventoryView() {
               Loading history...
             </div>
           ) : historyLogs.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">No stock history found</div>
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              No stock history found
+            </div>
           ) : (
             <div className="max-h-80 space-y-2 overflow-y-auto">
               {historyLogs.map((log) => (
-                <div key={log.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-3">
+                <div
+                  key={log.id}
+                  className="flex items-center justify-between rounded-lg border border-border bg-background p-3"
+                >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className={`text-sm font-medium ${log.change > 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                      <span
+                        className={`text-sm font-medium ${log.change > 0 ? "text-emerald-400" : "text-rose-400"}`}
+                      >
                         {log.change > 0 ? `+${log.change}` : log.change}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         ({log.previousQty} &rarr; {log.newQty})
                       </span>
                     </div>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{log.reason}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {log.reason}
+                    </p>
                   </div>
                   <span className="shrink-0 text-[10px] text-muted-foreground">
                     {new Date(log.createdAt).toLocaleString()}
