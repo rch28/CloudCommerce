@@ -4,7 +4,7 @@ import { getTenantId, requirePermission, handleError } from "@/lib/api-helpers";
 import { IMAGE_CONFIG } from "@/lib/image";
 
 export async function POST(request: NextRequest) {
-  const forbidden = requirePermission(request, "create");
+  const forbidden = await requirePermission(request, "create");
   if (forbidden) return forbidden;
 
   try {

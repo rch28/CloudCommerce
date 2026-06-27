@@ -3,7 +3,7 @@ import { getTenantId, getUserId, requirePermission, handleError } from "@/lib/ap
 import { getBanners, createBanner } from "@/lib/services/cms";
 
 export async function GET(request: NextRequest) {
-  const forbidden = requirePermission(request, "read");
+  const forbidden = await requirePermission(request, "read");
   if (forbidden) return forbidden;
 
   try {
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const forbidden = requirePermission(request, "create");
+  const forbidden = await requirePermission(request, "create");
   if (forbidden) return forbidden;
 
   try {

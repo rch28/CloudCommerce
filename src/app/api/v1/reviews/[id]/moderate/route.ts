@@ -7,7 +7,7 @@ export async function PATCH(
   request: NextRequest,
   { params: paramsPromise }: { params: Promise<{ id: string }> },
 ) {
-  const forbidden = requirePermission(request, "update");
+  const forbidden = await requirePermission(request, "update");
   if (forbidden) return forbidden;
 
   try {

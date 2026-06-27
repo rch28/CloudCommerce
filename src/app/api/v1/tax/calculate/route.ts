@@ -3,7 +3,7 @@ import { getTenantId, requirePermission, handleError } from "@/lib/api-helpers";
 import * as taxService from "@/lib/services/tax";
 
 export async function POST(request: NextRequest) {
-  const forbidden = requirePermission(request, "read");
+  const forbidden = await requirePermission(request, "read");
   if (forbidden) return forbidden;
   try {
     const tenantId = await getTenantId(request);

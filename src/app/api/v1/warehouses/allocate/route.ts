@@ -4,7 +4,7 @@ import { allocateInventorySchema } from "@/lib/schemas/warehouse";
 import { getTenantId, requirePermission, handleError } from "@/lib/api-helpers";
 
 export async function POST(request: NextRequest) {
-  const forbidden = requirePermission(request, "read");
+  const forbidden = await requirePermission(request, "read");
   if (forbidden) return forbidden;
 
   try {

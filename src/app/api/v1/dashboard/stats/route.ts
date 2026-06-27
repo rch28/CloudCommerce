@@ -3,7 +3,7 @@ import { getDashboardStats } from "@/lib/services/dashboard";
 import { getTenantId, requirePermission, handleError } from "@/lib/api-helpers";
 
 export async function GET(request: NextRequest) {
-  const forbidden = requirePermission(request, "read");
+  const forbidden = await requirePermission(request, "read");
   if (forbidden) return forbidden;
 
   try {

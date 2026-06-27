@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { verifyPassword, generateSessionToken, getSessionExpiry, setSessionCookie } from "@/lib/auth";
+import { verifyPassword, generateSessionToken, getSessionExpiry, setSessionCookie, DUMMY_PASSWORD_HASH } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
@@ -11,11 +11,10 @@ export async function POST(request: Request) {
     }
 
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
-    }
-
-    if (!verifyPassword(password, user.password)) {
+    // Always run a password verification (against a dummy hash when the user is
+    // unknown) so both branches take the same time — prevents account enumeration.
+    const passwordValid = verifyPassword(password, user?.password ?? DUMMY_PASSWORD_HASH);
+    if (!user || !passwordValid) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
@@ -34,6 +33,7 @@ export async function POST(request: Request) {
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
     });
   } catch (error) {
+    console.error("[auth/login] error:", error);
     return NextResponse.json({ error: "Login failed" }, { status: 500 });
   }
 }

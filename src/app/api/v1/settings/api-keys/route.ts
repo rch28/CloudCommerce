@@ -3,7 +3,7 @@ import { listApiKeys, createApiKey, revokeApiKey } from "@/lib/services/api-keys
 import { getTenantId, getUserId, requirePermission, handleError } from "@/lib/api-helpers";
 
 export async function GET(request: NextRequest) {
-  const forbidden = requirePermission(request, "read");
+  const forbidden = await requirePermission(request, "read");
   if (forbidden) return forbidden;
 
   try {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const forbidden = requirePermission(request, "manage");
+  const forbidden = await requirePermission(request, "manage");
   if (forbidden) return forbidden;
 
   try {
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const forbidden = requirePermission(request, "manage");
+  const forbidden = await requirePermission(request, "manage");
   if (forbidden) return forbidden;
 
   try {

@@ -155,6 +155,7 @@ model Category {
   products Product[]
 
   @@unique([slug, tenantId])
+  @@index([tenantId, deletedAt])
 }
 
 model Product {
@@ -186,6 +187,7 @@ model Product {
   reviews  Review[]
 
   @@unique([slug, tenantId])
+  @@index([tenantId, deletedAt])
 }
 
 model ProductImage {
@@ -202,7 +204,7 @@ model ProductImage {
 model ProductVariant {
   id           String   @id @default(cuid())
   productId    String
-  sku          String   @unique
+  sku          String
   barcode      String?
   price        Decimal
   comparePrice Decimal?
@@ -223,6 +225,10 @@ model ProductVariant {
   orderItems      OrderItem[]
   wishlistItems   WishlistItem[]
   warehouseInventories WarehouseInventory[]
+
+  // SKU uniqueness scoped to the product (not global) so different tenants/products
+  // can reuse SKU strings without cross-tenant collisions.
+  @@unique([sku, productId])
 }
 
 model ProductOption {
@@ -501,6 +507,7 @@ model Payment {
 model WebhookEvent {
   id          String    @id @default(cuid())
   provider    String
+  eventId     String?
   eventType   String
   rawBody     String
   status      String    @default("pending")
@@ -512,6 +519,10 @@ model WebhookEvent {
   createdAt   DateTime  @default(now())
 
   logs WebhookLog[]
+
+  // Dedup key for replayed provider events. Nullable so legacy rows don't collide
+  // (Postgres treats NULLs as distinct in a unique index).
+  @@unique([provider, eventId])
 }
 
 model WebhookLog {

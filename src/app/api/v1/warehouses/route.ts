@@ -3,7 +3,7 @@ import { getWarehouses, createWarehouse } from "@/lib/services/warehouse";
 import { getTenantId, getUserId, requirePermission, handleError } from "@/lib/api-helpers";
 
 export async function GET(request: NextRequest) {
-  const forbidden = requirePermission(request, "read");
+  const forbidden = await requirePermission(request, "read");
   if (forbidden) return forbidden;
 
   try {
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const forbidden = requirePermission(request, "create");
+  const forbidden = await requirePermission(request, "create");
   if (forbidden) return forbidden;
 
   try {

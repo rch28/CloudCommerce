@@ -5,7 +5,7 @@ import { IMAGE_CONFIG } from "@/lib/image";
 import { logAudit } from "@/lib/audit";
 
 export async function POST(request: NextRequest) {
-  const forbidden = requirePermission(request, "create");
+  const forbidden = await requirePermission(request, "create");
   if (forbidden) return forbidden;
 
   try {
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const forbidden = requirePermission(request, "delete");
+  const forbidden = await requirePermission(request, "delete");
   if (forbidden) return forbidden;
 
   try {

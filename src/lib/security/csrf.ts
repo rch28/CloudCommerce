@@ -1,6 +1,17 @@
-import { createHash, randomBytes, timingSafeEqual } from "crypto";
+import { createHash, timingSafeEqual } from "crypto";
 
-const SECRET = process.env.CSRF_SECRET || randomBytes(32).toString("hex");
+function resolveSecret(): string {
+  const fromEnv = process.env.CSRF_SECRET;
+  if (fromEnv) return fromEnv;
+  // A random per-process secret would differ across instances (breaking token
+  // validation) and silently mask a missing config — fail fast in production.
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("CSRF_SECRET must be set in production");
+  }
+  return "dev-insecure-csrf-secret";
+}
+
+const SECRET = resolveSecret();
 
 export function generateCSRFToken(sessionId: string): string {
   const data = `${sessionId}:${SECRET}`;

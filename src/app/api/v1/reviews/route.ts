@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const tenantId = request.headers.get("x-tenant-id");
 
   if (tenantId) {
-    const forbidden = requirePermission(request, "read");
+    const forbidden = await requirePermission(request, "read");
     if (forbidden) return forbidden;
 
     const result = await listReviews(tenantId, { productId, status, page, pageSize });

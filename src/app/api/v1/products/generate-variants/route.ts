@@ -4,7 +4,7 @@ import { variantGenerateSchema } from "@/lib/schemas";
 import { getUserId, requirePermission, handleError } from "@/lib/api-helpers";
 
 export async function POST(request: NextRequest) {
-  const forbidden = requirePermission(request, "create");
+  const forbidden = await requirePermission(request, "create");
   if (forbidden) return forbidden;
 
   try {

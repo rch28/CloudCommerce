@@ -30,7 +30,7 @@ export async function PATCH(
   request: NextRequest,
   { params: paramsPromise }: { params: Promise<{ id: string }> },
 ) {
-  const forbidden = requirePermission(request, "update");
+  const forbidden = await requirePermission(request, "update");
   if (forbidden) return forbidden;
 
   try {
@@ -88,7 +88,7 @@ export async function DELETE(
   request: NextRequest,
   { params: paramsPromise }: { params: Promise<{ id: string }> },
 ) {
-  const forbidden = requirePermission(request, "delete");
+  const forbidden = await requirePermission(request, "delete");
   if (forbidden) return forbidden;
 
   try {

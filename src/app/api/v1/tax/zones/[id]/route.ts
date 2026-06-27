@@ -3,7 +3,7 @@ import { getTenantId, getUserId, requirePermission, handleError } from "@/lib/ap
 import * as taxService from "@/lib/services/tax";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const forbidden = requirePermission(request, "read");
+  const forbidden = await requirePermission(request, "read");
   if (forbidden) return forbidden;
   try {
     const tenantId = await getTenantId(request);
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const forbidden = requirePermission(request, "update");
+  const forbidden = await requirePermission(request, "update");
   if (forbidden) return forbidden;
   try {
     const tenantId = await getTenantId(request);
@@ -28,7 +28,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const forbidden = requirePermission(request, "delete");
+  const forbidden = await requirePermission(request, "delete");
   if (forbidden) return forbidden;
   try {
     const tenantId = await getTenantId(request);

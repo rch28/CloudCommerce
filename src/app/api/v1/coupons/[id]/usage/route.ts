@@ -7,7 +7,7 @@ export async function GET(
   request: NextRequest,
   { params: paramsPromise }: { params: Promise<{ id: string }> },
 ) {
-  const forbidden = requirePermission(request, "read");
+  const forbidden = await requirePermission(request, "read");
   if (forbidden) return forbidden;
 
   try {

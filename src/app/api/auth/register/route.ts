@@ -4,14 +4,14 @@ import { hashPassword, generateSessionToken, getSessionExpiry, setSessionCookie 
 
 export async function POST(request: Request) {
   try {
-    const { email, password, name, role } = await request.json();
+    const { email, password, name } = await request.json();
 
     if (!email || !password || !name) {
       return NextResponse.json({ error: "Email, password, and name are required" }, { status: 400 });
     }
 
-    if (password.length < 6) {
-      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
+    if (typeof password !== "string" || password.length < 8) {
+      return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 });
     }
 
     const existing = await prisma.user.findUnique({ where: { email } });
@@ -20,10 +20,11 @@ export async function POST(request: Request) {
     }
 
     const hashed = hashPassword(password);
-    const userRole = role === "admin" || role === "merchant" ? role : "customer";
-
+    // Public self-registration ALWAYS creates a customer. Privileged roles
+    // (admin/merchant) must be provisioned through an authenticated admin flow —
+    // never via a client-supplied `role`.
     const user = await prisma.user.create({
-      data: { email, password: hashed, name, role: userRole },
+      data: { email, password: hashed, name, role: "customer" },
     });
 
     const token = generateSessionToken();
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
     }, { status: 201 });
   } catch (error) {
+    console.error("[auth/register] error:", error);
     return NextResponse.json({ error: "Registration failed" }, { status: 500 });
   }
 }

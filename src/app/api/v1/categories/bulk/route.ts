@@ -3,7 +3,7 @@ import { categoryRepo } from "@/lib/services/categories";
 import { getTenantId, getUserId, requirePermission, handleError } from "@/lib/api-helpers";
 
 export async function POST(request: NextRequest) {
-  const forbidden = requirePermission(request, "delete");
+  const forbidden = await requirePermission(request, "delete");
   if (forbidden) return forbidden;
 
   try {

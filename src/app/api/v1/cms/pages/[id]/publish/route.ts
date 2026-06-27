@@ -3,7 +3,7 @@ import { getTenantId, getUserId, requirePermission, handleError } from "@/lib/ap
 import { publishPage } from "@/lib/services/cms";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const forbidden = requirePermission(request, "update");
+  const forbidden = await requirePermission(request, "update");
   if (forbidden) return forbidden;
 
   const { id } = await params;

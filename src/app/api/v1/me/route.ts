@@ -1,20 +1,21 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { getSessionUser } from "@/lib/get-session";
 
 export async function GET() {
-  const session = (await cookies()).get("session");
+  const user = await getSessionUser();
 
-  if (!session) {
+  if (!user) {
     return NextResponse.json({ loggedIn: false, user: null });
   }
 
   return NextResponse.json({
     loggedIn: true,
     user: {
-      id: "1",
-      name: "Admin User",
-      email: "admin@cloudcommerce.com",
-      role: "admin",
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      tenantId: user.tenantId,
     },
   });
 }

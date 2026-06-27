@@ -3,7 +3,7 @@ import { variantRepo } from "@/lib/services/variants";
 import { getTenantId, getUserId, requirePermission, handleError } from "@/lib/api-helpers";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string; variantId: string }> }) {
-  const forbidden = requirePermission(request, "update");
+  const forbidden = await requirePermission(request, "update");
   if (forbidden) return forbidden;
 
   const { variantId } = await params;
@@ -19,7 +19,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string; variantId: string }> }) {
-  const forbidden = requirePermission(request, "delete");
+  const forbidden = await requirePermission(request, "delete");
   if (forbidden) return forbidden;
 
   const { variantId } = await params;
