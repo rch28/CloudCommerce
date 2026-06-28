@@ -125,27 +125,34 @@ export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Se
   const orderId = session.metadata?.orderId;
   if (!orderId) return;
 
-  await prisma.order.update({
-    where: { id: orderId },
+  // Idempotent: only transition if the order is still in a pre-paid state.
+  const updated = await prisma.order.updateMany({
+    where: { id: orderId, status: { in: ["pending", "processing"] } },
     data: {
       status: "paid",
       paymentIntentId: session.payment_intent?.toString() ?? null,
     },
   });
+
+  // Skip side-effects if already processed (count === 0 means already past pending).
+  if (updated.count === 0) return;
 }
 
 export async function handlePaymentIntentSucceeded(intent: Stripe.PaymentIntent) {
   const orderId = intent.metadata?.orderId;
   if (!orderId) return;
 
-  await prisma.order.update({
-    where: { id: orderId },
+  // Idempotent: only transition if still in a pre-paid state.
+  const updated = await prisma.order.updateMany({
+    where: { id: orderId, status: { in: ["pending", "processing"] } },
     data: {
       status: "paid",
       paymentIntentId: intent.id,
       chargeId: intent.latest_charge?.toString() ?? null,
     },
   });
+
+  if (updated.count === 0) return; // Already processed.
 
   const paidOrder = await prisma.order.findUnique({ where: { id: orderId }, select: { number: true, total: true, tenantId: true, customer: { select: { name: true, email: true } } } });
   if (paidOrder) {
@@ -168,6 +175,9 @@ export async function handlePaymentIntentFailed(intent: Stripe.PaymentIntent) {
     include: { items: true },
   });
   if (!order) return;
+
+  // Idempotent: only cancel/restock if not already cancelled/refunded.
+  if (order.status === "cancelled" || order.status === "refunded") return;
 
   await prisma.$transaction(async (tx) => {
     await tx.order.update({
@@ -199,11 +209,26 @@ export async function handleChargeRefunded(charge: Stripe.Charge) {
 
   const order = await prisma.order.findFirst({
     where: { paymentIntentId },
+    include: { items: true },
   });
   if (!order) return;
 
-  await prisma.order.update({
-    where: { id: order.id },
-    data: { status: "refunded" },
+  // Idempotent — skip if already refunded.
+  if (order.status === "refunded") return;
+
+  // Restock inventory on refund (parallel to cancel).
+  await prisma.$transaction(async (tx) => {
+    await tx.order.update({
+      where: { id: order.id },
+      data: { status: "refunded" },
+    });
+
+    for (const item of order.items) {
+      await tx.$queryRawUnsafe(
+        `UPDATE "ProductVariant" SET quantity = quantity + $1 WHERE id = $2`,
+        item.quantity,
+        item.variantId,
+      );
+    }
   });
 }

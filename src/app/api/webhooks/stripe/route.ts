@@ -20,14 +20,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Invalid signature: ${message}` }, { status: 400 });
   }
 
-  const eventRecord = await prisma.webhookEvent.create({
-    data: {
-      provider: "stripe",
-      eventType: event.type,
-      rawBody,
-      status: "processing",
-    },
-  });
+  // Idempotency: skip if this Stripe event was already processed.
+  let eventRecord: { id: string };
+  try {
+    eventRecord = await prisma.webhookEvent.create({
+      data: {
+        provider: "stripe",
+        eventId: event.id,
+        eventType: event.type,
+        rawBody,
+        status: "processing",
+      },
+    });
+  } catch {
+    // Unique constraint on (provider, eventId) — already processed.
+    return NextResponse.json({ received: true, duplicate: true });
+  }
 
   try {
     switch (event.type) {

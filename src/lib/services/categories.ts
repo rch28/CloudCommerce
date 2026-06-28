@@ -50,15 +50,16 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
     return { items: items.slice((page - 1) * pageSize, page * pageSize), total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
   }
 
-  async getById(id: string): Promise<CategoryRecord | null> {
+  async getById(id: string, tenantId?: string): Promise<CategoryRecord | null> {
     if (process.env.DATABASE_URL) {
       return withCache(
-        () => this.findById(id),
-        { get: (key: string) => categoryCache.get(key), set: (data) => categoryCache.set(data, (data as Record<string, unknown>).tenantId as string | undefined) },
+        () => this.findById(id, tenantId),
+        { get: (key: string) => categoryCache.get(key, tenantId), set: (data) => categoryCache.set(data, (data as Record<string, unknown>).tenantId as string | undefined) },
         id,
+        tenantId,
       );
     }
-    return mockCategories.find((c) => c.id === id && !c.deletedAt) ?? null;
+    return mockCategories.find((c) => c.id === id && !c.deletedAt && (!tenantId || c.tenantId === tenantId)) ?? null;
   }
 
   async createOne(data: CategoryInput, meta: AuditMeta): Promise<CategoryRecord> {
@@ -123,6 +124,8 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
 
   async archive(id: string, meta: AuditMeta): Promise<CategoryRecord> {
     if (process.env.DATABASE_URL) {
+      const existing = await this.model.findFirst({ where: { id, tenantId: meta.tenantId } });
+      if (!existing) throw new Error("Category not found or access denied");
       invalidateCategoryCache(id, meta.tenantId);
       invalidateStorefrontCache(meta.tenantId);
       const record = await this.model.update({ where: { id }, data: { deletedAt: new Date(), status: "archived" } });
@@ -138,6 +141,8 @@ class CategoryRepository extends BaseRepository<CategoryRecord, CategoryInput, P
 
   async restore(id: string, meta: AuditMeta): Promise<CategoryRecord> {
     if (process.env.DATABASE_URL) {
+      const existing = await this.model.findFirst({ where: { id, tenantId: meta.tenantId, deletedAt: { not: null } } });
+      if (!existing) throw new Error("Category not found or access denied");
       invalidateCategoryCache(id, meta.tenantId);
       invalidateStorefrontCache(meta.tenantId);
       const record = await this.model.update({ where: { id }, data: { deletedAt: null, status: "active" } });

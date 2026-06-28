@@ -123,18 +123,21 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
     return { items: items.slice((page - 1) * pageSize, page * pageSize), total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
   }
 
-  async getById(id: string): Promise<ProductRecord | null> {
+  async getById(id: string, tenantId?: string): Promise<ProductRecord | null> {
     if (process.env.DATABASE_URL) {
       return withCache(
         async () => {
-          const record = await prisma.product.findFirst({ where: { id, deletedAt: null }, include: buildIncludes() });
+          const where: Record<string, unknown> = { id, deletedAt: null };
+          if (tenantId) where.tenantId = tenantId;
+          const record = await prisma.product.findFirst({ where, include: buildIncludes() });
           return record as unknown as ProductRecord | null;
         },
-        { get: (key: string) => productCache.get(key), set: (data) => productCache.set(data, (data as Record<string, unknown>).tenantId as string | undefined) },
+        { get: (key: string) => productCache.get(key, tenantId), set: (data) => productCache.set(data, (data as Record<string, unknown>).tenantId as string | undefined) },
         id,
+        tenantId,
       );
     }
-    const record = mockProducts.find((p) => p.id === id && !p.deletedAt);
+    const record = mockProducts.find((p) => p.id === id && !p.deletedAt && (!tenantId || p.tenantId === tenantId));
     return record ? inflateMock(record) : null;
   }
 
@@ -226,6 +229,9 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
     const parsed = productSchema.partial().parse(data);
     if (process.env.DATABASE_URL) {
       const { images: _imgs, variants: updateVariants, options: _opts, ...fields } = parsed;
+      // Verify ownership before mutating.
+      const existing = await prisma.product.findFirst({ where: { id, tenantId: meta.tenantId } });
+      if (!existing) throw new Error("Product not found or access denied");
       const record = await prisma.product.update({ where: { id }, data: fields as any });
 
       // Update variants when provided (fixes quantity-not-saving bug)
@@ -271,6 +277,8 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
 
   async remove(id: string, meta: AuditMeta): Promise<ProductRecord> {
     if (process.env.DATABASE_URL) {
+      const existing = await prisma.product.findFirst({ where: { id, tenantId: meta.tenantId } });
+      if (!existing) throw new Error("Product not found or access denied");
       const record = await prisma.product.update({ where: { id }, data: { deletedAt: new Date() } });
       await logAuditFn("deleted", id, { softDelete: true }, meta);
       invalidateProductCache(id, meta.tenantId);
@@ -286,6 +294,8 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
 
   async archive(id: string, meta: AuditMeta): Promise<ProductRecord> {
     if (process.env.DATABASE_URL) {
+      const existing = await prisma.product.findFirst({ where: { id, tenantId: meta.tenantId } });
+      if (!existing) throw new Error("Product not found or access denied");
       const record = await prisma.product.update({ where: { id }, data: { status: "archived" }, include: buildIncludes() });
       await logAuditFn("updated", id, { status: "archived" }, meta);
       invalidateProductCache(id, meta.tenantId);
@@ -301,6 +311,8 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
 
   async restore(id: string, meta: AuditMeta): Promise<ProductRecord> {
     if (process.env.DATABASE_URL) {
+      const existing = await prisma.product.findFirst({ where: { id, tenantId: meta.tenantId, deletedAt: { not: null } } });
+      if (!existing) throw new Error("Product not found or access denied");
       const record = await prisma.product.update({ where: { id }, data: { deletedAt: null, status: "active" }, include: buildIncludes() });
       await logAuditFn("updated", id, { deletedAt: null, status: "active" }, meta);
       invalidateProductCache(id, meta.tenantId);

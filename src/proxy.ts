@@ -77,22 +77,34 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Rate limiting on API routes (Redis-backed, fallback to in-memory)
+  // Rate limiting on API routes (Redis-backed, fallback to in-memory).
+  // Use the last hop from x-real-ip (set by the trusted load balancer) to avoid
+  // spoofing via x-forwarded-for. Fall back to x-forwarded-for only when
+  // x-real-ip is absent (e.g. local dev without a reverse proxy).
   if (pathname.startsWith("/api/") && !pathname.startsWith("/api/webhooks/")) {
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-    const key = `api:${ip}:${pathname}`;
+    const ip =
+      request.headers.get("x-real-ip")?.trim() ||
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "unknown";
+
+    // Auth endpoints get a stricter limit (10 req/min) to slow brute-force.
+    const isAuthPath = pathname.startsWith("/api/auth/");
+    const limits = isAuthPath
+      ? { maxRequests: 10, windowMs: 60_000 }
+      : { maxRequests: 100, windowMs: 60_000 };
+    const key = `api:${ip}:${isAuthPath ? "auth" : pathname}`;
 
     let allowed: boolean;
     let remaining: number;
     let reset: number;
 
     if (redisClient) {
-      const result = await rateLimitRedis(key, { maxRequests: 100, windowMs: 60_000 });
+      const result = await rateLimitRedis(key, limits);
       allowed = result.allowed;
       remaining = result.remaining;
       reset = result.reset;
     } else {
-      const result = rateLimit(key, { maxRequests: 100, windowMs: 60_000 });
+      const result = rateLimit(key, limits);
       allowed = result.allowed;
       remaining = result.remaining;
       reset = result.reset;

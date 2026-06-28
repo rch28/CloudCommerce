@@ -57,8 +57,10 @@ export abstract class BaseRepository<T, CreateInput, UpdateInput> {
     return { items: items as T[], total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
   }
 
-  async findById(id: string): Promise<T | null> {
-    return this.model.findFirst({ where: { id, deletedAt: null } }) as Promise<T | null>;
+  async findById(id: string, tenantId?: string): Promise<T | null> {
+    const where: Record<string, unknown> = { id, deletedAt: null };
+    if (tenantId) where.tenantId = tenantId;
+    return this.model.findFirst({ where }) as Promise<T | null>;
   }
 
   async create(data: CreateInput, meta: AuditMeta): Promise<T> {
@@ -75,7 +77,9 @@ export abstract class BaseRepository<T, CreateInput, UpdateInput> {
   }
 
   async update(id: string, data: UpdateInput, meta: AuditMeta): Promise<T> {
-    const before = await this.model.findUnique({ where: { id } });
+    // Verify the record belongs to the caller's tenant before mutating.
+    const before = await this.model.findFirst({ where: { id, tenantId: meta.tenantId } });
+    if (!before) throw new Error("Record not found or access denied");
     const after = await this.model.update({ where: { id }, data });
     await logAudit({
       entityType: this.entityType,
@@ -89,6 +93,9 @@ export abstract class BaseRepository<T, CreateInput, UpdateInput> {
   }
 
   async softDelete(id: string, meta: AuditMeta): Promise<T> {
+    // Verify the record belongs to the caller's tenant before mutating.
+    const existing = await this.model.findFirst({ where: { id, tenantId: meta.tenantId } });
+    if (!existing) throw new Error("Record not found or access denied");
     const record = await this.model.update({
       where: { id },
       data: { deletedAt: new Date() },
@@ -105,6 +112,9 @@ export abstract class BaseRepository<T, CreateInput, UpdateInput> {
   }
 
   async hardDelete(id: string, meta: AuditMeta): Promise<void> {
+    // Verify the record belongs to the caller's tenant before deleting.
+    const existing = await this.model.findFirst({ where: { id, tenantId: meta.tenantId } });
+    if (!existing) throw new Error("Record not found or access denied");
     await this.model.delete({ where: { id } });
     await logAudit({
       entityType: this.entityType,

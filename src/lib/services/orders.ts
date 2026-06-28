@@ -4,8 +4,7 @@ import { logAudit } from "@/lib/audit";
 import { isValidTransition } from "@/data/order-status";
 import { OrderEventPublisher } from "@/lib/redis-pubsub";
 import { createNotification } from "@/lib/services/notifications";
-import { enqueueMail } from "@/lib/queue/enqueue";
-import { enqueueInventoryAdjust } from "@/lib/queue/enqueue";
+import { enqueueMail, enqueueInventorySync } from "@/lib/queue/enqueue";
 import { validateCoupon, calculateDiscount } from "@/lib/services/discounts";
 import { recordUsage } from "@/lib/services/coupon-usage";
 import { calculateTax } from "@/lib/services/tax";
@@ -144,19 +143,6 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
     const subtotal = cart.items.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
     const shipping = params.shippingPrice !== undefined ? params.shippingPrice : (subtotal >= 100 ? 0 : 10);
 
-    let tax = 0;
-    try {
-      const taxResult = await calculateTax(tenantId, {
-        amount: subtotal,
-        shipping,
-        origin: { country: resolvedAddress.country, state: resolvedAddress.state, zip: resolvedAddress.zip },
-        destination: { country: resolvedAddress.country, state: resolvedAddress.state, zip: resolvedAddress.zip, city: resolvedAddress.city },
-      });
-      tax = taxResult.totalTax;
-    } catch {
-      tax = Math.round(subtotal * 0.08 * 100) / 100;
-    }
-
     let discountAmount = 0;
     let discountType: string | null = null;
     let discountCode: string | null = null;
@@ -167,13 +153,19 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
       const productIds = cart.items.map((i) => i.variant?.productId).filter(Boolean) as string[];
       const categoryIds: string[] = [];
 
+      // Determine first-order status for coupon validation.
+      const orderCount = customerId
+        ? await tx.order.count({ where: { customerId, tenantId } })
+        : 0;
+      const isFirstOrder = orderCount === 0;
+
       const validationResult = await validateCoupon(couponCode, tenantId, {
         customerId: customerId ?? undefined,
         orderSubtotal: subtotal,
         shipping,
         productIds,
         categoryIds,
-        isFirstOrder: false,
+        isFirstOrder,
       });
 
       if (!validationResult.valid) {
@@ -198,6 +190,26 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
     }
 
     const shippingCost = freeShipping ? 0 : shipping;
+    // Resolve final discounted subtotal BEFORE computing tax — tax applies to
+    // the amount the customer actually pays, not the pre-discount base.
+    const taxableSubtotal = Math.max(0, subtotal - discountAmount);
+
+    let tax = 0;
+    try {
+      const taxResult = await calculateTax(tenantId, {
+        amount: taxableSubtotal,
+        shipping: shippingCost,
+        origin: { country: resolvedAddress.country, state: resolvedAddress.state, zip: resolvedAddress.zip },
+        destination: { country: resolvedAddress.country, state: resolvedAddress.state, zip: resolvedAddress.zip, city: resolvedAddress.city },
+      });
+      tax = taxResult.totalTax;
+    } catch {
+      // Only fall back to the default rate when no tax provider is configured
+      // (warn so this is visible in logs; do not silently produce wrong tax).
+      console.warn("[checkout] tax provider unavailable — using 8% fallback");
+      tax = Math.round(taxableSubtotal * 0.08 * 100) / 100;
+    }
+
     const total = Math.round((subtotal + shippingCost + tax - discountAmount) * 100) / 100;
 
     const order = await tx.order.create({
@@ -229,18 +241,6 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
       include: { items: true, address: true },
     });
 
-    if (couponId) {
-      await recordUsage({
-        orderId: order.id,
-        couponId,
-        customerId: customerId ?? undefined,
-        discountAmount,
-        discountType: discountType!,
-        discountCode: discountCode!,
-        tenantId,
-      });
-    }
-
     for (const item of cart.items) {
       const result = await tx.$queryRawUnsafe<Array<{ quantity: number }>>(
         `UPDATE "ProductVariant" SET quantity = quantity - $1 WHERE id = $2 AND quantity >= $1 RETURNING quantity`,
@@ -252,6 +252,32 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
           `Stock depleted for ${item.variant?.product?.name ?? "product"} during checkout`,
         );
       }
+    }
+
+    // Coupon usage inside the transaction so a rollback also rolls back the counter.
+    if (couponId) {
+      // Atomic increment: only apply if still below the limit.
+      const updated = await tx.coupon.updateMany({
+        where: {
+          id: couponId,
+          OR: [{ maxUses: null }, { currentUses: { lt: tx.coupon.fields.maxUses as unknown as number } }],
+        },
+        data: { currentUses: { increment: 1 } },
+      });
+      if (updated.count === 0) {
+        throw new Error("Coupon usage limit reached");
+      }
+      await tx.promotionUsage.create({
+        data: {
+          couponId,
+          orderId: order.id,
+          customerId: customerId ?? undefined,
+          discountAmount,
+          discountType: discountType!,
+          discountCode: discountCode!,
+          tenantId,
+        },
+      });
     }
 
     await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
@@ -306,14 +332,10 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
       });
     }
 
+    // Sync the Inventory mirror table to reflect the stock already decremented
+    // atomically in the transaction above — do NOT adjust again.
     for (const item of cart.items) {
-      enqueueInventoryAdjust(
-        item.variantId,
-        -item.quantity,
-        "Order confirmed",
-        tenantId,
-        { orderId: order.id },
-      );
+      enqueueInventorySync(item.variantId, tenantId);
     }
 
     if (customerId) {

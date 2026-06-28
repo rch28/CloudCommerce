@@ -23,9 +23,12 @@ class VariantRepository extends BaseRepository<VariantRecord, VariantInput, Part
     return mockVariants.filter((v) => v.productId === productId && !v.deletedAt);
   }
 
-  async getById(id: string): Promise<VariantRecord | null> {
+  async getById(id: string, tenantId?: string): Promise<VariantRecord | null> {
     if (process.env.DATABASE_URL) {
-      return prisma.productVariant.findFirst({ where: { id, deletedAt: null } }) as unknown as VariantRecord | null;
+      // Scope via the parent product's tenantId to prevent cross-tenant IDOR.
+      const where: Record<string, unknown> = { id, deletedAt: null };
+      if (tenantId) where.product = { tenantId };
+      return prisma.productVariant.findFirst({ where } as any) as unknown as VariantRecord | null;
     }
     return mockVariants.find((v) => v.id === id && !v.deletedAt) ?? null;
   }
@@ -47,6 +50,8 @@ class VariantRepository extends BaseRepository<VariantRecord, VariantInput, Part
   async updateOne(id: string, data: Partial<VariantInput>, meta: AuditMeta): Promise<VariantRecord> {
     const parsed = variantSchema.partial().parse(data);
     if (process.env.DATABASE_URL) {
+      const existing = await prisma.productVariant.findFirst({ where: { id, product: { tenantId: meta.tenantId } } } as any);
+      if (!existing) throw new Error("Variant not found or access denied");
       const record = await prisma.productVariant.update({ where: { id }, data: parsed });
       await logAudit({ entityType: "variant", entityId: id, action: "updated", changes: parsed, userId: meta.userId, tenantId: meta.tenantId });
       return record as unknown as VariantRecord;
@@ -59,6 +64,8 @@ class VariantRepository extends BaseRepository<VariantRecord, VariantInput, Part
 
   async remove(id: string, meta: AuditMeta): Promise<VariantRecord> {
     if (process.env.DATABASE_URL) {
+      const existing = await prisma.productVariant.findFirst({ where: { id, product: { tenantId: meta.tenantId } } } as any);
+      if (!existing) throw new Error("Variant not found or access denied");
       const record = await prisma.productVariant.update({ where: { id }, data: { deletedAt: new Date() } });
       await logAudit({ entityType: "variant", entityId: id, action: "deleted", changes: { softDelete: true }, userId: meta.userId, tenantId: meta.tenantId });
       return record as unknown as VariantRecord;
