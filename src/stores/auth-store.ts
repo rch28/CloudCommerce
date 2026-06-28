@@ -27,6 +27,7 @@ interface SignUpData {
 interface AuthState {
   session: Session | null
   loading: boolean
+  setRole: (role: Role) => void
   signIn: (email: string, password: string) => Promise<Session>
   signUp: (data: SignUpData) => Promise<Session>
   customerSignIn: (email: string, password: string, tenantId: string) => Promise<void>
@@ -39,6 +40,10 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set, get) => ({
   session: null,
   loading: true,
+
+  setRole: (role: Role) => {
+    set((state) => state.session ? { session: { ...state.session, role } } : {})
+  },
 
   init: async () => {
     set({ loading: true })
@@ -89,10 +94,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   customerSignIn: async (email: string, password: string, tenantId: string) => {
     await storefrontApi.customerLogin({ email, password })
+    // Fetch session after login so the store reflects the authenticated state.
+    await get().init()
   },
 
   customerSignUp: async (data: { email: string; password: string; name: string; tenantId: string }) => {
     await storefrontApi.customerRegister(data)
+    // Fetch session after registration so the store reflects the authenticated state.
+    await get().init()
   },
 
   signOut: async () => {

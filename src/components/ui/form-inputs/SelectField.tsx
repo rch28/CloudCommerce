@@ -52,7 +52,7 @@ function SelectField<
           )}
           <FormControl>
             <Select
-              value={field.value ?? ""}
+              value={field.value || undefined}
               onValueChange={field.onChange}
               disabled={disabled}
             >

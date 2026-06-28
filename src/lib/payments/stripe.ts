@@ -70,6 +70,6 @@ export class StripeProvider implements PaymentProvider {
       payment_intent: providerPaymentId,
       ...(amount !== undefined ? { amount: Math.round(amount * 100) } : {}),
     });
-    return { status: refund.status === "succeeded" ? "succeeded" : "pending", refundId: refund.id };
+    return { status: refund.status === "succeeded" ? "succeeded" : "failed", refundId: refund.id };
   }
 }

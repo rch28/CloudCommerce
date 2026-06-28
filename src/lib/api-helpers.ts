@@ -59,6 +59,15 @@ export async function requirePermission(request: NextRequest, permission: Permis
   return null;
 }
 
+/** Restricts a route to platform admins (role === "admin"). */
+export async function requireAdminRole(request: NextRequest) {
+  const role = await getUserRole(request);
+  if (role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  return null;
+}
+
 export function handleError(error: unknown) {
   if (error instanceof SyntaxError) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });

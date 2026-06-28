@@ -147,23 +147,43 @@ export async function adjustStock(data: StockAdjustInput, userId?: string) {
   const { variantId, change, reason } = parsed;
 
   if (process.env.DATABASE_URL) {
-    const inv = await prisma.inventory.findUnique({ where: { variantId } }) as unknown as InventoryRecord | null;
-    if (!inv) throw new Error("Inventory record not found");
-    const newQty = inv.quantity + change;
-    if (newQty < 0) throw new Error("Insufficient stock");
-    const [updated] = await Promise.all([
-      prisma.inventory.update({ where: { variantId }, data: { quantity: newQty } }),
-      addLog({ variantId, change, reason, previousQty: inv.quantity, newQty, previousReserved: inv.reserved, newReserved: inv.reserved, userId }),
+    // Atomic CAS: only commit if quantity stays >= 0. RETURNING gives us both
+    // old and new quantities without a separate read, eliminating the race.
+    const rows = await prisma.$queryRawUnsafe<
+      Array<{ new_qty: number; prev_qty: number; reserved: number; tenant_id: string }>
+    >(
+      `UPDATE "Inventory"
+       SET quantity = quantity + $1, "updatedAt" = NOW()
+       WHERE "variantId" = $2 AND (quantity + $1) >= 0
+       RETURNING
+         quantity                AS new_qty,
+         quantity - $1           AS prev_qty,
+         reserved,
+         "tenantId"              AS tenant_id`,
+      change,
+      variantId,
+    );
+
+    if (rows.length === 0) {
+      // Check whether the record doesn't exist or stock was insufficient.
+      const exists = await prisma.inventory.findUnique({ where: { variantId }, select: { id: true } });
+      if (!exists) throw new Error("Inventory record not found");
+      throw new Error("Insufficient stock");
+    }
+
+    const { new_qty: newQty, prev_qty: prevQty, reserved, tenant_id: tenantId } = rows[0];
+
+    await Promise.all([
+      addLog({ variantId, change, reason, previousQty: prevQty, newQty, previousReserved: reserved, newReserved: reserved, userId }),
+      logAudit({
+        entityType: "inventory", entityId: variantId, action: "stock_adjusted",
+        changes: { variantId, change, reason, previousQty: prevQty, newQty }, userId, tenantId,
+      }),
     ]);
 
-    await logAudit({
-      entityType: "inventory", entityId: variantId, action: "stock_adjusted",
-      changes: { variantId, change, reason, previousQty: inv.quantity, newQty }, userId, tenantId: inv.tenantId,
-    });
+    await checkAndNotifyStock(variantId, newQty, tenantId, reason);
 
-    await checkAndNotifyStock(variantId, newQty, inv.tenantId, reason);
-
-    return updated;
+    return { variantId, quantity: newQty, reserved };
   }
   const idx = mockInventory.findIndex((i) => i.variantId === variantId);
   if (idx === -1) throw new Error("Inventory record not found");

@@ -89,13 +89,15 @@ function LoginForm() {
         </Link>
       </p>
 
-      <div className="mt-8 rounded-lg border border-border bg-card p-4">
-        <p className="text-xs font-medium text-muted-foreground mb-2">Demo credentials</p>
-        <div className="space-y-1 text-xs text-muted-foreground">
-          <p>Admin: <span className="text-[#F8FAFC]">admin@cloudcommerce.com</span> / <span className="text-[#F8FAFC]">admin123</span></p>
-          <p>Merchant: <span className="text-[#F8FAFC]">merchant@demo.com</span> / <span className="text-[#F8FAFC]">merchant123</span></p>
+      {process.env.NODE_ENV !== "production" && (
+        <div className="mt-8 rounded-lg border border-border bg-card p-4">
+          <p className="text-xs font-medium text-muted-foreground mb-2">Dev credentials</p>
+          <div className="space-y-1 text-xs text-muted-foreground">
+            <p>Admin: <span className="text-[#F8FAFC]">admin@cloudcommerce.com</span> / <span className="text-[#F8FAFC]">admin123</span></p>
+            <p>Merchant: <span className="text-[#F8FAFC]">merchant@demo.com</span> / <span className="text-[#F8FAFC]">merchant123</span></p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

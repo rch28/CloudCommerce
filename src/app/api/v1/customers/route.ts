@@ -1,27 +1,38 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { listCustomers, getCustomer, createCustomer } from "@/lib/services/customers";
+import { getTenantId, requirePermission, handleError } from "@/lib/api-helpers";
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const tenantId = searchParams.get("tenantId");
-  const id = searchParams.get("id");
-  if (!tenantId) return NextResponse.json({ error: "tenantId required" }, { status: 400 });
-  if (id) {
-    const customer = await getCustomer(id);
-    return NextResponse.json(customer ?? { error: "Not found" }, { status: customer ? 200 : 404 });
+export async function GET(req: NextRequest) {
+  const forbidden = await requirePermission(req, "read");
+  if (forbidden) return forbidden;
+
+  try {
+    const tenantId = await getTenantId(req);
+    const id = req.nextUrl.searchParams.get("id");
+
+    if (id) {
+      const customer = await getCustomer(id, tenantId);
+      if (!customer) return NextResponse.json({ error: "Not found" }, { status: 404 });
+      return NextResponse.json(customer);
+    }
+
+    const customers = await listCustomers(tenantId);
+    return NextResponse.json(customers);
+  } catch (e) {
+    return handleError(e);
   }
-  const customers = await listCustomers(tenantId);
-  return NextResponse.json(customers);
 }
 
-export async function POST(req: Request) {
-  const body = await req.json();
-  const { tenantId, ...data } = body;
-  if (!tenantId) return NextResponse.json({ error: "tenantId required" }, { status: 400 });
+export async function POST(req: NextRequest) {
+  const forbidden = await requirePermission(req, "manage");
+  if (forbidden) return forbidden;
+
   try {
-    const customer = await createCustomer(data, tenantId);
+    const tenantId = await getTenantId(req);
+    const body = await req.json();
+    const customer = await createCustomer(body, tenantId);
     return NextResponse.json(customer, { status: 201 });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 400 });
+  } catch (e) {
+    return handleError(e);
   }
 }

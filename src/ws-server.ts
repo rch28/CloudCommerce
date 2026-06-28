@@ -1,5 +1,5 @@
 import { WebSocketServer, WebSocket } from "ws";
-import { createServer } from "http";
+import { createServer, type IncomingMessage } from "http";
 import { prisma } from "@/lib/prisma";
 import { OrderEventSubscriber, type OrderEventPayload, type NotificationEventPayload } from "@/lib/redis-pubsub";
 import { wsMetrics } from "@/lib/ws-metrics";
@@ -7,6 +7,7 @@ import { wsMetrics } from "@/lib/ws-metrics";
 const WS_PORT = parseInt(process.env.WS_PORT || "3001", 10);
 const HEARTBEAT_INTERVAL_MS = 30_000;
 const PONG_TIMEOUT_MS = 10_000;
+const AUTH_TIMEOUT_MS = 15_000;
 
 interface ClientState {
   tenantId: string | null;
@@ -72,7 +73,8 @@ async function handleAuth(ws: WebSocket, client: ClientState, token: string) {
   }, HEARTBEAT_INTERVAL_MS);
 }
 
-function cleanup(ws: WebSocket, client: ClientState) {
+function cleanup(ws: WebSocket, client: ClientState, authTimeout?: ReturnType<typeof setTimeout>) {
+  if (authTimeout) clearTimeout(authTimeout);
   if (client.heartbeatTimer) clearInterval(client.heartbeatTimer);
   if (client.tenantId) {
     const sockets = tenantSockets.get(client.tenantId);
@@ -87,18 +89,29 @@ async function main() {
   const subscriber = new OrderEventSubscriber();
   await subscriber.connect();
 
-  subscriber.onEvent = (event: OrderEventPayload) => {
+  // Use the Redis channel name as the authoritative tenant scope — never the payload body.
+  subscriber.onEvent = (event: OrderEventPayload, channelTenantId: string) => {
     wsMetrics.totalEventsProcessed++;
-    broadcast(event.data.tenantId, { type: "order_event", ...event });
+    broadcast(channelTenantId, { type: "order_event", ...event });
   };
 
-  subscriber.onNotification = (event: NotificationEventPayload) => {
+  subscriber.onNotification = (event: NotificationEventPayload, channelTenantId: string) => {
     wsMetrics.totalEventsProcessed++;
-    broadcast(event.data.tenantId, { type: "notification", ...event });
+    broadcast(channelTenantId, { type: "notification", ...event });
   };
 
   const server = createServer();
-  const wss = new WebSocketServer({ server });
+
+  const allowedOrigins = (process.env.WS_ALLOWED_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean);
+
+  const wss = new WebSocketServer({
+    server,
+    verifyClient: ({ req }: { req: IncomingMessage }) => {
+      if (allowedOrigins.length === 0) return true;
+      const origin = req.headers.origin;
+      return !origin || allowedOrigins.includes(origin);
+    },
+  });
 
   wsMetrics.serverStartTime = Date.now();
 
@@ -112,6 +125,14 @@ async function main() {
     };
 
     send(ws, { type: "auth_required" });
+
+    // Close connections that never authenticate within the allowed window.
+    const authTimeout = setTimeout(() => {
+      if (!client.authenticated) {
+        send(ws, { type: "auth_timeout" });
+        ws.close();
+      }
+    }, AUTH_TIMEOUT_MS);
 
     ws.on("message", async (raw) => {
       try {
@@ -138,7 +159,7 @@ async function main() {
     });
 
     ws.on("close", () => {
-      cleanup(ws, client);
+      cleanup(ws, client, authTimeout);
       wsMetrics.connectedClients = wss.clients.size;
       console.log("[WS] client disconnected");
     });

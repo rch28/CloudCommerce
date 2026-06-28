@@ -98,28 +98,34 @@ async function adjustVariantInventory(
   userId?: string,
   orderId?: string,
 ): Promise<void> {
-  const inv = await prisma.inventory.findUnique({ where: { variantId } });
-  if (!inv) throw new Error("Inventory record not found");
+  // Atomic CAS: update only when the result stays non-negative.
+  const rows = await prisma.$queryRawUnsafe<
+    Array<{ new_qty: number; prev_qty: number; reserved: number; low_stock_threshold: number }>
+  >(
+    `UPDATE "Inventory"
+     SET quantity = quantity + $1, "updatedAt" = NOW()
+     WHERE "variantId" = $2 AND (quantity + $1) >= 0
+     RETURNING
+       quantity                   AS new_qty,
+       quantity - $1              AS prev_qty,
+       reserved,
+       "lowStockThreshold"        AS low_stock_threshold`,
+    quantity,
+    variantId,
+  );
 
-  const newQty = inv.quantity + quantity;
-  if (newQty < 0) throw new Error("Insufficient stock");
+  if (rows.length === 0) {
+    throw new Error(`Inventory record not found or insufficient stock for variant ${variantId}`);
+  }
 
-  await prisma.inventory.update({
-    where: { variantId },
-    data: { quantity: newQty },
-  });
+  const { new_qty: newQty, prev_qty: prevQty, low_stock_threshold: threshold } = rows[0];
+  const fullReason = orderId ? `${reason} (order ${orderId})` : reason;
 
   await prisma.inventoryLog.create({
-    data: {
-      variantId,
-      change: quantity,
-      reason: orderId ? `${reason} (order ${orderId})` : reason,
-      previousQty: inv.quantity,
-      newQty,
-    },
+    data: { variantId, change: quantity, reason: fullReason, previousQty: prevQty, newQty },
   });
 
-  if (newQty <= inv.lowStockThreshold) {
+  if (newQty <= threshold) {
     const product = await prisma.productVariant.findUnique({
       where: { id: variantId },
       include: { product: { select: { name: true } } },
@@ -129,7 +135,7 @@ async function adjustVariantInventory(
       type: newQty <= 0 ? "inventory.out_of_stock" : "inventory.low_stock",
       title: newQty <= 0 ? `${productName} out of stock` : `${productName} low stock`,
       body: `${productName} has ${newQty} units remaining`,
-      data: { variantId, productName, quantity: newQty, threshold: inv.lowStockThreshold, reason },
+      data: { variantId, productName, quantity: newQty, threshold, reason: fullReason },
       channel: "in_app",
     });
   }
@@ -156,10 +162,13 @@ async function checkLowStock(variantId: string, tenantId: string): Promise<void>
 }
 
 async function checkAllLowStock(tenantId: string): Promise<void> {
-  const lowItems = await prisma.inventory.findMany({
-    where: { tenantId, quantity: { lte: prisma.inventory.fields.lowStockThreshold } },
+  const allItems = await prisma.inventory.findMany({
+    where: { tenantId },
     include: { variant: { include: { product: { select: { name: true } } } } },
   });
+  // Filter in code — Prisma FieldRef cannot be used in a where clause for
+  // column-to-column comparisons.
+  const lowItems = allItems.filter((i) => i.quantity <= i.lowStockThreshold);
 
   for (const inv of lowItems) {
     const productName = inv.variant?.product?.name ?? "Product";

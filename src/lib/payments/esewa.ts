@@ -40,7 +40,7 @@ export class ESewaProvider implements PaymentProvider {
     });
     if (!res.ok) throw new Error(`eSewa verification failed: ${res.status}`);
     const data = await res.json();
-    const status = data.status === "COMPLETE" ? "succeeded" : data.status === "REFUNDED" ? "refunded" : "pending";
+    const status = data.status === "COMPLETE" ? "succeeded" : data.status === "REFUNDED" ? "failed" : "pending";
     return { id: providerPaymentId, status, providerPaymentId, providerData: data };
   }
 

@@ -1,8 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAdminAnalytics } from "@/lib/services/analytics";
+import { requireAdminRole } from "@/lib/api-helpers";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const forbidden = await requireAdminRole(req);
+  if (forbidden) return forbidden;
   try {
     const hasDb = !!process.env.DATABASE_URL;
 

@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getTenantId, getUserId, handleError } from "@/lib/api-helpers";
+import { getTenantId, getUserId, requirePermission, handleError } from "@/lib/api-helpers";
 import { pointsAdjustSchema } from "@/lib/schemas/loyalty";
 import { earnPoints } from "@/lib/services/loyalty";
 import { logAudit } from "@/lib/audit";
 
 export async function POST(request: NextRequest) {
+  const forbidden = await requirePermission(request, "manage");
+  if (forbidden) return forbidden;
+
   try {
     const tenantId = await getTenantId(request);
     const userId = await getUserId(request);

@@ -60,8 +60,10 @@ export class OrderEventPublisher {
 
 export class OrderEventSubscriber {
   private sub: RedisClientType;
-  onEvent: ((event: OrderEventPayload) => void) | null = null;
-  onNotification: ((event: NotificationEventPayload) => void) | null = null;
+  // Callbacks receive the channel-derived tenantId as the authoritative scope —
+  // never trust the tenantId embedded in the payload body.
+  onEvent: ((event: OrderEventPayload, channelTenantId: string) => void) | null = null;
+  onNotification: ((event: NotificationEventPayload, channelTenantId: string) => void) | null = null;
   private connected = false;
 
   constructor() {
@@ -73,18 +75,20 @@ export class OrderEventSubscriber {
     if (this.connected) return;
     this.connected = true;
     await this.sub.connect();
-    await this.sub.pSubscribe(`${CHANNEL_PREFIX}*`, (message: string, _channel: string) => {
+    await this.sub.pSubscribe(`${CHANNEL_PREFIX}*`, (message: string, channel: string) => {
       if (!this.onEvent) return;
       try {
         const event = JSON.parse(message) as OrderEventPayload;
-        this.onEvent(event);
+        const channelTenantId = channel.slice(CHANNEL_PREFIX.length);
+        this.onEvent(event, channelTenantId);
       } catch { /* skip malformed */ }
     });
-    await this.sub.pSubscribe(`notifications:*`, (message: string) => {
+    await this.sub.pSubscribe(`notifications:*`, (message: string, channel: string) => {
       if (!this.onNotification) return;
       try {
         const event = JSON.parse(message) as NotificationEventPayload;
-        this.onNotification(event);
+        const channelTenantId = channel.slice("notifications:".length);
+        this.onNotification(event, channelTenantId);
       } catch { /* skip malformed */ }
     });
   }

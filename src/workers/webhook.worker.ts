@@ -16,7 +16,9 @@ export function createWebhookWorker(): Worker {
 
       switch (payload.type) {
         case "deliver":
-          return deliverWebhook(payload);
+          // Use BullMQ's own retry counter — job.data.attempt is set only on the
+          // first enqueue and won't increment on automatic retries.
+          return deliverWebhook(payload, job.attemptsMade + 1);
         case "cleanup":
           return cleanupOldWebhooks(payload.olderThanDays, payload.tenantId);
       }
@@ -55,8 +57,11 @@ export function createWebhookWorker(): Worker {
   return worker;
 }
 
-async function deliverWebhook(payload: Extract<WebhookJobPayload, { type: "deliver" }>): Promise<void> {
-  const { webhookEventId, provider, eventType, rawBody, tenantId, attempt } = payload;
+async function deliverWebhook(
+  payload: Extract<WebhookJobPayload, { type: "deliver" }>,
+  attempt: number,
+): Promise<void> {
+  const { webhookEventId, provider, eventType, rawBody, tenantId } = payload;
 
   const webhookUrl = await resolveWebhookUrl(provider, tenantId);
   if (!webhookUrl) {

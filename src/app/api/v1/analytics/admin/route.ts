@@ -1,22 +1,25 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAdminAnalytics, getTimeSeriesData } from "@/lib/services/analytics";
-import type { NextRequest } from "next/server";
+import { requireAdminRole, handleError } from "@/lib/api-helpers";
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const range = (searchParams.get("range") || "month") as any;
-  const start = searchParams.get("start") || undefined;
-  const end = searchParams.get("end") || undefined;
-  const metric = searchParams.get("metric");
+  const forbidden = await requireAdminRole(req);
+  if (forbidden) return forbidden;
 
   try {
+    const { searchParams } = new URL(req.url);
+    const range = (searchParams.get("range") || "month") as "today" | "week" | "month" | "year" | "custom";
+    const start = searchParams.get("start") ?? undefined;
+    const end = searchParams.get("end") ?? undefined;
+    const metric = searchParams.get("metric");
+
     if (metric) {
       const data = await getTimeSeriesData(null, metric, { range, start, end });
       return NextResponse.json({ data, metric });
     }
     const metrics = await getAdminAnalytics({ range, start, end });
     return NextResponse.json(metrics);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 400 });
+  } catch (e) {
+    return handleError(e);
   }
 }

@@ -1,9 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAggregateMetrics, getAllQueueHealth } from "@/lib/queue/monitoring";
 import { redisClient } from "@/lib/redis";
 import { getWsMetrics } from "@/lib/ws-metrics";
+import { requireAdminRole } from "@/lib/api-helpers";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const forbidden = await requireAdminRole(req);
+  if (forbidden) return forbidden;
   const queueMetrics = await getAggregateMetrics();
   const queueHealth = await getAllQueueHealth();
   const redisInfo = await getRedisInfo();

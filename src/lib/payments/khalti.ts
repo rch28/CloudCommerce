@@ -51,7 +51,7 @@ export class KhaltiProvider implements PaymentProvider {
     });
     if (!res.ok) throw new Error(`Khalti lookup failed: ${res.status}`);
     const data = await res.json();
-    const status = data.status === "Completed" ? "succeeded" : data.status === "Refunded" ? "refunded" : "pending";
+    const status = data.status === "Completed" ? "succeeded" : data.status === "Refunded" ? "failed" : "pending";
     return { id: data.pidx, status, providerPaymentId: data.pidx, providerData: data };
   }
 

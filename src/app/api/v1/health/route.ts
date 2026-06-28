@@ -1,25 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { testQueueConnection } from "@/lib/queue/connection";
-import { getAllQueueHealth } from "@/lib/queue/monitoring";
 
+// Health endpoint: returns opaque status only — no internal topology details.
 export async function GET() {
-  const checks: Record<string, unknown> = {};
+  const dbStatus = await checkDatabase();
+  const queueOk = await testQueueConnection();
 
-  checks.database = await checkDatabase();
-  checks.queueConnection = await testQueueConnection();
-  checks.queues = await getAllQueueHealth();
-
-  const healthy = checks.database === "ok" && checks.queueConnection === true;
-  const status = healthy ? 200 : 503;
+  const healthy = dbStatus === "ok" && queueOk === true;
 
   return NextResponse.json(
     {
       status: healthy ? "healthy" : "degraded",
       timestamp: new Date().toISOString(),
-      checks,
     },
-    { status },
+    { status: healthy ? 200 : 503 },
   );
 }
 

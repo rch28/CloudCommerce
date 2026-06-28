@@ -6,7 +6,6 @@ import { OrderEventPublisher } from "@/lib/redis-pubsub";
 import { createNotification } from "@/lib/services/notifications";
 import { enqueueMail, enqueueInventorySync } from "@/lib/queue/enqueue";
 import { validateCoupon, calculateDiscount } from "@/lib/services/discounts";
-import { recordUsage } from "@/lib/services/coupon-usage";
 import { calculateTax } from "@/lib/services/tax";
 import { allocateStock, reserveStock, confirmDeduction } from "@/lib/services/warehouse";
 
@@ -56,13 +55,20 @@ interface OrderResult {
   address: OrderAddressData | null;
 }
 
-async function generateOrderNumber(): Promise<string> {
-  const lastOrder = await prisma.order.findFirst({
-    where: { number: { startsWith: "CC-" } },
-    orderBy: { number: "desc" },
-    select: { number: true },
-  });
-  const lastNum = lastOrder ? parseInt(lastOrder.number.slice(3), 10) : 0;
+// Must be called inside a prisma.$transaction callback.
+// Uses a per-tenant advisory lock to serialize concurrent checkouts so two
+// simultaneous orders never receive the same order number.
+async function generateOrderNumber(
+  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  tenantId: string,
+): Promise<string> {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"cc_order_num_" + tenantId}))`;
+  const rows = await tx.$queryRaw<Array<{ number: string }>>`
+    SELECT number FROM "Order"
+    WHERE "tenantId" = ${tenantId} AND number LIKE 'CC-%'
+    ORDER BY number DESC LIMIT 1
+  `;
+  const lastNum = rows[0] ? parseInt(rows[0].number.slice(3), 10) : 0;
   return `CC-${String(lastNum + 1).padStart(5, "0")}`;
 }
 
@@ -139,8 +145,10 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
       throw new Error("Shipping address is required");
     }
 
-    const orderNumber = await generateOrderNumber();
-    const subtotal = cart.items.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
+    const orderNumber = await generateOrderNumber(tx, tenantId);
+    // Use the live variant price — never trust the stored cart price to prevent
+    // price manipulation from stale or client-modified cart items.
+    const subtotal = cart.items.reduce((s, i) => s + Number(i.variant!.price) * i.quantity, 0);
     const shipping = params.shippingPrice !== undefined ? params.shippingPrice : (subtotal >= 100 ? 0 : 10);
 
     let discountAmount = 0;
@@ -231,7 +239,7 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
             variantId: item.variantId,
             productName: item.variant?.product?.name ?? "",
             sku: item.variant?.sku ?? "",
-            price: Number(item.price),
+            price: Number(item.variant!.price),
             quantity: item.quantity,
             image: item.variant?.product?.images?.[0]?.url ?? null,
           })),
@@ -256,15 +264,16 @@ export async function checkout(params: CheckoutParams): Promise<OrderResult> {
 
     // Coupon usage inside the transaction so a rollback also rolls back the counter.
     if (couponId) {
-      // Atomic increment: only apply if still below the limit.
-      const updated = await tx.coupon.updateMany({
-        where: {
-          id: couponId,
-          OR: [{ maxUses: null }, { currentUses: { lt: tx.coupon.fields.maxUses as unknown as number } }],
-        },
-        data: { currentUses: { increment: 1 } },
-      });
-      if (updated.count === 0) {
+      // Atomic increment guarded by the maxUses constraint.
+      // tx.coupon.fields.maxUses is a FieldRef and cannot be used as a literal
+      // in Prisma's updateMany where clause — raw SQL is the only safe option.
+      const updated = await tx.$queryRawUnsafe<Array<{ id: string }>>(
+        `UPDATE "Coupon" SET "currentUses" = "currentUses" + 1
+         WHERE id = $1 AND ("maxUses" IS NULL OR "currentUses" < "maxUses")
+         RETURNING id`,
+        couponId,
+      );
+      if (updated.length === 0) {
         throw new Error("Coupon usage limit reached");
       }
       await tx.promotionUsage.create({
@@ -510,12 +519,20 @@ export async function createOrder(data: OrderInput, tenantId: string) {
 
 export async function updateOrderStatus(id: string, status: string, tenantId: string) {
   if (process.env.DATABASE_URL) {
+    const existing = await prisma.order.findFirst({ where: { id, tenantId }, select: { status: true } });
+    if (!existing) throw new Error("Order not found");
+    if (!isValidTransition(existing.status, status)) {
+      throw new Error(`Invalid status transition: ${existing.status} → ${status}`);
+    }
     const order = await prisma.order.update({ where: { id }, data: { status }, include: { items: true } });
-    await logAudit({ entityType: "order", entityId: id, action: "updated", changes: { status }, tenantId });
+    await logAudit({ entityType: "order", entityId: id, action: "updated", changes: { previousStatus: existing.status, status }, tenantId });
     return order;
   }
-  const idx = mockOrders.findIndex((o) => o.id === id);
+  const idx = mockOrders.findIndex((o) => o.id === id && o.tenantId === tenantId);
   if (idx === -1) throw new Error("Order not found");
+  if (!isValidTransition(mockOrders[idx].status, status)) {
+    throw new Error(`Invalid status transition: ${mockOrders[idx].status} → ${status}`);
+  }
   mockOrders[idx].status = status;
   return mockOrders[idx];
 }
