@@ -18,6 +18,7 @@ import Badge from "../Badge";
 import DataTable from "@/components/dashboard/data-table";
 import ProductForm from "@/components/dashboard/product-form";
 import SearchField from "@/components/ui/form-inputs/SearchField";
+import { SelectField } from "@/components/ui/select-field";
 
 interface ProductData {
   id: string;
@@ -308,36 +309,26 @@ export default function ProductsView() {
           placeholder="Search products by name, SKU, description..."
         />
 
-        <select
+        <SelectField
           value={categoryFilter}
+          options={categoryFilters}
           onChange={(e) => {
             setCategoryFilter(e.target.value);
             setPage(1);
             setSelected(new Set());
           }}
-          className="rounded-lg border border-border bg-background px-3 py-2.5 text-xs text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
-        >
-          {categoryFilters.map((f) => (
-            <option key={f.value} value={f.value}>
-              {f.label}
-            </option>
-          ))}
-        </select>
-        <select
+          size="compact"
+        />
+        <SelectField
           value={statusFilter}
+          options={statusFilters}
           onChange={(e) => {
             setStatusFilter(e.target.value);
             setPage(1);
             setSelected(new Set());
           }}
-          className="rounded-lg border border-border bg-background px-3 py-2.5 text-xs text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
-        >
-          {statusFilters.map((f) => (
-            <option key={f.value} value={f.value}>
-              {f.label}
-            </option>
-          ))}
-        </select>
+          size="compact"
+        />
         <button
           onClick={() => {
             setEditing(null);

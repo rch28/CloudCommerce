@@ -14,6 +14,7 @@ import Badge from "../Badge";
 import DataTable from "@/components/dashboard/data-table";
 import CategoryForm from "@/components/dashboard/category-form";
 import SearchField from "@/components/ui/form-inputs/SearchField";
+import { SelectField } from "@/components/ui/select-field";
 
 interface Category {
   id: string;
@@ -228,22 +229,22 @@ export default function CategoriesView() {
           placeholder="Search categories..."
         />
 
-        <select
+        <SelectField
           value={statusFilter}
           onChange={(e) => {
             setStatusFilter(e.target.value);
             setPage(1);
             setSelected(new Set());
           }}
-          className="rounded-lg border border-border bg-background px-3 py-2.5 text-xs text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+          size="compact"
         >
           <option value="all">All Status</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
           <option value="archived">Archived</option>
-        </select>
+        </SelectField>
         {/* Category filter */}
-        <select
+        <SelectField
           value={categoryFilter}
           onChange={(e) => {
             // When a specific category is chosen we want to filter by that category ID.
@@ -253,7 +254,7 @@ export default function CategoriesView() {
             setPage(1);
             setSelected(new Set());
           }}
-          className="rounded-lg border border-border bg-background px-3 py-2.5 text-xs text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+          size="compact"
         >
           <option value="all">All Categories</option>
           {categories.map((c) => (
@@ -261,7 +262,7 @@ export default function CategoriesView() {
               {c.name}
             </option>
           ))}
-        </select>
+        </SelectField>
         <button
           onClick={() => {
             setEditing(null);

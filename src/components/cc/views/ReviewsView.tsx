@@ -5,6 +5,7 @@ import { reviewsApi } from "@/services/reviews.service";
 import { useRouter } from "next/navigation";
 import { Star, Filter, MoreHorizontal } from "lucide-react";
 import SearchField from "@/components/ui/form-inputs/SearchField";
+import { SelectField } from "@/components/ui/select-field";
 
 interface ReviewItem {
   id: string; rating: number; title: string | null; body: string | null; status: string;
@@ -101,15 +102,15 @@ export default function ReviewsView() {
         />
         <div className="flex items-center gap-2">
           <Filter size={16} className="text-muted-foreground" />
-          <select
+          <SelectField
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="px-3 py-2 border rounded-md text-sm bg-background"
+            size="compact"
           >
             {STATUSES.map((s) => (
               <option key={s} value={s}>{s === "all" ? "All Status" : s.charAt(0).toUpperCase() + s.slice(1)}</option>
             ))}
-          </select>
+          </SelectField>
         </div>
       </div>
 
