@@ -6,7 +6,7 @@ export interface SelectOption {
   label: string;
 }
 
-interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectFieldProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "size"> {
   options?: SelectOption[];
   size?: "default" | "compact" | "sm" | "md";
 }
