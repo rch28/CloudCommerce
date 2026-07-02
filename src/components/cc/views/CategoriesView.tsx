@@ -2,17 +2,13 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   Plus,
-  Pencil,
-  Archive,
-  Trash2,
-  RotateCcw,
   Tag,
-  Search,
 } from "lucide-react";
 import { categoriesApi } from "@/services/categories.service";
 import Badge from "../Badge";
 import DataTable from "@/components/dashboard/data-table";
 import CategoryForm from "@/components/dashboard/category-form";
+import ActionButtons from "@/components/ui/action-buttons";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import { SelectField } from "@/components/ui/select-field";
 
@@ -355,38 +351,16 @@ export default function CategoriesView() {
             render: (item: Record<string, unknown>) => {
               const c = item as unknown as Category;
               return (
-                <div className="flex items-center justify-end gap-1">
-                  <button
-                    onClick={() => {
-                      setEditing(c);
-                      setFormOpen(true);
-                    }}
-                    className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC]"
-                  >
-                    <Pencil size={14} />
-                  </button>
-                  {c.status !== "archived" ? (
-                    <button
-                      onClick={() => handleArchive(c.id)}
-                      className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-amber-400"
-                    >
-                      <Archive size={14} />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleRestore(c.id)}
-                      className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-emerald-400"
-                    >
-                      <RotateCcw size={14} />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setConfirmDelete(c.id)}
-                    className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-rose-400"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
+                <ActionButtons
+                  actions={[
+                    { type: "edit", tooltip: "Edit category", onClick: () => { setEditing(c); setFormOpen(true); } },
+                    ...(c.status !== "archived"
+                      ? [{ type: "archive" as const, tooltip: "Archive category", onClick: () => handleArchive(c.id) }]
+                      : [{ type: "restore" as const, tooltip: "Restore category", onClick: () => handleRestore(c.id) }]
+                    ),
+                    { type: "delete", tooltip: "Delete category", onClick: () => setConfirmDelete(c.id) },
+                  ]}
+                />
               );
             },
           },

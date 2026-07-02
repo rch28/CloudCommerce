@@ -11,12 +11,14 @@ import {
   AlertCircle,
   Loader2,
   Search,
+  Edit2,
 } from "lucide-react";
 import { productsApi } from "@/services/products.service";
 import { categoriesApi } from "@/services/categories.service";
 import Badge from "../Badge";
 import DataTable from "@/components/dashboard/data-table";
 import ProductForm from "@/components/dashboard/product-form";
+import ActionButtons from "@/components/ui/action-buttons";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import { SelectField } from "@/components/ui/select-field";
 
@@ -453,53 +455,17 @@ export default function ProductsView() {
               const p = item as unknown as ProductData;
               const isBusy = actionLoading === p.id;
               return (
-                <div className="flex items-center justify-end gap-1">
-                  <button
-                    onClick={() => {
-                      setEditing(p);
-                      setFormOpen(true);
-                    }}
-                    disabled={isBusy}
-                    className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC] disabled:opacity-30"
-                  >
-                    <Pencil size={14} />
-                  </button>
-                  <button
-                    onClick={() => handleDuplicate(p.id)}
-                    disabled={isBusy}
-                    className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-cyan-400 disabled:opacity-30"
-                  >
-                    <Copy size={14} />
-                  </button>
-                  {p.status !== "archived" ? (
-                    <button
-                      onClick={() => handleArchive(p.id)}
-                      disabled={isBusy}
-                      className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-amber-400 disabled:opacity-30"
-                    >
-                      {isBusy ? (
-                        <Loader2 size={14} className="animate-spin" />
-                      ) : (
-                        <Archive size={14} />
-                      )}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleRestore(p.id)}
-                      disabled={isBusy}
-                      className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-emerald-400 disabled:opacity-30"
-                    >
-                      <RotateCcw size={14} />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setConfirmDelete(p.id)}
-                    disabled={isBusy}
-                    className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-rose-400 disabled:opacity-30"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
+                <ActionButtons
+                  actions={[
+                    { type: "edit", tooltip: "Edit product", onClick: () => { setEditing(p); setFormOpen(true); }, disabled: isBusy },
+                    { type: "copy", tooltip: "Duplicate product", onClick: () => handleDuplicate(p.id), disabled: isBusy },
+                    ...(p.status !== "archived"
+                      ? [{ type: "archive" as const, tooltip: "Archive product", onClick: () => handleArchive(p.id), disabled: isBusy }]
+                      : [{ type: "restore" as const, tooltip: "Restore product", onClick: () => handleRestore(p.id), disabled: isBusy }]
+                    ),
+                    { type: "delete", tooltip: "Delete product", onClick: () => setConfirmDelete(p.id), disabled: isBusy },
+                  ]}
+                />
               );
             },
           },

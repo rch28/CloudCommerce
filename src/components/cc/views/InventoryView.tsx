@@ -5,11 +5,9 @@ import {
   Package,
   Loader2,
   RefreshCw,
-  History,
-  Archive,
-  RotateCcw,
 } from "lucide-react";
 import { inventoryApi } from "@/services/inventory.service";
+import ActionButtons from "@/components/ui/action-buttons";
 import DataTable from "@/components/dashboard/data-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -339,26 +337,12 @@ export default function InventoryView() {
               render: (item: Record<string, unknown>) => {
                 const i = item as unknown as InventoryItem;
                 return (
-                  <div className="flex items-center justify-end gap-1">
-                    <button
-                      onClick={() => openHistory(i.variantId)}
-                      className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC]"
-                      title="Stock history"
-                    >
-                      <History size={14} />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setAdjustOpen(i.variantId);
-                        setAdjustChange(1);
-                        setAdjustReason("");
-                      }}
-                      className="rounded-lg border border-border p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC]"
-                      title="Adjust stock"
-                    >
-                      <RotateCcw size={14} />
-                    </button>
-                  </div>
+                  <ActionButtons
+                    actions={[
+                      { type: "history", tooltip: "Stock history", onClick: () => openHistory(i.variantId) },
+                      { type: "adjust", tooltip: "Adjust stock", onClick: () => { setAdjustOpen(i.variantId); setAdjustChange(1); setAdjustReason(""); } },
+                    ]}
+                  />
                 );
               },
             },

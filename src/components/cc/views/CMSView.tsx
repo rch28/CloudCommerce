@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { cmsApi } from "@/services/cms.service";
 import {
-  FileText, Plus, Pencil, Trash2, MoveUp, MoveDown, Eye, Globe,
+  FileText, Plus, Trash2, MoveUp, MoveDown, Eye,
   Layout, Image, Type as TypeIcon, Grid, Tag, Megaphone, MousePointerClick,
   Search, Loader2, AlertCircle, ChevronDown, Check, X,
 } from "lucide-react";
@@ -21,6 +21,7 @@ import {
   Tabs, TabsList, TabsTrigger, TabsContent,
 } from "@/components/ui/tabs";
 import Badge from "../Badge";
+import ActionButtons from "@/components/ui/action-buttons";
 import DataTable from "@/components/dashboard/data-table";
 import EmptyState from "@/components/dashboard/empty-state";
 import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
@@ -451,34 +452,14 @@ export default function CMSView() {
                 render: (item: Record<string, unknown>) => {
                   const p = item as unknown as PageItem;
                   return (
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => openPreview(p.slug)}
-                        className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-[#F8FAFC]"
-                        title="Preview"
-                      >
-                        <Eye size={14} />
-                      </button>
-                      <button
-                        onClick={() => handlePublish(p.id, p.status !== "published")}
-                        className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-emerald-400"
-                        title={p.status === "published" ? "Unpublish" : "Publish"}
-                      >
-                        <Globe size={14} />
-                      </button>
-                      <button
-                        onClick={() => openEditPage(p)}
-                        className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-[#F8FAFC]"
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button
-                        onClick={() => setConfirmDelete({ type: "page", id: p.id })}
-                        className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-rose-400"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+                    <ActionButtons
+                      actions={[
+                        { type: "preview", tooltip: "Preview page", onClick: () => openPreview(p.slug) },
+                        { type: p.status === "published" ? "unpublish" : "publish", tooltip: p.status === "published" ? "Unpublish page" : "Publish page", onClick: () => handlePublish(p.id, p.status !== "published") },
+                        { type: "edit", tooltip: "Edit page", onClick: () => openEditPage(p) },
+                        { type: "delete", tooltip: "Delete page", onClick: () => setConfirmDelete({ type: "page", id: p.id }) },
+                      ]}
+                    />
                   );
                 },
               },
@@ -567,20 +548,12 @@ export default function CMSView() {
                 render: (item: Record<string, unknown>) => {
                   const b = item as unknown as BannerItem;
                   return (
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => openEditBanner(b)}
-                        className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-[#F8FAFC]"
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button
-                        onClick={() => setConfirmDelete({ type: "banner", id: b.id })}
-                        className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-rose-400"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+                    <ActionButtons
+                      actions={[
+                        { type: "edit", tooltip: "Edit banner", onClick: () => openEditBanner(b) },
+                        { type: "delete", tooltip: "Delete banner", onClick: () => setConfirmDelete({ type: "banner", id: b.id }) },
+                      ]}
+                    />
                   );
                 },
               },

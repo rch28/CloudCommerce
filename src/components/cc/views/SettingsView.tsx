@@ -17,8 +17,8 @@ import {
   Copy,
   EyeOff,
   AlertTriangle,
-  Trash2,
 } from "lucide-react";
+import ActionButtons from "@/components/ui/action-buttons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -765,14 +765,11 @@ export default function SettingsView() {
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeStaff(m.id)}
-                        className="text-muted-foreground hover:text-red-400"
-                      >
-                        <Trash2 size={15} />
-                      </Button>
+                      <ActionButtons
+                        actions={[
+                          { type: "delete", tooltip: "Remove staff member", onClick: () => removeStaff(m.id) },
+                        ]}
+                      />
                     </TableCell>
                   </TableRow>
                 ))
@@ -925,14 +922,11 @@ export default function SettingsView() {
                         {new Date(k.createdAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => revokeKey(k.id)}
-                          className="text-muted-foreground hover:text-red-400"
-                        >
-                          <Trash2 size={15} />
-                        </Button>
+                        <ActionButtons
+                          actions={[
+                            { type: "delete", tooltip: "Revoke API key", onClick: () => revokeKey(k.id) },
+                          ]}
+                        />
                       </TableCell>
                     </TableRow>
                   );

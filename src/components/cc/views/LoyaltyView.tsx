@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Gift, Star, Award, TrendingUp, Plus, Pencil, Trash2, Search, Loader2, AlertCircle, Check, X, Settings, Users, History, Ticket } from "lucide-react";
+import { Gift, Star, Award, TrendingUp, Plus, Loader2, AlertCircle, Check, X, Settings, Users, History, Ticket } from "lucide-react";
 import { loyaltyApi } from "@/services/loyalty.service";
+import ActionButtons from "@/components/ui/action-buttons";
 import DataTable from "@/components/dashboard/data-table";
 import EmptyState from "@/components/dashboard/empty-state";
 import ErrorState from "@/components/dashboard/error-state";
@@ -369,20 +370,12 @@ export default function LoyaltyView() {
       key: "actions",
       label: "",
       render: (item) => (
-        <div className="flex items-center gap-1">
-          <button
-            onClick={(e) => { e.stopPropagation(); setEditingRule(item as unknown as RewardRuleItem); setRuleDialogOpen(true); }}
-            className="rounded-lg p-1.5 text-muted-foreground hover:text-[#F8FAFC] hover:bg-[#1E293B]"
-          >
-            <Pencil size={14} />
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); handleDeleteRule(String(item.id)); }}
-            className="rounded-lg p-1.5 text-muted-foreground hover:text-rose-400 hover:bg-[#1E293B]"
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
+        <ActionButtons
+          actions={[
+            { type: "edit", tooltip: "Edit rule", onClick: () => { setEditingRule(item as unknown as RewardRuleItem); setRuleDialogOpen(true); } },
+            { type: "delete", tooltip: "Delete rule", onClick: () => handleDeleteRule(String(item.id)) },
+          ]}
+        />
       ),
     },
   ];

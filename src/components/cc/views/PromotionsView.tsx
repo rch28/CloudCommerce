@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Tag, Percent, Truck, MoreHorizontal } from "lucide-react";
+import { Plus, Tag, Percent, Truck } from "lucide-react";
 import { promotionsApi } from "@/services/promotions.service";
+import ActionButtons from "@/components/ui/action-buttons";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 
 const TABS = ["Coupons", "Promotions", "Usage Analytics"] as const;
@@ -183,9 +184,11 @@ export default function PromotionsView() {
                       {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString() : "—"}
                     </td>
                     <td className="px-4 py-3">
-                      <button className="p-1 hover:bg-muted rounded">
-                        <MoreHorizontal size={14} />
-                      </button>
+                      <ActionButtons
+                        actions={[
+                          { type: "view", tooltip: "View coupon details", onClick: () => router.push(`/merchant/promotions/coupons/${c.id}`) },
+                        ]}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -206,11 +209,12 @@ export default function PromotionsView() {
                 <th className="text-left px-4 py-3 font-medium">Uses</th>
                 <th className="text-left px-4 py-3 font-medium">Status</th>
                 <th className="text-left px-4 py-3 font-medium">Expires</th>
+                <th className="w-10 px-4 py-3" />
               </tr>
             </thead>
             <tbody>
               {promotions.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">No promotions yet</td></tr>
+                  <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">No promotions yet</td></tr>
               ) : promotions.map((p) => (
                 <tr
                   key={p.id}
@@ -234,6 +238,13 @@ export default function PromotionsView() {
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {p.expiresAt ? new Date(p.expiresAt).toLocaleDateString() : "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <ActionButtons
+                      actions={[
+                        { type: "view", tooltip: "View promotion details", onClick: () => router.push(`/merchant/promotions/promotions/${p.id}`) },
+                      ]}
+                    />
                   </td>
                 </tr>
               ))}

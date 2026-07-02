@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { warehouseApi } from "@/services/warehouse.service";
 import {
   Warehouse, Building2, MapPin, Boxes, ArrowRightLeft, Truck,
-  Plus, Pencil, Trash2, Search, Loader2, AlertCircle, Check, X,
+  Plus, Search, Loader2, AlertCircle, Check, X,
   Globe, Filter, ArrowUpDown, RefreshCw, Package,
 } from "lucide-react";
+import ActionButtons from "@/components/ui/action-buttons";
 import DataTable from "@/components/dashboard/data-table";
 import EmptyState from "@/components/dashboard/empty-state";
 import { Button } from "@/components/ui/button";
@@ -424,14 +425,12 @@ export default function WarehousesView() {
                   render: (item: Record<string, unknown>) => {
                     const w = item as unknown as WarehouseItem;
                     return (
-                      <div className="flex justify-end gap-1">
-                        <button onClick={() => openEdit(w)} className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC]" title="Edit">
-                          <Pencil size={14} />
-                        </button>
-                        <button onClick={() => handleDeleteWarehouse(w.id, w.name)} className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-rose-500/10 hover:text-rose-400" title="Delete">
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
+                      <ActionButtons
+                        actions={[
+                          { type: "edit", tooltip: "Edit warehouse", onClick: () => openEdit(w) },
+                          { type: "delete", tooltip: "Delete warehouse", onClick: () => handleDeleteWarehouse(w.id, w.name) },
+                        ]}
+                      />
                     );
                   },
                 },
