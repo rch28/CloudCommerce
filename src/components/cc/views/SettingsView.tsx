@@ -2,18 +2,41 @@
 import { useState, useEffect } from "react";
 import { settingsApi } from "@/services/settings.service";
 import {
-  Store, Palette, Mail, MapPin, Search, Globe, Users, Shield,
-  Loader2, Check, X, Plus, Copy, EyeOff, AlertTriangle, Trash2,
+  Store,
+  Palette,
+  Mail,
+  MapPin,
+  Search,
+  Globe,
+  Users,
+  Shield,
+  Loader2,
+  Check,
+  X,
+  Plus,
+  Copy,
+  EyeOff,
+  AlertTriangle,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 
 const TABS = [
@@ -28,11 +51,25 @@ const TABS = [
 ];
 
 const PRESET_COLORS = [
-  "#7C3AED", "#06B6D4", "#22C55E", "#F59E0B",
-  "#EC4899", "#3B82F6", "#EF4444", "#14B8A6",
+  "#7C3AED",
+  "#06B6D4",
+  "#22C55E",
+  "#F59E0B",
+  "#EC4899",
+  "#3B82F6",
+  "#EF4444",
+  "#14B8A6",
 ];
 
-function Section({ icon: Icon, title, children }: { icon: any; title: string; children: React.ReactNode }) {
+function Section({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: any;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-xl border border-border bg-card p-6">
       <div className="mb-5 flex items-center gap-2">
@@ -44,10 +81,21 @@ function Section({ icon: Icon, title, children }: { icon: any; title: string; ch
   );
 }
 
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function Field({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1.5">
-      <Label variant="muted" size="sm">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</Label>
+      <Label variant="muted" size="sm">
+        {label}
+        {required && <span className="text-red-500 ml-0.5">*</span>}
+      </Label>
       {children}
     </div>
   );
@@ -76,10 +124,23 @@ export default function SettingsView() {
   const [savedSection, setSavedSection] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const [store, setStore] = useState({ name: "", slug: "", logoUrl: "", description: "" });
-  const [branding, setBranding] = useState({ primaryColor: "#7C3AED", secondaryColor: "#06B6D4" });
+  const [store, setStore] = useState({
+    name: "",
+    slug: "",
+    logoUrl: "",
+    description: "",
+  });
+  const [branding, setBranding] = useState({
+    primaryColor: "#7C3AED",
+    secondaryColor: "#06B6D4",
+  });
   const [contact, setContact] = useState({ email: "", phone: "" });
-  const [address, setAddress] = useState({ country: "", state: "", city: "", postalCode: "" });
+  const [address, setAddress] = useState({
+    country: "",
+    state: "",
+    city: "",
+    postalCode: "",
+  });
   const [seo, setSeo] = useState({ metaTitle: "", metaDescription: "" });
   const [domains, setDomains] = useState({ subdomain: "", customDomain: "" });
 
@@ -116,8 +177,14 @@ export default function SettingsView() {
           if (settingsData.address) setAddress(settingsData.address);
           if (settingsData.seo) setSeo(settingsData.seo);
           if (settingsData.domains) setDomains(settingsData.domains);
-          setStaff(Array.isArray(staffData) ? staffData : (staffData as any).staff || []);
-          setApiKeys(Array.isArray(keysData) ? keysData : (keysData as any).keys || []);
+          setStaff(
+            Array.isArray(staffData)
+              ? staffData
+              : (staffData as any).staff || [],
+          );
+          setApiKeys(
+            Array.isArray(keysData) ? keysData : (keysData as any).keys || [],
+          );
         }
       } catch {
         if (!cancelled) setError("Failed to load settings");
@@ -125,7 +192,9 @@ export default function SettingsView() {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function saveSection(sectionName: string, data: any) {
@@ -147,7 +216,10 @@ export default function SettingsView() {
     setInviting(true);
     setError(null);
     try {
-      const data = await settingsApi.inviteStaff({ email: inviteEmail, role: inviteRole });
+      const data = await settingsApi.inviteStaff({
+        email: inviteEmail,
+        role: inviteRole,
+      });
       setStaff((prev) => [...prev, data]);
       setInviteEmail("");
       setInviteRole("staff");
@@ -183,7 +255,10 @@ export default function SettingsView() {
     setCreatingKey(true);
     setError(null);
     try {
-      const scopes = keyScopes.split(",").map((s) => s.trim()).filter(Boolean);
+      const scopes = keyScopes
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
       const data = await settingsApi.createApiKey({ name: keyName, scopes });
       setNewKey(data.fullKey || data.key || "");
       setApiKeys((prev) => [...prev, data]);
@@ -214,7 +289,7 @@ export default function SettingsView() {
     );
   }
 
-  function renderTabButton(tab: typeof TABS[number]) {
+  function renderTabButton(tab: (typeof TABS)[number]) {
     const Icon = tab.icon;
     return (
       <button
@@ -242,9 +317,13 @@ export default function SettingsView() {
         className="bg-[#7C3AED] text-white hover:bg-[#8B5CF6]"
       >
         {isSaving ? (
-          <><Loader2 size={15} className="mr-1 animate-spin" /> Saving...</>
+          <>
+            <Loader2 size={15} className="mr-1 animate-spin" /> Saving...
+          </>
         ) : isSaved ? (
-          <><Check size={15} className="mr-1" /> Saved!</>
+          <>
+            <Check size={15} className="mr-1" /> Saved!
+          </>
         ) : (
           "Save"
         )}
@@ -258,20 +337,26 @@ export default function SettingsView() {
         <div className="flex items-center gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3">
           <AlertTriangle size={18} className="shrink-0 text-red-400" />
           <p className="flex-1 text-sm text-red-300">{error}</p>
-          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300">
+          <button
+            onClick={() => setError(null)}
+            className="text-red-400 hover:text-red-300"
+          >
             <X size={16} />
           </button>
         </div>
       )}
 
-      <div className="flex flex-wrap gap-1 rounded-lg border border-border bg-background p-1">
+      <div className="flex flex-wrap gap-1 rounded-lg border border-border bg-card p-1">
         {TABS.map(renderTabButton)}
       </div>
 
       {activeTab === "store" && (
         <Section icon={Store} title="Store">
           <form
-            onSubmit={(e) => { e.preventDefault(); saveSection("store", store); }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              saveSection("store", store);
+            }}
             className="space-y-4"
           >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -287,19 +372,21 @@ export default function SettingsView() {
               <Field label="Logo URL">
                 <Input
                   value={store.logoUrl}
-                  onChange={(e) => setStore({ ...store, logoUrl: e.target.value })}
+                  onChange={(e) =>
+                    setStore({ ...store, logoUrl: e.target.value })
+                  }
                 />
               </Field>
             </div>
             <Field label="Description">
               <Textarea
                 value={store.description}
-                onChange={(e) => setStore({ ...store, description: e.target.value })}
+                onChange={(e) =>
+                  setStore({ ...store, description: e.target.value })
+                }
               />
             </Field>
-            <div className="flex justify-end">
-              {renderSaveButton("store")}
-            </div>
+            <div className="flex justify-end">{renderSaveButton("store")}</div>
           </form>
         </Section>
       )}
@@ -307,7 +394,10 @@ export default function SettingsView() {
       {activeTab === "branding" && (
         <Section icon={Palette} title="Branding">
           <form
-            onSubmit={(e) => { e.preventDefault(); saveSection("branding", branding); }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              saveSection("branding", branding);
+            }}
             className="space-y-4"
           >
             <Field label="Primary Color" required>
@@ -316,9 +406,13 @@ export default function SettingsView() {
                   <button
                     key={c}
                     type="button"
-                    onClick={() => setBranding({ ...branding, primaryColor: c })}
+                    onClick={() =>
+                      setBranding({ ...branding, primaryColor: c })
+                    }
                     className={`h-8 w-8 rounded-md ring-2 ring-offset-2 ring-offset-background transition-all ${
-                      branding.primaryColor === c ? "ring-[#F8FAFC] scale-110" : "ring-transparent"
+                      branding.primaryColor === c
+                        ? "ring-[#F8FAFC] scale-110"
+                        : "ring-transparent"
                     }`}
                     style={{ backgroundColor: c }}
                   />
@@ -326,7 +420,9 @@ export default function SettingsView() {
                 <input
                   type="color"
                   value={branding.primaryColor}
-                  onChange={(e) => setBranding({ ...branding, primaryColor: e.target.value })}
+                  onChange={(e) =>
+                    setBranding({ ...branding, primaryColor: e.target.value })
+                  }
                   className="h-8 w-8 cursor-pointer rounded-md border border-border bg-transparent"
                 />
               </div>
@@ -337,9 +433,13 @@ export default function SettingsView() {
                   <button
                     key={c}
                     type="button"
-                    onClick={() => setBranding({ ...branding, secondaryColor: c })}
+                    onClick={() =>
+                      setBranding({ ...branding, secondaryColor: c })
+                    }
                     className={`h-8 w-8 rounded-md ring-2 ring-offset-2 ring-offset-background transition-all ${
-                      branding.secondaryColor === c ? "ring-[#F8FAFC] scale-110" : "ring-transparent"
+                      branding.secondaryColor === c
+                        ? "ring-[#F8FAFC] scale-110"
+                        : "ring-transparent"
                     }`}
                     style={{ backgroundColor: c }}
                   />
@@ -347,7 +447,9 @@ export default function SettingsView() {
                 <input
                   type="color"
                   value={branding.secondaryColor}
-                  onChange={(e) => setBranding({ ...branding, secondaryColor: e.target.value })}
+                  onChange={(e) =>
+                    setBranding({ ...branding, secondaryColor: e.target.value })
+                  }
                   className="h-8 w-8 cursor-pointer rounded-md border border-border bg-transparent"
                 />
               </div>
@@ -355,9 +457,14 @@ export default function SettingsView() {
             <Field label="Preview">
               <div
                 className="flex h-20 items-center justify-center rounded-lg"
-                style={{ backgroundColor: branding.primaryColor, color: branding.secondaryColor }}
+                style={{
+                  backgroundColor: branding.primaryColor,
+                  color: branding.secondaryColor,
+                }}
               >
-                <span className="text-sm font-semibold">CloudCommerce Store</span>
+                <span className="text-sm font-semibold">
+                  CloudCommerce Store
+                </span>
               </div>
             </Field>
             <div className="flex justify-end">
@@ -370,7 +477,10 @@ export default function SettingsView() {
       {activeTab === "contact" && (
         <Section icon={Mail} title="Contact">
           <form
-            onSubmit={(e) => { e.preventDefault(); saveSection("contact", contact); }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              saveSection("contact", contact);
+            }}
             className="space-y-4"
           >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -378,13 +488,17 @@ export default function SettingsView() {
                 <Input
                   type="email"
                   value={contact.email}
-                  onChange={(e) => setContact({ ...contact, email: e.target.value })}
+                  onChange={(e) =>
+                    setContact({ ...contact, email: e.target.value })
+                  }
                 />
               </Field>
               <Field label="Phone">
                 <Input
                   value={contact.phone}
-                  onChange={(e) => setContact({ ...contact, phone: e.target.value })}
+                  onChange={(e) =>
+                    setContact({ ...contact, phone: e.target.value })
+                  }
                 />
               </Field>
             </div>
@@ -398,32 +512,43 @@ export default function SettingsView() {
       {activeTab === "address" && (
         <Section icon={MapPin} title="Address">
           <form
-            onSubmit={(e) => { e.preventDefault(); saveSection("address", address); }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              saveSection("address", address);
+            }}
             className="space-y-4"
           >
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Country">
                 <Input
                   value={address.country}
-                  onChange={(e) => setAddress({ ...address, country: e.target.value })}
+                  onChange={(e) =>
+                    setAddress({ ...address, country: e.target.value })
+                  }
                 />
               </Field>
               <Field label="State">
                 <Input
                   value={address.state}
-                  onChange={(e) => setAddress({ ...address, state: e.target.value })}
+                  onChange={(e) =>
+                    setAddress({ ...address, state: e.target.value })
+                  }
                 />
               </Field>
               <Field label="City">
                 <Input
                   value={address.city}
-                  onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                  onChange={(e) =>
+                    setAddress({ ...address, city: e.target.value })
+                  }
                 />
               </Field>
               <Field label="Postal Code">
                 <Input
                   value={address.postalCode}
-                  onChange={(e) => setAddress({ ...address, postalCode: e.target.value })}
+                  onChange={(e) =>
+                    setAddress({ ...address, postalCode: e.target.value })
+                  }
                 />
               </Field>
             </div>
@@ -437,7 +562,10 @@ export default function SettingsView() {
       {activeTab === "seo" && (
         <Section icon={Search} title="SEO">
           <form
-            onSubmit={(e) => { e.preventDefault(); saveSection("seo", seo); }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              saveSection("seo", seo);
+            }}
             className="space-y-4"
           >
             <Field label="Meta Title">
@@ -445,7 +573,9 @@ export default function SettingsView() {
                 <Input
                   maxLength={70}
                   value={seo.metaTitle}
-                  onChange={(e) => setSeo({ ...seo, metaTitle: e.target.value })}
+                  onChange={(e) =>
+                    setSeo({ ...seo, metaTitle: e.target.value })
+                  }
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                   {seo.metaTitle.length}/70
@@ -457,7 +587,9 @@ export default function SettingsView() {
                 <Textarea
                   maxLength={160}
                   value={seo.metaDescription}
-                  onChange={(e) => setSeo({ ...seo, metaDescription: e.target.value })}
+                  onChange={(e) =>
+                    setSeo({ ...seo, metaDescription: e.target.value })
+                  }
                 />
                 <span className="absolute bottom-2 right-3 text-xs text-muted-foreground">
                   {seo.metaDescription.length}/160
@@ -467,19 +599,20 @@ export default function SettingsView() {
             <Field label="Search Result Preview">
               <div className="rounded-lg border border-border bg-background p-4">
                 <p className="truncate text-xs text-emerald-400">
-                  {origin ? `${origin}/${domains.subdomain || "store"}` : `${domains.subdomain || "store"}.cloudcommerce.com`}
+                  {origin
+                    ? `${origin}/${domains.subdomain || "store"}`
+                    : `${domains.subdomain || "store"}.cloudcommerce.com`}
                 </p>
                 <p className="mt-1 truncate text-sm font-semibold text-primary">
                   {seo.metaTitle || "Store Title"} - CloudCommerce
                 </p>
                 <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
-                  {seo.metaDescription || "Your store description will appear here in search results."}
+                  {seo.metaDescription ||
+                    "Your store description will appear here in search results."}
                 </p>
               </div>
             </Field>
-            <div className="flex justify-end">
-              {renderSaveButton("seo")}
-            </div>
+            <div className="flex justify-end">{renderSaveButton("seo")}</div>
           </form>
         </Section>
       )}
@@ -487,14 +620,19 @@ export default function SettingsView() {
       {activeTab === "domains" && (
         <Section icon={Globe} title="Domains">
           <form
-            onSubmit={(e) => { e.preventDefault(); saveSection("domains", domains); }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              saveSection("domains", domains);
+            }}
             className="space-y-4"
           >
             <Field label="Subdomain" required>
               <div className="flex overflow-hidden rounded-md border border-border">
                 <Input
                   value={domains.subdomain}
-                  onChange={(e) => setDomains({ ...domains, subdomain: e.target.value })}
+                  onChange={(e) =>
+                    setDomains({ ...domains, subdomain: e.target.value })
+                  }
                   className="rounded-none border-0"
                 />
                 <span className="flex items-center border-l border-border bg-muted px-3 text-sm text-muted-foreground">
@@ -511,7 +649,9 @@ export default function SettingsView() {
               <Input
                 placeholder="shop.yourdomain.com"
                 value={domains.customDomain}
-                onChange={(e) => setDomains({ ...domains, customDomain: e.target.value })}
+                onChange={(e) =>
+                  setDomains({ ...domains, customDomain: e.target.value })
+                }
               />
             </Field>
             <div className="flex justify-end">
@@ -524,10 +664,14 @@ export default function SettingsView() {
       {activeTab === "users" && (
         <Section icon={Users} title="Users (Staff)">
           <div className="mb-6 rounded-lg border border-border bg-background p-4">
-            <p className="mb-3 text-sm font-medium text-[#F8FAFC]">Invite Staff Member</p>
+            <p className="mb-3 text-sm font-medium text-[#F8FAFC]">
+              Invite Staff Member
+            </p>
             <div className="flex flex-wrap items-end gap-3">
               <div className="flex-1">
-                <Label variant="muted" size="xs">Email <span className="text-red-500">*</span></Label>
+                <Label variant="muted" size="xs">
+                  Email <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   type="email"
                   placeholder="colleague@example.com"
@@ -537,7 +681,9 @@ export default function SettingsView() {
                 />
               </div>
               <div className="w-32">
-                <Label variant="muted" size="xs">Role</Label>
+                <Label variant="muted" size="xs">
+                  Role
+                </Label>
                 <Select value={inviteRole} onValueChange={setInviteRole}>
                   <SelectTrigger className="mt-1">
                     <SelectValue />
@@ -555,9 +701,14 @@ export default function SettingsView() {
                 className="bg-[#7C3AED] text-white hover:bg-[#8B5CF6]"
               >
                 {inviting ? (
-                  <><Loader2 size={15} className="mr-1 animate-spin" /> Inviting...</>
+                  <>
+                    <Loader2 size={15} className="mr-1 animate-spin" />{" "}
+                    Inviting...
+                  </>
                 ) : (
-                  <><Plus size={15} className="mr-1" /> Invite</>
+                  <>
+                    <Plus size={15} className="mr-1" /> Invite
+                  </>
                 )}
               </Button>
             </div>
@@ -575,7 +726,10 @@ export default function SettingsView() {
             <TableBody>
               {staff.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={4}
+                    className="text-center text-muted-foreground"
+                  >
                     No staff members yet
                   </TableCell>
                 </TableRow>
@@ -636,10 +790,15 @@ export default function SettingsView() {
                 <div className="flex items-start gap-3">
                   <Check className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-emerald-400">API Key Created</p>
-                    <p className="mt-1 break-all font-mono text-sm text-[#F8FAFC]">{newKey}</p>
+                    <p className="text-sm font-medium text-emerald-400">
+                      API Key Created
+                    </p>
+                    <p className="mt-1 break-all font-mono text-sm text-[#F8FAFC]">
+                      {newKey}
+                    </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Make sure to copy this key now. You won&apos;t be able to see it again.
+                      Make sure to copy this key now. You won&apos;t be able to
+                      see it again.
                     </p>
                     <Button
                       size="sm"
@@ -661,10 +820,14 @@ export default function SettingsView() {
             )}
 
             <div className="rounded-lg border border-border bg-background p-4">
-              <p className="mb-3 text-sm font-medium text-[#F8FAFC]">Create API Key</p>
+              <p className="mb-3 text-sm font-medium text-[#F8FAFC]">
+                Create API Key
+              </p>
               <div className="flex flex-wrap items-end gap-3">
                 <div className="flex-1">
-                  <Label variant="muted" size="xs">Key Name <span className="text-red-500">*</span></Label>
+                  <Label variant="muted" size="xs">
+                    Key Name <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     placeholder="e.g. Production"
                     value={keyName}
@@ -673,7 +836,9 @@ export default function SettingsView() {
                   />
                 </div>
                 <div className="flex-[2]">
-                  <Label variant="muted" size="xs">Scopes (comma-separated)</Label>
+                  <Label variant="muted" size="xs">
+                    Scopes (comma-separated)
+                  </Label>
                   <Input
                     placeholder="products:read, orders:write, customers:read"
                     value={keyScopes}
@@ -688,7 +853,10 @@ export default function SettingsView() {
                   className="bg-[#7C3AED] text-white hover:bg-[#8B5CF6]"
                 >
                   {creatingKey ? (
-                    <><Loader2 size={15} className="mr-1 animate-spin" /> Generating...</>
+                    <>
+                      <Loader2 size={15} className="mr-1 animate-spin" />{" "}
+                      Generating...
+                    </>
                   ) : (
                     "Generate"
                   )}
@@ -710,7 +878,10 @@ export default function SettingsView() {
             <TableBody>
               {apiKeys.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={5}
+                    className="text-center text-muted-foreground"
+                  >
                     No API keys yet
                   </TableCell>
                 </TableRow>

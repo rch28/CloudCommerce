@@ -188,7 +188,7 @@ export default function InventoryView() {
       />
 
       {/* Filter tabs */}
-      <div className="flex gap-1 rounded-lg border border-border bg-background p-1">
+      <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
         {(["all", "low_stock", "out_of_stock"] as const).map((tab) => (
           <button
             key={tab}
