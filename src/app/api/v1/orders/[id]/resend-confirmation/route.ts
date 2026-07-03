@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSessionUser } from "@/lib/get-session";
+import { getTenantId, requirePermission } from "@/lib/api-helpers";
 import { resendConfirmationEmail } from "@/lib/services/orders";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getSessionUser();
-    if (!session || (session.role !== "admin" && session.role !== "staff")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const forbidden = await requirePermission(request, "update");
+    if (forbidden) return forbidden;
 
     const { id } = await params;
-    const tenantId = session.tenantId;
-    if (!tenantId) return NextResponse.json({ error: "No tenant" }, { status: 400 });
+    const tenantId = await getTenantId(request);
 
     await resendConfirmationEmail(id, tenantId);
 
