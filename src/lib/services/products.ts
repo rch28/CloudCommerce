@@ -85,12 +85,16 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
         price_desc: { field: "price", dir: "desc" },
       };
 
-      let orderBy: Record<string, "asc" | "desc"> = { createdAt: "desc" };
-      if (params.sort && sortMap[params.sort]) {
+      const isPriceSort = params.sort === "price_asc" || params.sort === "price_desc" || params.orderBy === "price";
+
+      let orderBy: Record<string, "asc" | "desc"> | undefined = { createdAt: "desc" };
+      if (!isPriceSort && params.sort && sortMap[params.sort]) {
         const s = sortMap[params.sort];
         orderBy = { [s.field]: s.dir };
-      } else if (params.orderBy) {
+      } else if (!isPriceSort && params.orderBy) {
         orderBy = { [params.orderBy]: params.order || "desc" };
+      } else if (isPriceSort) {
+        orderBy = undefined;
       }
 
       const page = Math.max(1, params.page || 1);
@@ -101,11 +105,21 @@ class ProductRepository extends BaseRepository<ProductRecord, ProductInput, Part
             where,
             include: buildIncludes(),
             orderBy,
-            skip, take: pageSize,
+            skip: isPriceSort ? undefined : skip,
+            take: isPriceSort ? undefined : pageSize,
           }),
           prisma.product.count({ where }),
         ]);
-      return { items: items as unknown as ProductRecord[], total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
+
+      let result = items as unknown as ProductRecord[];
+      const priceDir = params.sort === "price_desc" ? "desc" : params.orderBy === "price" ? (params.order || "asc") : null;
+      if (priceDir === "asc") {
+        result.sort((a, b) => (a.variants?.[0]?.price ?? 0) - (b.variants?.[0]?.price ?? 0));
+      } else if (priceDir === "desc") {
+        result.sort((a, b) => (b.variants?.[0]?.price ?? 0) - (a.variants?.[0]?.price ?? 0));
+      }
+      const sliced = result.slice(skip, skip + pageSize);
+      return { items: sliced, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
     }
     let items = mockProducts.filter((p) => p.tenantId === tenantId && !p.deletedAt).map(inflateMock);
     if (params.search) items = items.filter((p) => p.name.toLowerCase().includes(params.search!.toLowerCase()));
