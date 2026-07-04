@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import { Gift, Star, Award, TrendingUp, Plus, Loader2, AlertCircle, Check, X, Settings, Users, History, Ticket } from "lucide-react";
 import { loyaltyApi } from "@/services/loyalty.service";
 import ActionButtons from "@/components/ui/action-buttons";
@@ -204,18 +205,17 @@ function RuleFormDialog({
             >
               Cancel
             </button>
-            <button
+            <Button
               disabled={saving || !name || !points}
               onClick={async () => {
                 setSaving(true);
                 await onSave({ name, type, eventType, points: Number(points), value: value ? Number(value) : undefined, valueType, minPoints: minPoints ? Number(minPoints) : undefined, maxRedemptions: maxRedemptions ? Number(maxRedemptions) : undefined, isActive });
                 setSaving(false);
               }}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6] disabled:opacity-50"
             >
               {saving && <Loader2 size={14} className="animate-spin" />}
               {initial ? "Update" : "Create"}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -422,12 +422,11 @@ export default function LoyaltyView() {
           <p className="text-sm text-muted-foreground">Manage reward rules, view customer points, and configure settings.</p>
         </div>
         {activeTab === "Rules" && (
-          <button
+          <Button
             onClick={() => { setEditingRule(null); setRuleDialogOpen(true); }}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6]"
           >
             <Plus size={16} /> New Rule
-          </button>
+          </Button>
         )}
       </div>
 
@@ -572,12 +571,9 @@ export default function LoyaltyView() {
             </div>
           </div>
 
-          <button
-            onClick={handleSaveSettings}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6]"
-          >
+          <Button onClick={handleSaveSettings}>
             Save Settings
-          </button>
+          </Button>
         </div>
       )}
 

@@ -11,6 +11,7 @@ import { InputField } from "@/components/ui/form-inputs/InputField";
 import { useAuthStore } from "@/stores/auth-store";
 import type { Role } from "@/stores/auth-store";
 import { ApiError } from "@/lib/axios";
+import { Button } from "@/components/ui/button";
 
 const registerSchema = z.object({
   name: z.string().min(1, "Name is required").max(200),
@@ -132,13 +133,14 @@ export default function RegisterPage() {
                 >
                   Back
                 </button>
-                <button
+                <Button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
+                  className="flex-1"
+                  variant="gradient"
                 >
                   {loading ? "Creating account..." : `Create ${role} account`}
-                </button>
+                </Button>
               </div>
             </form>
           </Form>

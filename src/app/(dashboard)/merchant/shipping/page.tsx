@@ -3,6 +3,7 @@
 import { useState, useEffect, startTransition } from "react";
 import { Plus, Pencil, Trash2, Truck, Globe, GripVertical } from "lucide-react";
 import PageHeader from "@/components/dashboard/page-header";
+import { Button } from "@/components/ui/button";
 import { shippingApi } from "@/services/shipping.service";
 
 type Zone = {
@@ -235,7 +236,7 @@ export default function ShippingPage() {
       {tab === "zones" && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <button
+            <Button
               onClick={() => {
                 setEditingZone({
                   name: "",
@@ -246,10 +247,11 @@ export default function ShippingPage() {
                 });
                 setShowZoneForm(true);
               }}
-              className="flex items-center gap-1.5 rounded-lg bg-[#7C3AED] px-3 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors"
+              size="sm"
+              className="gap-1.5"
             >
               <Plus size={15} /> Add Zone
-            </button>
+            </Button>
           </div>
 
           {showZoneForm && editingZone && (
@@ -330,12 +332,9 @@ export default function ShippingPage() {
                 >
                   Cancel
                 </button>
-                <button
-                  onClick={saveZone}
-                  className="rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors"
-                >
+                <Button onClick={saveZone}>
                   Save
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -479,12 +478,9 @@ export default function ShippingPage() {
                           className="w-24 rounded-lg border border-border bg-[#09090B] px-2 py-1.5 text-xs text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
                           placeholder="0.00"
                         />
-                        <button
-                          onClick={saveRate}
-                          className="px-3 py-1.5 rounded-lg bg-[#7C3AED] text-xs font-medium text-white hover:bg-[#8B5CF6] transition-colors"
-                        >
+                        <Button onClick={saveRate} size="sm">
                           Add
-                        </button>
+                        </Button>
                         <button
                           onClick={() => setRateForm(null)}
                           className="px-2 py-1.5 text-xs text-muted-foreground hover:text-[#F8FAFC] transition-colors"
@@ -504,7 +500,7 @@ export default function ShippingPage() {
       {tab === "methods" && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <button
+            <Button
               onClick={() => {
                 setEditingMethod({
                   name: "",
@@ -515,10 +511,11 @@ export default function ShippingPage() {
                 });
                 setShowMethodForm(true);
               }}
-              className="flex items-center gap-1.5 rounded-lg bg-[#7C3AED] px-3 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors"
+              size="sm"
+              className="gap-1.5"
             >
               <Plus size={15} /> Add Method
-            </button>
+            </Button>
           </div>
 
           {showMethodForm && editingMethod && (
@@ -747,12 +744,9 @@ export default function ShippingPage() {
                 >
                   Cancel
                 </button>
-                <button
-                  onClick={saveMethod}
-                  className="rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors"
-                >
+                <Button onClick={saveMethod}>
                   Save
-                </button>
+                </Button>
               </div>
             </div>
           )}

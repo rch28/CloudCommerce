@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod/v4";
 import { InputField } from "@/components/ui/form-inputs/InputField";
 import { useAuthStore } from "@/stores/auth-store";
+import { Button } from "@/components/ui/button";
 
 const registerSchema = z.object({
   name: z.string().min(1, "Name is required").max(200),
@@ -81,13 +82,14 @@ export default function CustomerRegisterPage({ params }: { params: Promise<{ ten
 
           {apiError && <p className="text-sm text-rose-400">{apiError}</p>}
 
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
+            className="w-full"
+            variant="gradient"
           >
             {loading ? "Creating account..." : "Create account"}
-          </button>
+          </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">

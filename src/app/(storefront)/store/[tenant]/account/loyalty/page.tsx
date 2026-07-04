@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Gift, Star, Award, TrendingUp, Ticket, Truck, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { loyaltyApi } from "@/services/loyalty.service";
 
 const tierColors: Record<string, string> = {
@@ -83,7 +84,7 @@ export default function CustomerLoyaltyPage({ params }: { params: Promise<{ tena
           <Gift size={48} className="mx-auto mb-4 text-muted-foreground" />
           <h3 className="mb-2 text-lg font-semibold text-[#F8FAFC]">Join Our Loyalty Program</h3>
           <p className="mb-6 text-sm text-muted-foreground">Earn points on every purchase and unlock exclusive rewards.</p>
-          <button
+          <Button
             onClick={async () => {
               try {
                 await loyaltyApi.enroll();
@@ -92,11 +93,11 @@ export default function CustomerLoyaltyPage({ params }: { params: Promise<{ tena
                 // ignore
               }
             }}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6]"
+            className="gap-2"
           >
             <Gift size={16} />
             Enroll Now
-          </button>
+          </Button>
         </div>
       ) : (
         <>

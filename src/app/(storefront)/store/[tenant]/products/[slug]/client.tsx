@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import { ShoppingCart, Check, Minus, Plus, Star, Truck, Shield, Heart } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -154,17 +155,15 @@ export default function ProductDetailClient({ tenant, product, inventoryMap }: {
               <span className="w-10 text-center text-sm text-[#F8FAFC]">{quantity}</span>
               <button onClick={() => setQuantity(quantity + 1)} className="p-2 text-muted-foreground hover:text-[#F8FAFC] transition-colors"><Plus size={14} /></button>
             </div>
-            <button
+            <Button
               onClick={handleAdd}
               disabled={outOfStock}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-medium transition-all ${
-                added
-                  ? "bg-emerald-500 text-white"
-                  : "bg-[#7C3AED] text-white hover:bg-[#8B5CF6]"
-              } disabled:cursor-not-allowed disabled:opacity-40`}
+              variant="default"
+              size="xl"
+              className={`flex-1 gap-2 ${added ? "!bg-emerald-500 text-white hover:!bg-emerald-500" : ""}`}
             >
               {added ? <><Check size={16} /> Added!</> : <><ShoppingCart size={16} /> {outOfStock ? "Sold Out" : "Add to Cart"}</>}
-            </button>
+            </Button>
             <button
               onClick={() => toggleItem(selectedVariant.id)}
               className={`p-3 rounded-lg border transition-all ${

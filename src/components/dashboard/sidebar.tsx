@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 type NavItem = { id: string; label: string; path: string; icon: typeof LayoutDashboard };
 
@@ -59,18 +60,18 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     const Icon = item.icon;
     const isActive = pathname === item.path;
     return (
-      <button
-        onClick={() => { router.push(item.path); onClose(); }}
+      <Button
+        variant={isActive ? "default" : "ghost"}
         className={cn(
-          "group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-          isActive
-            ? "bg-[#7C3AED] text-white shadow-lg shadow-[#7C3AED]/30"
-            : "text-muted-foreground hover:bg-[#1E293B] hover:text-[#F8FAFC]"
+          "w-full justify-start gap-3",
+          !isActive && "text-muted-foreground",
+          isActive && "shadow-lg shadow-[#7C3AED]/30"
         )}
+        onClick={() => { router.push(item.path); onClose(); }}
       >
-        <Icon size={18} className={cn(isActive ? "text-white" : "text-muted-foreground group-hover:text-[#F8FAFC]")} />
+        <Icon size={18} />
         {item.label}
-      </button>
+      </Button>
     );
   }
 

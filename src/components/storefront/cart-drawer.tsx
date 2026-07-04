@@ -2,6 +2,7 @@
 import { X, ShoppingCart, Trash2, Minus, Plus } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface CartDrawerProps {
   open: boolean;
@@ -32,9 +33,11 @@ export default function CartDrawer({ open, onClose, tenant }: CartDrawerProps) {
             <div className="flex flex-col items-center justify-center pt-16 text-center">
               <ShoppingCart size={48} className="text-muted-foreground mb-4" />
               <p className="text-sm text-muted-foreground">Your cart is empty</p>
-              <Link href={`${base}/products`} onClick={onClose} className="mt-4 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors">
-                Browse products
-              </Link>
+              <Button asChild className="mt-4">
+                <Link href={`${base}/products`} onClick={onClose}>
+                  Browse products
+                </Link>
+              </Button>
             </div>
           ) : (
             <div className="space-y-3">
@@ -87,9 +90,11 @@ export default function CartDrawer({ open, onClose, tenant }: CartDrawerProps) {
                 <span>${pricing.tax.toFixed(2)}</span>
               </div>
             </div>
-            <Link href={`${base}/checkout`} onClick={onClose} className="mt-3 flex w-full items-center justify-center rounded-lg bg-[#7C3AED] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors">
-              Checkout
-            </Link>
+            <Button asChild className="mt-3 w-full">
+              <Link href={`${base}/checkout`} onClick={onClose}>
+                Checkout
+              </Link>
+            </Button>
           </div>
         )}
       </div>

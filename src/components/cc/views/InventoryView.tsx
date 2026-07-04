@@ -403,7 +403,7 @@ export default function InventoryView() {
                 disabled={
                   adjusting || !adjustReason.trim() || adjustChange === 0
                 }
-                className="bg-[#7C3AED] text-white hover:bg-[#8B5CF6] disabled:opacity-50"
+                
               >
                 {adjusting ? (
                   <>

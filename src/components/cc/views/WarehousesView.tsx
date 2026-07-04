@@ -349,7 +349,7 @@ export default function WarehousesView() {
               <Warehouse size={20} className="text-muted-foreground" />
               <span className="text-sm text-muted-foreground">{warehouses.length} warehouses</span>
             </div>
-            <Button onClick={openCreate} className="bg-[#7C3AED] text-white hover:bg-[#8B5CF6]">
+            <Button onClick={openCreate}>
               <Plus size={14} className="mr-1" /> Add Warehouse
             </Button>
           </div>
@@ -496,7 +496,7 @@ export default function WarehousesView() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setFormOpen(false)} className="border-border text-muted-foreground">Cancel</Button>
-                <Button onClick={handleSaveWarehouse} disabled={saving || !formData.name || !formData.code} className="bg-[#7C3AED] text-white hover:bg-[#8B5CF6]">
+                <Button onClick={handleSaveWarehouse} disabled={saving || !formData.name || !formData.code}>
                   {saving ? <><Loader2 size={14} className="mr-1 animate-spin" /> Saving...</> : editingWarehouse ? "Update" : "Create"}
                 </Button>
               </DialogFooter>
@@ -594,7 +594,7 @@ export default function WarehousesView() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">{transfers.length} transfers</span>
-            <Button onClick={() => setTransferFormOpen(true)} className="bg-[#7C3AED] text-white hover:bg-[#8B5CF6]">
+            <Button onClick={() => setTransferFormOpen(true)}>
               <ArrowRightLeft size={14} className="mr-1" /> New Transfer
             </Button>
           </div>
@@ -714,7 +714,7 @@ export default function WarehousesView() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setTransferFormOpen(false)} className="border-border text-muted-foreground">Cancel</Button>
-                <Button onClick={handleCreateTransfer} disabled={transferSaving || !transferData.fromWarehouseId || !transferData.toWarehouseId || !transferData.variantId} className="bg-[#7C3AED] text-white hover:bg-[#8B5CF6]">
+                <Button onClick={handleCreateTransfer} disabled={transferSaving || !transferData.fromWarehouseId || !transferData.toWarehouseId || !transferData.variantId}>
                   {transferSaving ? <><Loader2 size={14} className="mr-1 animate-spin" /> Creating...</> : "Create Transfer"}
                 </Button>
               </DialogFooter>
@@ -736,7 +736,7 @@ export default function WarehousesView() {
                 onChange={(e) => setAllocInput(e.target.value)}
                 placeholder="v-1:10, v-2:20"
               />
-              <Button onClick={handleAllocate} disabled={allocLoading} className="bg-[#7C3AED] text-white hover:bg-[#8B5CF6]">
+              <Button onClick={handleAllocate} disabled={allocLoading}>
                 {allocLoading ? <Loader2 size={14} className="animate-spin" /> : "Allocate"}
               </Button>
             </div>

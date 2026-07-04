@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Package, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { storefrontApi } from "@/services/storefront.service";
 
 interface OrderItem {
@@ -102,9 +103,11 @@ export default function CheckoutSuccessPage({ params }: { params: Promise<{ tena
         <h1 className="text-2xl font-bold text-[#F8FAFC] mb-4">Order Status</h1>
         <p className="text-muted-foreground mb-6">{error || "Order not found"}</p>
         <div className="flex flex-wrap justify-center gap-4">
-          <Link href={`${base}/account/orders`} className="rounded-lg bg-[#7C3AED] px-6 py-3 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors">
-            View Orders
-          </Link>
+          <Button asChild size="xl">
+            <Link href={`${base}/account/orders`}>
+              View Orders
+            </Link>
+          </Button>
           <Link href={`${base}/products`} className="rounded-lg border border-border px-6 py-3 text-sm font-medium text-[#F8FAFC] hover:bg-card transition-colors">
             Continue Shopping
           </Link>
@@ -198,9 +201,11 @@ export default function CheckoutSuccessPage({ params }: { params: Promise<{ tena
       </div>
 
       <div className="mt-8 flex flex-wrap justify-center gap-4">
-        <Link href={`${base}/account/orders`} className="rounded-lg bg-[#7C3AED] px-6 py-3 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors">
-          View Orders
-        </Link>
+        <Button asChild size="xl">
+          <Link href={`${base}/account/orders`}>
+            View Orders
+          </Link>
+        </Button>
         <Link href={`${base}/products`} className="rounded-lg border border-border px-6 py-3 text-sm font-medium text-[#F8FAFC] hover:bg-card transition-colors">
           Continue Shopping
         </Link>

@@ -314,7 +314,7 @@ export default function SettingsView() {
       <Button
         type="submit"
         disabled={isSaving}
-        className="bg-[#7C3AED] text-white hover:bg-[#8B5CF6]"
+        
       >
         {isSaving ? (
           <>
@@ -698,7 +698,7 @@ export default function SettingsView() {
                 type="button"
                 onClick={inviteStaff}
                 disabled={!inviteEmail || inviting}
-                className="bg-[#7C3AED] text-white hover:bg-[#8B5CF6]"
+                
               >
                 {inviting ? (
                   <>
@@ -847,7 +847,7 @@ export default function SettingsView() {
                   type="button"
                   onClick={createApiKey}
                   disabled={!keyName || creatingKey}
-                  className="bg-[#7C3AED] text-white hover:bg-[#8B5CF6]"
+                  
                 >
                   {creatingKey ? (
                     <>

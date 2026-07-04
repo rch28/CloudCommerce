@@ -11,6 +11,7 @@ import { InputField } from "@/components/ui/form-inputs/InputField";
 import { useAuthStore } from "@/stores/auth-store";
 import type { z } from "zod/v4";
 import { ApiError } from "@/lib/axios";
+import { Button } from "@/components/ui/button";
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
@@ -75,13 +76,14 @@ function LoginForm() {
             <p className="text-sm text-rose-400">{apiError}</p>
           )}
 
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
+            className="w-full"
+            variant="gradient"
           >
             {loading ? "Signing in..." : "Sign in"}
-          </button>
+          </Button>
         </form>
       </Form>
 

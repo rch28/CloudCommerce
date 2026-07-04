@@ -2,6 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart, Star, Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/hooks/useWishlist";
 
@@ -70,7 +71,7 @@ export default function ProductCard({ id, name, slug, price, image, stock, sold,
         </div>
         <div className="mt-3 flex items-center justify-between">
           <span className="text-lg font-bold text-[#F8FAFC]">${Number(price).toFixed(2)}</span>
-          <button
+          <Button
             onClick={() => {
               if (!outOfStock) addItem({
                 variantId: variantId || `var-${id}`,
@@ -78,10 +79,11 @@ export default function ProductCard({ id, name, slug, price, image, stock, sold,
               });
             }}
             disabled={outOfStock}
-            className="flex items-center gap-1.5 rounded-lg bg-[#7C3AED] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#8B5CF6] disabled:cursor-not-allowed disabled:opacity-40"
+            size="sm"
+            className="gap-1.5"
           >
             <ShoppingCart size={13} /> {outOfStock ? "Sold out" : "Add"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

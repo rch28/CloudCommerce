@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { productsApi } from "@/services/products.service";
 import { categoriesApi } from "@/services/categories.service";
+import { Button } from "@/components/ui/button";
 import Badge from "../Badge";
 import DataTable from "@/components/dashboard/data-table";
 import ProductForm from "@/components/dashboard/product-form";
@@ -241,12 +242,12 @@ export default function ProductsView() {
           Failed to load products
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">{error}</p>
-        <button
+        <Button
           onClick={() => fetchProducts()}
-          className="mt-4 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6]"
+          className="mt-4"
         >
           Retry
-        </button>
+        </Button>
       </div>
     );
   }
@@ -331,15 +332,14 @@ export default function ProductsView() {
           }}
           size="compact"
         />
-        <button
+        <Button
           onClick={() => {
             setEditing(null);
             setFormOpen(true);
           }}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6]"
         >
           <Plus size={16} /> Add Product
-        </button>
+        </Button>
       </div>
 
       <DataTable

@@ -2,6 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { Trash2, Minus, Plus, ShoppingCart, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 
 export default function CartPage({ params }: { params: Promise<{ tenant: string }> }) {
@@ -15,9 +16,11 @@ export default function CartPage({ params }: { params: Promise<{ tenant: string 
         <ShoppingCart size={48} className="mx-auto text-muted-foreground mb-4" />
         <h1 className="text-2xl font-bold text-[#F8FAFC]">Your cart is empty</h1>
         <p className="mt-2 text-muted-foreground">Looks like you haven&apos;t added anything yet.</p>
-        <Link href={`${base}/products`} className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-6 py-3 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors">
-          <ArrowLeft size={16} /> Continue Shopping
-        </Link>
+        <Button asChild size="xl" className="mt-6 gap-2">
+          <Link href={`${base}/products`}>
+            <ArrowLeft size={16} /> Continue Shopping
+          </Link>
+        </Button>
       </div>
     );
   }
@@ -58,9 +61,11 @@ export default function CartPage({ params }: { params: Promise<{ tenant: string 
             <div className="flex justify-between text-muted-foreground"><span>Tax</span><span>${pricing.tax.toFixed(2)}</span></div>
             <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-[#F8FAFC]"><span>Total</span><span>${pricing.total.toFixed(2)}</span></div>
           </div>
-          <Link href={`${base}/checkout`} className="mt-6 flex w-full items-center justify-center rounded-lg bg-[#7C3AED] px-4 py-3 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors">
-            Proceed to Checkout
-          </Link>
+          <Button asChild className="mt-6 w-full">
+            <Link href={`${base}/checkout`}>
+              Proceed to Checkout
+            </Link>
+          </Button>
           <Link href={`${base}/products`} className="mt-3 flex w-full items-center justify-center text-sm text-muted-foreground hover:text-[#F8FAFC] transition-colors">
             Continue Shopping
           </Link>

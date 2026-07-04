@@ -353,7 +353,7 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="border-border text-muted-foreground">
               Cancel
             </Button>
-            <Button type="submit" disabled={saving} className="bg-[#7C3AED] text-white hover:bg-[#8B5CF6] disabled:opacity-50">
+            <Button type="submit" disabled={saving}>
               {saving ? "Saving..." : product ? "Save Changes" : "Create Product"}
             </Button>
           </div>

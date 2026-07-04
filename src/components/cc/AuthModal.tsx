@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod/v4";
 import { useAuthStore, type Role } from "@/stores/auth-store";
 import { InputField } from "@/components/ui/form-inputs/InputField";
+import { Button } from "@/components/ui/button";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email"),
@@ -122,12 +123,13 @@ export default function AuthModal({ open, onClose }: { open: boolean; onClose: (
 
                 {apiError && <p className="text-sm text-rose-400">{apiError}</p>}
 
-                <button
+                <Button
                   type="submit" disabled={loading}
-                  className="w-full rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
+                  className="w-full"
+                  variant="gradient"
                 >
                   {loading ? "Signing in..." : "Sign in"}
-                </button>
+                </Button>
               </form>
 
               <p className="mt-4 text-sm text-slate-400">
@@ -212,12 +214,13 @@ export default function AuthModal({ open, onClose }: { open: boolean; onClose: (
                   >
                     <ArrowLeft size={16} className="inline" /> Back
                   </button>
-                  <button
+                  <Button
                     type="submit" disabled={loading}
-                    className="flex-1 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
+                    className="flex-1"
+                    variant="gradient"
                   >
                     {loading ? "Creating..." : `Create ${role} account`}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </>

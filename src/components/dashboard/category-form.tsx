@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { categorySchema } from "@/lib/schemas";
+import { Button } from "@/components/ui/button";
 
 type FormValues = {
   name: string;
@@ -160,13 +161,12 @@ export default function CategoryForm({ open, onOpenChange, category, categories,
             >
               Cancel
             </button>
-            <button
+            <Button
               type="submit"
               disabled={saving}
-              className="rounded-lg bg-[#7C3AED] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6] disabled:opacity-50"
             >
               {saving ? "Saving..." : category ? "Update" : "Create"}
-            </button>
+            </Button>
           </div>
         </form>
       </DialogContent>

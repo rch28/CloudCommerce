@@ -226,15 +226,15 @@ export default function TaxSettingsView() {
               placeholder="Search zones..."
               className="max-w-xs"
             />
-            <button
+            <Button
               onClick={() => {
                 setEditingZone({ name: "", type: "country", country: "US", zipCodes: [], isActive: true });
                 setZoneDialog(true);
               }}
-              className="flex items-center gap-1.5 rounded-lg bg-[#7C3AED] px-3 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors"
+              className="gap-1.5"
             >
               <Plus size={15} /> Add Zone
-            </button>
+            </Button>
           </div>
 
           {zones.length === 0 ? (
@@ -243,15 +243,14 @@ export default function TaxSettingsView() {
               title="No tax zones configured"
               description="Create your first tax zone to start calculating taxes based on customer location."
               action={
-                <button
+                <Button
                   onClick={() => {
                     setEditingZone({ name: "", type: "country", country: "US", zipCodes: [], isActive: true });
                     setZoneDialog(true);
                   }}
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6]"
                 >
                   <Plus size={15} /> Create Zone
-                </button>
+                </Button>
               }
             />
           ) : (
@@ -302,15 +301,15 @@ export default function TaxSettingsView() {
       {tab === "rates" && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <button
+            <Button
               onClick={() => {
                 setEditingRate({ name: "", zoneId: "", type: "percentage", rate: 0, priority: 0, isActive: true });
                 setRateDialog(true);
               }}
-              className="flex items-center gap-1.5 rounded-lg bg-[#7C3AED] px-3 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors"
+              className="gap-1.5"
             >
               <Plus size={15} /> Add Rate
-            </button>
+            </Button>
           </div>
 
           {rates.length === 0 ? (
@@ -319,15 +318,14 @@ export default function TaxSettingsView() {
               title="No tax rates configured"
               description="Add tax rates to your zones to define how much tax should be applied."
               action={
-                <button
+                <Button
                   onClick={() => {
                     setEditingRate({ name: "", zoneId: "", type: "percentage", rate: 0, priority: 0, isActive: true });
                     setRateDialog(true);
                   }}
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6]"
                 >
                   <Plus size={15} /> Create Rate
-                </button>
+                </Button>
               }
             />
           ) : (

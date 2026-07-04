@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { ShoppingCart, Plus, Minus, X, Star, Check } from "lucide-react";
 import { products } from "@/data/mock";
+import { Button } from "@/components/ui/button";
 
 interface CartItem { id: string; name: string; price: number; image: string; qty: number; }
 
@@ -86,13 +87,13 @@ export default function StorefrontView() {
               <h4 className="mt-1 truncate font-medium text-white">{p.name}</h4>
               <div className="mt-3 flex items-center justify-between">
                 <span className="text-lg font-bold text-white">${p.price.toFixed(2)}</span>
-                <button
+                <Button
                   disabled={p.stock === 0}
                   onClick={() => add(p)}
-                  className="rounded-lg bg-violet-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-40"
+                  size="sm"
                 >
                   {p.stock === 0 ? "Sold out" : "Add"}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -128,9 +129,9 @@ export default function StorefrontView() {
                 <input type="checkbox" checked={sms} onChange={(e) => setSms(e.target.checked)} className="mt-0.5 accent-violet-600" />
                 <span>Text me updates. Msg &amp; data rates may apply. Reply STOP to unsubscribe.</span>
               </label>
-              <button type="submit" className="w-full rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90">
+              <Button type="submit" className="w-full" variant="gradient">
                 Subscribe
-              </button>
+              </Button>
             </form>
           )}
         </div>
@@ -165,9 +166,9 @@ export default function StorefrontView() {
                 <span className="text-slate-400">Total</span>
                 <span className="text-lg font-bold">${total.toFixed(2)}</span>
               </div>
-              <button disabled={!cart.length} className="w-full rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-3 font-semibold text-white hover:opacity-90 disabled:opacity-40">
+              <Button disabled={!cart.length} className="w-full" variant="gradient" size="xl">
                 Checkout with Stripe
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@
 import React from "react";
 import { User, Mail, Phone } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { accountApi } from "@/services/account.service";
 
 export default function AccountProfilePage({ params }: { params: Promise<{ tenant: string }> }) {
@@ -94,13 +95,9 @@ export default function AccountProfilePage({ params }: { params: Promise<{ tenan
             />
           </div>
         </div>
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6] disabled:opacity-50"
-        >
+        <Button type="submit" disabled={saving}>
           {saving ? "Saving..." : "Save Changes"}
-        </button>
+        </Button>
       </form>
     </div>
   );

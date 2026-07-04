@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Package, Loader2, CheckCircle, RefreshCw, AlertCircle, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import Badge from "@/components/cc/Badge";
 import { getValidTransitions, STATUS_LABELS } from "@/data/order-status";
 import { ordersApi } from "@/services/orders.service";
@@ -318,11 +319,12 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
                 <p className="text-xs text-muted-foreground">Update Status</p>
                 <div className="flex flex-wrap gap-2">
                   {validTransitions.map((status) => (
-                    <button
+                    <Button
                       key={status}
                       disabled={actionLoading === "status"}
                       onClick={() => handleStatusUpdate(status)}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-[#7C3AED] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#8B5CF6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      size="sm"
+                      className="gap-1.5"
                     >
                       {actionLoading === "status" ? (
                         <Loader2 size={12} className="animate-spin" />
@@ -330,7 +332,7 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
                         <CheckCircle size={12} />
                       )}
                       Mark as {STATUS_LABELS[status] || status}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>

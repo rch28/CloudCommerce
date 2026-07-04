@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Pencil, Archive, Trash2, RotateCcw, Copy, Loader2, AlertCircle, Package } from "lucide-react";
 import { productsApi } from "@/services/products.service";
+import { Button } from "@/components/ui/button";
 import Badge from "@/components/cc/Badge";
 import PageHeader from "@/components/dashboard/page-header";
 
@@ -112,9 +113,9 @@ export default function ProductDetailView() {
       <div className="flex flex-col items-center justify-center rounded-xl border border-rose-500/30 bg-rose-500/10 px-6 py-24 text-center">
         <AlertCircle size={32} className="text-rose-400" />
         <h3 className="mt-4 text-lg font-semibold text-[#F8FAFC]">{error || "Product not found"}</h3>
-        <button onClick={() => router.push("/merchant/products")} className="mt-4 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6]">
+        <Button onClick={() => router.push("/merchant/products")} className="mt-4">
           Back to Products
-        </button>
+        </Button>
       </div>
     );
   }

@@ -1,4 +1,5 @@
 import { AlertTriangle, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ErrorStateProps {
   title?: string;
@@ -19,13 +20,10 @@ export default function ErrorState({
       <h3 className="mb-1 text-lg font-semibold text-[#F8FAFC]">{title}</h3>
       <p className="mb-6 max-w-sm text-center text-sm text-muted-foreground">{message}</p>
       {onRetry && (
-        <button
-          onClick={onRetry}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6]"
-        >
+        <Button onClick={onRetry} className="gap-2">
           <RotateCcw size={15} />
           Try again
-        </button>
+        </Button>
       )}
     </div>
   );

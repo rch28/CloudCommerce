@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import { CreditCard, Check, ArrowUpRight, Loader2, AlertCircle, Download, Receipt } from "lucide-react";
 import { billingApi } from "@/services/billing.service";
 import { PLANS, type PlanFeatures } from "@/lib/features";
@@ -167,17 +168,14 @@ export default function BillingView() {
                     {plan.prioritySupport ? "Priority support" : "Email support"}
                   </li>
                 </ul>
-                <button
+                <Button
                   onClick={() => handlePlanChange(plan.slug)}
                   disabled={isCurrent || changing || isCanceled}
-                  className={`mt-4 w-full rounded-lg py-2 text-sm font-medium transition-colors ${
-                    isCurrent
-                      ? "border border-border text-muted-foreground cursor-default"
-                      : "bg-[#7C3AED] text-white hover:bg-[#8B5CF6] disabled:cursor-not-allowed disabled:opacity-50"
-                  }`}
+                  variant={isCurrent ? "outline" : "default"}
+                  className="mt-4 w-full"
                 >
                   {changing ? <Loader2 size={14} className="mx-auto animate-spin" /> : isCurrent ? "Current Plan" : isCanceled ? "Reactivate" : plan.price > (currentPlan?.price ?? 0) ? "Upgrade" : "Downgrade"}
-                </button>
+                </Button>
               </div>
             );
           })}

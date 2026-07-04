@@ -102,12 +102,12 @@ function ConfirmDialog({ open, onOpenChange, title, description, onConfirm, conf
           >
             Cancel
           </button>
-          <button
+          <Button
             onClick={() => { onConfirm(); onOpenChange(false); }}
-            className={`rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors ${variant === "destructive" ? "bg-rose-600 hover:bg-rose-500" : "bg-[#7C3AED] hover:bg-[#8B5CF6]"}`}
+            variant={variant === "destructive" ? "destructive" : "default"}
           >
             {confirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -471,12 +471,9 @@ export default function CMSView() {
             emptyDescription="Create your first page to get started with the CMS."
             loading={false}
             actions={
-              <button
-                onClick={openNewPage}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6]"
-              >
+              <Button onClick={openNewPage}>
                 <Plus size={16} /> Add Page
-              </button>
+              </Button>
             }
           />
         </TabsContent>
@@ -565,12 +562,9 @@ export default function CMSView() {
             emptyDescription="Create your first banner to promote your products."
             loading={false}
             actions={
-              <button
-                onClick={openNewBanner}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6]"
-              >
+              <Button onClick={openNewBanner}>
                 <Plus size={16} /> Add Banner
-              </button>
+              </Button>
             }
           />
         </TabsContent>

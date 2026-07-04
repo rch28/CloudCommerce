@@ -195,7 +195,7 @@ export default function OptionManager({ productId, onVariantsGenerated }: Option
             type="button"
             disabled={generating || !baseSku}
             onClick={handleGenerate}
-            className="mt-3 bg-[#7C3AED] text-white hover:bg-[#8B5CF6] disabled:opacity-50"
+            className="mt-3"
           >
             {generating ? (
               <><Loader2 size={14} className="mr-1 animate-spin" /> Generating...</>

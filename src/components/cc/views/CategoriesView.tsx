@@ -4,6 +4,7 @@ import {
   Plus,
   Tag,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { categoriesApi } from "@/services/categories.service";
 import Badge from "../Badge";
 import DataTable from "@/components/dashboard/data-table";
@@ -259,15 +260,14 @@ export default function CategoriesView() {
             </option>
           ))}
         </SelectField>
-        <button
+        <Button
           onClick={() => {
             setEditing(null);
             setFormOpen(true);
           }}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#7C3AED] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6]"
         >
           <Plus size={16} /> Add Category
-        </button>
+        </Button>
       </div>
 
       <DataTable

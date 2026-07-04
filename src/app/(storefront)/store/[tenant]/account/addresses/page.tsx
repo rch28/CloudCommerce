@@ -2,6 +2,7 @@
 import React from "react";
 import { MapPin, Plus, Pencil, Trash2, Check } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { accountApi } from "@/services/account.service";
 
 const US_STATES = [
@@ -151,12 +152,9 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-[#F8FAFC]">Addresses</h2>
         {!formOpen && (
-          <button
-            onClick={() => openForm()}
-            className="flex items-center gap-1.5 rounded-lg bg-[#7C3AED] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#8B5CF6]"
-          >
+          <Button onClick={() => openForm()} size="sm" className="gap-1.5">
             <Plus size={14} /> Add Address
-          </button>
+          </Button>
         )}
       </div>
 
@@ -267,13 +265,9 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
           </label>
 
           <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8B5CF6] disabled:opacity-50"
-            >
+            <Button type="submit" disabled={saving}>
               {saving ? "Saving..." : editingId ? "Update" : "Add"}
-            </button>
+            </Button>
             <button
               type="button"
               onClick={closeForm}

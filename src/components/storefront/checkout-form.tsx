@@ -11,6 +11,7 @@ import {
   Truck,
 } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { requests } from "@/lib/axios";
 import { accountApi } from "@/services/account.service";
 import { shippingApi } from "@/services/shipping.service";
@@ -187,12 +188,11 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <CreditCard size={48} className="text-muted-foreground mb-4" />
         <p className="text-muted-foreground">Your cart is empty</p>
-        <Link
-          href={`/store/${tenant}/products`}
-          className="mt-4 rounded-lg bg-[#7C3AED] px-4 py-2 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors"
-        >
-          Browse products
-        </Link>
+        <Button asChild className="mt-4">
+          <Link href={`/store/${tenant}/products`}>
+            Browse products
+          </Link>
+        </Button>
       </div>
     );
   }
@@ -362,7 +362,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
         </div>
 
         <div className="flex justify-end">
-          <button
+          <Button
             type="button"
             disabled={!canContinueToReview()}
             onClick={async () => {
@@ -396,7 +396,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
               setShippingLoading(false);
               setStep("shipping");
             }}
-            className="flex items-center gap-2 rounded-lg bg-[#7C3AED] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            className="gap-2"
           >
             {shippingLoading ? (
               <Loader2 size={16} className="animate-spin" />
@@ -405,7 +405,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                 Continue <ChevronRight size={16} />
               </>
             )}
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -497,14 +497,14 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
           >
             Back
           </button>
-          <button
+          <Button
             type="button"
             disabled={!selectedShipping}
             onClick={() => setStep("review")}
-            className="flex-1 rounded-lg bg-[#7C3AED] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1"
           >
             Continue to Review <ChevronRight size={16} className="inline" />
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -657,18 +657,18 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
         >
           Back
         </button>
-        <button
+        <Button
           type="button"
           disabled={loading}
           onClick={handlePlaceOrder}
-          className="flex-1 rounded-lg bg-[#7C3AED] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#8B5CF6] transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex-1"
         >
           {loading ? (
             <Loader2 size={16} className="mx-auto animate-spin" />
           ) : (
             `Place Order — $${total.toFixed(2)}`
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );
