@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Download } from "lucide-react";
+import { TabFilter } from "@/components/ui/tab-filter";
 import Badge from "../Badge";
 import { orders as allOrders } from "@/data/mock";
 import SearchField from "@/components/ui/form-inputs/SearchField";
@@ -8,7 +9,14 @@ import SearchField from "@/components/ui/form-inputs/SearchField";
 export default function OrdersView() {
   const [status, setStatus] = useState("all");
   const [search, setSearch] = useState("");
-  const statuses = ["all", "paid", "pending", "shipped", "delivered", "cancelled"];
+  const statuses = [
+    { label: "All", value: "all" },
+    { label: "Paid", value: "paid" },
+    { label: "Pending", value: "pending" },
+    { label: "Shipped", value: "shipped" },
+    { label: "Delivered", value: "delivered" },
+    { label: "Cancelled", value: "cancelled" },
+  ];
 
   const filtered = allOrders.filter(
     (o) =>
@@ -20,21 +28,11 @@ export default function OrdersView() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          {statuses.map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatus(s)}
-              className={`rounded-lg px-3.5 py-1.5 text-sm font-medium capitalize transition-all ${
-                status === s
-                  ? "bg-violet-600 text-white"
-                  : "border border-slate-800 bg-slate-900 text-slate-400 hover:text-white"
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
+        <TabFilter
+          options={statuses}
+          value={status}
+          onChange={setStatus}
+        />
         <button className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-300 hover:text-white">
           <Download size={16} /> Export CSV
         </button>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import PageHeader from "@/components/dashboard/page-header";
 import Badge from "@/components/cc/Badge";
 import { Search, ChevronLeft, ChevronRight, Loader2, ArrowUpDown } from "lucide-react";
+import { TabFilter } from "@/components/ui/tab-filter";
 import { ordersApi } from "@/services/orders.service";
 
 const STATUS_FILTERS = [
@@ -76,21 +77,11 @@ export default function MerchantOrdersPage() {
     <div className="space-y-6">
       <PageHeader title="Orders" description="Manage and track customer orders" />
 
-      <div className="flex flex-wrap items-center gap-2">
-        {STATUS_FILTERS.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setStatusFilter(f.value)}
-            className={`rounded-lg px-3.5 py-1.5 text-sm font-medium capitalize transition-all ${
-              statusFilter === f.value
-                ? "bg-[#7C3AED] text-white"
-                : "border border-border bg-card text-muted-foreground hover:text-[#F8FAFC]"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
+      <TabFilter
+        options={STATUS_FILTERS}
+        value={statusFilter}
+        onChange={setStatusFilter}
+      />
 
       <div className="relative max-w-sm">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
