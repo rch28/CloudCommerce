@@ -6,6 +6,7 @@ import { Zap } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "@/lib/schemas";
+import { Form } from "@/components/ui/form";
 import { InputField } from "@/components/ui/form-inputs/InputField";
 import { useAuthStore } from "@/stores/auth-store";
 import type { z } from "zod/v4";
@@ -51,36 +52,38 @@ function LoginForm() {
         <p className="mt-1 text-sm text-muted-foreground">Enter your credentials to continue</p>
       </div>
 
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <InputField
-          control={form.control}
-          name="email"
-          label="Email"
-          placeholder="you@example.com"
-          type="email"
-          required
-        />
-        <InputField
-          control={form.control}
-          name="password"
-          label="Password"
-          placeholder="Enter your password"
-          type="password"
-          required
-        />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <InputField
+            control={form.control}
+            name="email"
+            label="Email"
+            placeholder="you@example.com"
+            type="email"
+            required
+          />
+          <InputField
+            control={form.control}
+            name="password"
+            label="Password"
+            placeholder="Enter your password"
+            type="password"
+            required
+          />
 
-        {apiError && (
-          <p className="text-sm text-rose-400">{apiError}</p>
-        )}
+          {apiError && (
+            <p className="text-sm text-rose-400">{apiError}</p>
+          )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
-        >
-          {loading ? "Signing in..." : "Sign in"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
+          >
+            {loading ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
+      </Form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}

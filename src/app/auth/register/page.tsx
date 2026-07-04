@@ -6,6 +6,7 @@ import { Zap, ShoppingBag, ShieldCheck } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod/v4";
+import { Form } from "@/components/ui/form";
 import { InputField } from "@/components/ui/form-inputs/InputField";
 import { useAuthStore } from "@/stores/auth-store";
 import type { Role } from "@/stores/auth-store";
@@ -95,50 +96,52 @@ export default function RegisterPage() {
             </p>
           </div>
         ) : (
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <InputField
-              control={form.control}
-              name="name"
-              label="Full name"
-              placeholder="John Doe"
-              required
-            />
-            <InputField
-              control={form.control}
-              name="email"
-              label="Email"
-              placeholder="you@example.com"
-              type="email"
-              required
-            />
-            <InputField
-              control={form.control}
-              name="password"
-              label="Password"
-              placeholder="At least 6 characters"
-              type="password"
-              required
-            />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <InputField
+                control={form.control}
+                name="name"
+                label="Full name"
+                placeholder="John Doe"
+                required
+              />
+              <InputField
+                control={form.control}
+                name="email"
+                label="Email"
+                placeholder="you@example.com"
+                type="email"
+                required
+              />
+              <InputField
+                control={form.control}
+                name="password"
+                label="Password"
+                placeholder="At least 6 characters"
+                type="password"
+                required
+              />
 
-            {apiError && <p className="text-sm text-rose-400">{apiError}</p>}
+              {apiError && <p className="text-sm text-rose-400">{apiError}</p>}
 
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="rounded-lg border border-border px-4 py-2.5 text-sm text-muted-foreground hover:text-[#F8FAFC]"
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
-              >
-                {loading ? "Creating account..." : `Create ${role} account`}
-              </button>
-            </div>
-          </form>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="rounded-lg border border-border px-4 py-2.5 text-sm text-muted-foreground hover:text-[#F8FAFC]"
+                >
+                  Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-40"
+                >
+                  {loading ? "Creating account..." : `Create ${role} account`}
+                </button>
+              </div>
+            </form>
+          </Form>
         )}
       </div>
     </div>
