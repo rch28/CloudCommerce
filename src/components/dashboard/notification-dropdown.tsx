@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Bell, CheckCheck, Package, Truck, CheckCircle, XCircle, AlertTriangle, DollarSign, Loader2 } from "lucide-react";
+import { Bell, CheckCheck, Package, Truck, CheckCircle, XCircle, AlertTriangle, DollarSign } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useNotifications } from "@/hooks/useNotifications";
 
 function getIcon(type: string) {
@@ -71,9 +72,7 @@ export default function NotificationDropdown() {
 
           <div className="max-h-96 overflow-y-auto">
             {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 size={20} className="animate-spin text-muted-foreground" />
-              </div>
+              <LoadingSpinner size={20} className="py-8" />
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-8 text-center">
                 <Bell size={24} className="text-muted-foreground/50" />

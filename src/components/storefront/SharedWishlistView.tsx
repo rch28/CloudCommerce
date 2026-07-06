@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Heart, ShoppingCart, ArrowLeft, Loader2 } from "lucide-react";
+import { Heart, ShoppingCart, ArrowLeft } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { wishlistApi } from "@/services/wishlist.service";
 
 interface SharedItem {
@@ -53,11 +54,7 @@ export default function SharedWishlistView({ tenant, shareToken }: Props) {
   };
 
   if (loading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 size={32} className="animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <LoadingSpinner size={32} className="min-h-[50vh]" />;
   }
 
   if (notFound) {

@@ -18,6 +18,7 @@ import {
   EyeOff,
   AlertTriangle,
 } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import ActionButtons from "@/components/ui/action-buttons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -282,11 +283,7 @@ export default function SettingsView() {
   }
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <LoadingSpinner size={32} className="h-64" />;
   }
 
   function renderTabButton(tab: (typeof TABS)[number]) {

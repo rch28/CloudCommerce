@@ -9,10 +9,10 @@ import {
   RotateCcw,
   Package,
   AlertCircle,
-  Loader2,
   Search,
   Edit2,
 } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { productsApi } from "@/services/products.service";
 import { categoriesApi } from "@/services/categories.service";
 import { Button } from "@/components/ui/button";
@@ -254,12 +254,12 @@ export default function ProductsView() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card px-6 py-16 text-center">
-        <Loader2 size={28} className="animate-spin text-[#7C3AED]" />
-        <p className="mt-4 text-sm text-muted-foreground">
-          Loading products...
-        </p>
-      </div>
+      <LoadingSpinner
+        size={28}
+        text="Loading products..."
+        className="rounded-xl border border-border bg-card px-6 py-16 text-center"
+        spinnerClassName="text-[#7C3AED]"
+      />
     );
   }
 

@@ -2,7 +2,8 @@
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Package, MapPin, Heart, Gift, LogOut, Loader2 } from "lucide-react";
+import { User, Package, MapPin, Heart, Gift, LogOut } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { accountApi } from "@/services/account.service";
 
 export default function AccountLayout({ children, params }: { children: React.ReactNode; params: Promise<{ tenant: string }> }) {
@@ -25,11 +26,7 @@ export default function AccountLayout({ children, params }: { children: React.Re
   }, [authState, tenant, pathname, router]);
 
   if (authState === "loading") {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 size={32} className="animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <LoadingSpinner size={32} className="min-h-[50vh]" />;
   }
 
   const nav = [

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { X, Plus, Loader2 } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { productsApi } from "@/services/products.service";
 
 interface OptionValue {
@@ -98,12 +99,7 @@ export default function OptionManager({ productId, onVariantsGenerated }: Option
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-8 text-muted-foreground">
-        <Loader2 size={16} className="mr-2 animate-spin" />
-        Loading options...
-      </div>
-    );
+    return <LoadingSpinner size={16} text="Loading options..." className="py-8" />;
   }
 
   return (

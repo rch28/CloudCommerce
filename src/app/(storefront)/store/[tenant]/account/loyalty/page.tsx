@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Gift, Star, Award, TrendingUp, Ticket, Truck, Loader2 } from "lucide-react";
+import { Gift, Star, Award, TrendingUp, Ticket, Truck } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { loyaltyApi } from "@/services/loyalty.service";
 
@@ -63,11 +64,7 @@ export default function CustomerLoyaltyPage({ params }: { params: Promise<{ tena
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 size={28} className="animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <LoadingSpinner size={28} className="min-h-[40vh]" />;
   }
 
   const nextTier = account ? Object.entries(tierMinPoints).find(([, min]) => min > (account?.lifetimePoints ?? 0)) : null;

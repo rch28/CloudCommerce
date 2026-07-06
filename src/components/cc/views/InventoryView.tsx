@@ -12,6 +12,7 @@ import DataTable from "@/components/dashboard/data-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SearchField from "@/components/ui/form-inputs/SearchField";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -208,10 +209,7 @@ export default function InventoryView() {
 
       {/* Data table */}
       {loading ? (
-        <div className="flex items-center justify-center py-12 text-muted-foreground">
-          <Loader2 size={20} className="mr-2 animate-spin" />
-          Loading inventory...
-        </div>
+        <LoadingSpinner size={20} text="Loading inventory..." className="py-12" />
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border px-4 py-12 text-center">
           <Package size={32} className="text-muted-foreground/40" />
@@ -429,10 +427,7 @@ export default function InventoryView() {
             </DialogDescription>
           </DialogHeader>
           {historyLoading ? (
-            <div className="flex items-center justify-center py-8 text-muted-foreground">
-              <Loader2 size={16} className="mr-2 animate-spin" />
-              Loading history...
-            </div>
+            <LoadingSpinner size={16} text="Loading history..." className="py-8" />
           ) : historyLogs.length === 0 ? (
             <div className="py-8 text-center text-sm text-muted-foreground">
               No stock history found

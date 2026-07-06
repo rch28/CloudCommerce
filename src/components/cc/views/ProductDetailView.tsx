@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Pencil, Archive, Trash2, RotateCcw, Copy, Loader2, AlertCircle, Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { productsApi } from "@/services/products.service";
 import { Button } from "@/components/ui/button";
 import Badge from "@/components/cc/Badge";
@@ -101,10 +102,12 @@ export default function ProductDetailView() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card px-6 py-24 text-center">
-        <Loader2 size={28} className="animate-spin text-[#7C3AED]" />
-        <p className="mt-4 text-sm text-muted-foreground">Loading product...</p>
-      </div>
+      <LoadingSpinner
+        size={28}
+        text="Loading product..."
+        className="rounded-xl border border-border bg-card px-6 py-24 text-center"
+        spinnerClassName="text-[#7C3AED]"
+      />
     );
   }
 

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { Bell, Package, Truck, CheckCircle, XCircle, AlertTriangle, DollarSign, Loader2, Inbox } from "lucide-react";
+import { Bell, Package, Truck, CheckCircle, XCircle, AlertTriangle, DollarSign, Inbox } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useNotifications } from "@/hooks/useNotifications";
 
 function getIcon(type: string) {
@@ -76,9 +77,7 @@ export default function NotificationCenterView() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 size={28} className="animate-spin text-muted-foreground" />
-        </div>
+        <LoadingSpinner size={28} className="py-16" />
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-16 text-center">
           <Inbox size={40} className="text-muted-foreground/30" />

@@ -3,9 +3,10 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import PageHeader from "@/components/dashboard/page-header";
 import Badge from "@/components/cc/Badge";
-import { ChevronLeft, ChevronRight, Loader2, ArrowUpDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import { TabFilter } from "@/components/ui/tab-filter";
 import SearchField from "@/components/ui/form-inputs/SearchField";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ordersApi } from "@/services/orders.service";
 
 const STATUS_FILTERS = [
@@ -92,9 +93,7 @@ export default function MerchantOrdersPage() {
       />
 
       {loading ? (
-        <div className="flex items-center justify-center py-24">
-          <Loader2 size={24} className="animate-spin text-muted-foreground" />
-        </div>
+        <LoadingSpinner className="py-24" />
       ) : orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-24">
           <p className="text-muted-foreground">No orders found</p>

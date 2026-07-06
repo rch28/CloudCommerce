@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Package, Loader2, CheckCircle, RefreshCw, AlertCircle, Send } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import Badge from "@/components/cc/Badge";
 import { getValidTransitions, STATUS_LABELS } from "@/data/order-status";
@@ -117,11 +118,7 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 size={24} className="animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <LoadingSpinner className="py-24" />;
   }
 
   if (error || !order) {

@@ -2,7 +2,8 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle, Package, Loader2 } from "lucide-react";
+import { CheckCircle, Package } from "lucide-react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { storefrontApi } from "@/services/storefront.service";
 
@@ -90,7 +91,7 @@ export default function CheckoutSuccessPage({ params }: { params: Promise<{ tena
   if (loading) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-24 text-center">
-        <Loader2 size={48} className="mx-auto animate-spin text-[#7C3AED] mb-6" />
+        <LoadingSpinner size={48} className="" spinnerClassName="text-[#7C3AED] mb-6" />
         <h1 className="text-2xl font-bold text-[#F8FAFC]">Confirming your order...</h1>
         <p className="mt-2 text-muted-foreground">Please wait while we confirm your payment.</p>
       </div>

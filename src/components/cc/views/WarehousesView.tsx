@@ -9,6 +9,7 @@ import {
 import ActionButtons from "@/components/ui/action-buttons";
 import DataTable from "@/components/dashboard/data-table";
 import EmptyState from "@/components/dashboard/empty-state";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -355,9 +356,7 @@ export default function WarehousesView() {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-12 text-muted-foreground">
-              <Loader2 size={20} className="mr-2 animate-spin" /> Loading...
-            </div>
+            <LoadingSpinner size={20} text="Loading..." className="py-12" />
           ) : (
             <DataTable
               columns={[
@@ -525,9 +524,7 @@ export default function WarehousesView() {
           {!selectedWarehouseId ? (
             <EmptyState icon={Package} title="Select a Warehouse" description="Choose a warehouse to view its inventory" />
           ) : invLoading ? (
-            <div className="flex items-center justify-center py-12 text-muted-foreground">
-              <Loader2 size={20} className="mr-2 animate-spin" /> Loading inventory...
-            </div>
+            <LoadingSpinner size={20} text="Loading inventory..." className="py-12" />
           ) : (
             <DataTable
               columns={[
@@ -600,9 +597,7 @@ export default function WarehousesView() {
           </div>
 
           {transferLoading ? (
-            <div className="flex items-center justify-center py-12 text-muted-foreground">
-              <Loader2 size={20} className="mr-2 animate-spin" /> Loading transfers...
-            </div>
+            <LoadingSpinner size={20} text="Loading transfers..." className="py-12" />
           ) : (
             <DataTable
               columns={[
