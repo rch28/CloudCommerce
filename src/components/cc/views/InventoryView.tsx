@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import EmptyState from "@/components/dashboard/empty-state";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -429,9 +430,7 @@ export default function InventoryView() {
           {historyLoading ? (
             <LoadingSpinner size={16} text="Loading history..." className="py-8" />
           ) : historyLogs.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              No stock history found
-            </div>
+            <EmptyState message="No stock history found" className="py-8" />
           ) : (
             <div className="max-h-80 space-y-2 overflow-y-auto">
               {historyLogs.map((log) => (

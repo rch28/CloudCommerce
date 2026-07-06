@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import { TabFilter } from "@/components/ui/tab-filter";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import EmptyState from "@/components/dashboard/empty-state";
 import { ordersApi } from "@/services/orders.service";
 
 const STATUS_FILTERS = [
@@ -95,9 +96,7 @@ export default function MerchantOrdersPage() {
       {loading ? (
         <LoadingSpinner className="py-24" />
       ) : orders.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-24">
-          <p className="text-muted-foreground">No orders found</p>
-        </div>
+        <EmptyState message="No orders found" />
       ) : (
         <div className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="overflow-x-auto">

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { searchService } from "@/lib/services/search";
 import { getSettingsBySlug } from "@/lib/services/settings";
 import ProductCard from "@/components/storefront/product-card";
+import EmptyState from "@/components/dashboard/empty-state";
 
 export function generateStaticParams() {
   return [];
@@ -53,12 +54,14 @@ export default async function SearchPage({
       </div>
 
       {result.items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-muted-foreground">No products found for &ldquo;{query}&rdquo;</p>
-          <Link href={`/store/${tenant}/products`} className="mt-4 text-sm font-medium text-[#7C3AED] hover:text-[#8B5CF6] transition-colors">
-            Browse all products
-          </Link>
-        </div>
+        <EmptyState
+          message={`No products found for "${query}"`}
+          action={
+            <Link href={`/store/${tenant}/products`} className="text-sm font-medium text-[#7C3AED] hover:text-[#8B5CF6] transition-colors">
+              Browse all products
+            </Link>
+          }
+        />
       ) : (
         <>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">

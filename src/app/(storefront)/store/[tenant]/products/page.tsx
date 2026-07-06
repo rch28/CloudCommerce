@@ -5,6 +5,7 @@ import { categoryRepo } from "@/lib/services/categories";
 import { getSettingsBySlug } from "@/lib/services/settings";
 import ProductCard from "@/components/storefront/product-card";
 import ProductFilters from "@/components/storefront/product-filters";
+import EmptyState from "@/components/dashboard/empty-state";
 
 export function generateStaticParams() {
   return [];
@@ -70,12 +71,14 @@ export default async function ProductsPage({
       <ProductFilters tenant={tenant} category={sp.category} sort={sp.sort} minPrice={sp.minPrice} maxPrice={sp.maxPrice} categories={categories} />
 
       {products.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-muted-foreground">No products found</p>
-          <Link href={`/store/${tenant}/products`} className="mt-4 text-sm font-medium text-[#7C3AED] hover:text-[#8B5CF6] transition-colors">
-            Clear filters
-          </Link>
-        </div>
+        <EmptyState
+          message="No products found"
+          action={
+            <Link href={`/store/${tenant}/products`} className="text-sm font-medium text-[#7C3AED] hover:text-[#8B5CF6] transition-colors">
+              Clear filters
+            </Link>
+          }
+        />
       ) : (
         <>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
