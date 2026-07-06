@@ -3,8 +3,9 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import PageHeader from "@/components/dashboard/page-header";
 import Badge from "@/components/cc/Badge";
-import { Search, ChevronLeft, ChevronRight, Loader2, ArrowUpDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, ArrowUpDown } from "lucide-react";
 import { TabFilter } from "@/components/ui/tab-filter";
+import SearchField from "@/components/ui/form-inputs/SearchField";
 import { ordersApi } from "@/services/orders.service";
 
 const STATUS_FILTERS = [
@@ -83,15 +84,12 @@ export default function MerchantOrdersPage() {
         onChange={setStatusFilter}
       />
 
-      <div className="relative max-w-sm">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by order #, customer name or email..."
-          className="w-full rounded-lg border border-border bg-card py-2 pl-9 pr-3 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
-        />
-      </div>
+      <SearchField
+        searchQuery={search}
+        setSearchQuery={setSearch}
+        placeholder="Search by order #, customer name or email..."
+        className="max-w-sm"
+      />
 
       {loading ? (
         <div className="flex items-center justify-center py-24">

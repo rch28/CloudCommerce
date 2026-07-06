@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingCart, Menu, Zap, X, Heart } from "lucide-react";
+import { ShoppingCart, Menu, Zap, X, Heart } from "lucide-react";
+import SearchField from "@/components/ui/form-inputs/SearchField";
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -53,14 +54,13 @@ export default function StoreHeader({ tenant, storeName, logo, primaryColor }: S
           ))}
         </nav>
 
-        <div className="relative ml-auto max-w-xs flex-1 hidden sm:block">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={searchOpen}
-            onChange={(e) => setSearchOpen(e.target.value)}
+        <div className="ml-auto max-w-xs flex-1 hidden sm:block">
+          <SearchField
+            searchQuery={searchOpen}
+            setSearchQuery={setSearchOpen}
             onKeyDown={(e) => { if (e.key === "Enter" && searchOpen.trim()) window.location.href = `${base}/search?q=${encodeURIComponent(searchOpen.trim())}`; }}
             placeholder="Search products..."
-            className="w-full rounded-lg border border-border bg-card py-2 pl-9 pr-3 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+            inputClassName="py-2"
           />
         </div>
 
@@ -91,14 +91,13 @@ export default function StoreHeader({ tenant, storeName, logo, primaryColor }: S
 
       {mobileOpen && (
         <div className="border-t border-border px-4 py-3 lg:hidden">
-          <div className="relative mb-3">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={searchOpen}
-              onChange={(e) => setSearchOpen(e.target.value)}
+          <div className="mb-3">
+            <SearchField
+              searchQuery={searchOpen}
+              setSearchQuery={setSearchOpen}
               onKeyDown={(e) => { if (e.key === "Enter" && searchOpen.trim()) window.location.href = `${base}/search?q=${encodeURIComponent(searchOpen.trim())}`; }}
               placeholder="Search..."
-              className="w-full rounded-lg border border-border bg-card py-2 pl-9 pr-3 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+              inputClassName="py-2"
             />
           </div>
           {nav.map((n) => (
