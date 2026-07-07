@@ -1,62 +1,147 @@
 "use client";
-import { useState } from "react";
-import { Mail } from "lucide-react";
-import { customers as allCustomers } from "@/data/mock";
+import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, Mail } from "lucide-react";
 import SearchField from "@/components/ui/form-inputs/SearchField";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import EmptyState from "@/components/dashboard/empty-state";
+import { customersApi } from "@/services/customers.service";
+
+interface CustomerRow {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  orderCount: number;
+  totalSpent: number;
+  joined: string;
+}
+
+const LIMIT = 20;
 
 export default function CustomersView() {
+  const [customers, setCustomers] = useState<CustomerRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const filtered = allCustomers.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.email.toLowerCase().includes(search.toLowerCase()),
-  );
+  const [loading, setLoading] = useState(true);
+
+  const totalPages = Math.ceil(total / LIMIT);
+
+  const fetchCustomers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params: Record<string, string> = { page: String(page), limit: String(LIMIT) };
+      if (search) params.search = search;
+      const data = await customersApi.list(params);
+      setCustomers(data.customers ?? []);
+      setTotal(data.total ?? 0);
+    } catch {
+      setCustomers([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, search]);
+
+  useEffect(() => {
+    fetchCustomers();
+  }, [fetchCustomers]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <SearchField
         searchQuery={search}
         setSearchQuery={setSearch}
-        placeholder="Search customers..."
+        placeholder="Search customers by name or email..."
         className="max-w-sm"
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((c) => (
-          <div
-            key={c.id}
-            className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 transition-all hover:-translate-y-0.5 hover:border-violet-700/50"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 text-sm font-bold text-white">
-                {c.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </div>
-              <div className="min-w-0">
-                <p className="truncate font-semibold text-white">{c.name}</p>
-                <p className="truncate text-xs text-slate-500">{c.email}</p>
-              </div>
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="rounded-lg bg-slate-950/60 p-3">
-                <p className="text-xs text-slate-500">Orders</p>
-                <p className="text-lg font-bold text-white">{c.orders}</p>
-              </div>
-              <div className="rounded-lg bg-slate-950/60 p-3">
-                <p className="text-xs text-slate-500">Spent</p>
-                <p className="text-lg font-bold text-violet-400">
-                  ${c.spent.toLocaleString()}
-                </p>
-              </div>
-            </div>
-            <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-800 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white">
-              <Mail size={15} /> Contact
-            </button>
+      {loading ? (
+        <LoadingSpinner className="py-24" />
+      ) : customers.length === 0 ? (
+        <EmptyState message="No customers found" />
+      ) : (
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
+                <tr>
+                  <th className="px-5 py-3.5 font-medium">Customer</th>
+                  <th className="px-5 py-3.5 font-medium">Orders</th>
+                  <th className="px-5 py-3.5 font-medium">Total Spent</th>
+                  <th className="px-5 py-3.5 font-medium">Joined</th>
+                  <th className="px-5 py-3.5 text-right font-medium">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {customers.map((c) => (
+                  <tr key={c.id} className="transition-colors hover:bg-muted/30">
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 text-xs font-bold text-white">
+                          {c.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                        </div>
+                        <div>
+                          <p className="font-medium text-[#F8FAFC]">{c.name}</p>
+                          <p className="text-xs text-muted-foreground">{c.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-500/15 px-2.5 py-0.5 text-xs font-medium text-sky-400">
+                        {c.orderCount} orders
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 font-medium text-[#F8FAFC]">
+                      ${c.totalSpent.toLocaleString()}
+                    </td>
+                    <td className="px-5 py-4 text-muted-foreground">
+                      {new Date(c.joined).toLocaleDateString()}
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <Link
+                        href={`/merchant/customers/${c.id}`}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-[#7C3AED]/30 hover:text-[#F8FAFC]"
+                      >
+                        <Mail size={13} /> View
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ))}
-      </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-border px-5 py-3">
+              <p className="text-sm text-muted-foreground">
+                Page {page} of {totalPages} ({total} total)
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-[#7C3AED]/30 hover:text-[#F8FAFC] disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  <ChevronLeft size={14} /> Previous
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                  className="flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-[#7C3AED]/30 hover:text-[#F8FAFC] disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  Next <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

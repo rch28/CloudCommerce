@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listCustomers, getCustomer, createCustomer } from "@/lib/services/customers";
+import { listMerchantCustomers, getCustomer, createCustomer } from "@/lib/services/customers";
 import { getTenantId, requirePermission, handleError } from "@/lib/api-helpers";
 
 export async function GET(req: NextRequest) {
@@ -8,16 +8,21 @@ export async function GET(req: NextRequest) {
 
   try {
     const tenantId = await getTenantId(req);
-    const id = req.nextUrl.searchParams.get("id");
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
 
     if (id) {
       const customer = await getCustomer(id, tenantId);
       if (!customer) return NextResponse.json({ error: "Not found" }, { status: 404 });
-      return NextResponse.json(customer);
+      return NextResponse.json({ customer });
     }
 
-    const customers = await listCustomers(tenantId);
-    return NextResponse.json(customers);
+    const search = searchParams.get("search") ?? "";
+    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
+
+    const result = await listMerchantCustomers(tenantId, { search, page, limit });
+    return NextResponse.json(result);
   } catch (e) {
     return handleError(e);
   }
