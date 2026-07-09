@@ -10,6 +10,8 @@ import Badge from "../Badge";
 import DataTable from "@/components/dashboard/data-table";
 import CategoryForm from "@/components/dashboard/category-form";
 import ActionButtons from "@/components/ui/action-buttons";
+import ConfirmDeleteDialog from "@/components/dashboard/confirm-delete-dialog";
+import BulkActionBar from "@/components/dashboard/bulk-action-bar";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import { SelectField } from "@/components/ui/select-field";
 
@@ -191,31 +193,12 @@ export default function CategoriesView() {
 
   return (
     <div className="space-y-5">
-      {selected.size > 0 && (
-        <div className="flex items-center gap-2 rounded-xl border border-[#7C3AED]/30 bg-[#7C3AED]/10 px-4 py-2.5">
-          <span className="text-sm text-[#F8FAFC]">
-            {selected.size} selected
-          </span>
-          <button
-            onClick={handleBulkArchive}
-            className="ml-auto rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-amber-400"
-          >
-            Archive All
-          </button>
-          <button
-            onClick={handleBulkDelete}
-            className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-rose-400"
-          >
-            Delete All
-          </button>
-          <button
-            onClick={() => setSelected(new Set())}
-            className="rounded-lg px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-[#F8FAFC]"
-          >
-            Clear
-          </button>
-        </div>
-      )}
+      <BulkActionBar
+        selectedCount={selected.size}
+        onArchive={handleBulkArchive}
+        onDelete={handleBulkDelete}
+        onClear={() => setSelected(new Set())}
+      />
 
       <div className="flex items-center gap-3">
         {/* Search input on the left side */}
@@ -381,32 +364,12 @@ export default function CategoriesView() {
         onSave={handleSave}
       />
 
-      {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-2xl">
-            <h3 className="text-lg font-semibold text-[#F8FAFC]">
-              Delete Category
-            </h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Are you sure? This action cannot be undone.
-            </p>
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => setConfirmDelete(null)}
-                className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDelete(confirmDelete)}
-                className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-500"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDeleteDialog
+        open={confirmDelete !== null}
+        onOpenChange={() => setConfirmDelete(null)}
+        onConfirm={() => handleDelete(confirmDelete!)}
+        entityName="Category"
+      />
     </div>
   );
 }

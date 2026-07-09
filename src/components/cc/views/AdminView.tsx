@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import StatCard from "../StatCard";
+import StatCard from "@/components/dashboard/stats-card";
 import Badge from "../Badge";
 import { merchants } from "@/data/mock";
 
