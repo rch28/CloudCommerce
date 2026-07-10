@@ -5,6 +5,7 @@ import { reviewsApi } from "@/services/reviews.service";
 import { useRouter } from "next/navigation";
 import { Star, Filter, MoreHorizontal } from "lucide-react";
 import SearchField from "@/components/ui/form-inputs/SearchField";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SelectField } from "@/components/ui/select-field";
 
 interface ReviewItem {
@@ -78,11 +79,30 @@ export default function ReviewsView() {
 
   if (loading && reviews.length === 0) {
     return (
-      <div className="p-6 space-y-4">
-        <div className="h-8 w-48 bg-muted animate-pulse rounded" />
-        <div className="h-10 bg-muted animate-pulse rounded" />
-        <div className="space-y-2">
-          {[1,2,3,4,5].map((i) => <div key={i} className="h-20 bg-muted animate-pulse rounded" />)}
+      <div className="space-y-5">
+        <Skeleton className="h-8 w-48" />
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-10 flex-1 max-w-sm rounded-lg" />
+          <Skeleton className="h-10 w-32 rounded-lg" />
+        </div>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <div className="space-y-3">
+            {[1,2,3,4,5].map((i) => (
+              <div key={i} className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                  <Skeleton className="h-4 w-14" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );

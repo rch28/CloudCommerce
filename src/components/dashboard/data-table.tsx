@@ -103,7 +103,7 @@ export default function DataTable({
   }
 
   if (loading) {
-    return <LoadingSkeleton variant="table" />;
+    return <LoadingSkeleton variant="table-page" />;
   }
 
   return (

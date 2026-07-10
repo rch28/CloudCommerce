@@ -15,6 +15,7 @@ import {
 import StatsCard from "@/components/dashboard/stats-card";
 import ChartCard from "@/components/dashboard/chart-card";
 import ErrorState from "@/components/dashboard/error-state";
+import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import Badge from "@/components/cc/Badge";
 import { adminApi } from "@/services/admin.service";
 
@@ -78,23 +79,7 @@ export default function AdminDashboardView() {
   }
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-28 animate-pulse rounded-xl bg-slate-800/50" />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="h-72 animate-pulse rounded-xl bg-slate-800/50 lg:col-span-2" />
-          <div className="h-72 animate-pulse rounded-xl bg-slate-800/50" />
-        </div>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-          <div className="h-80 animate-pulse rounded-xl bg-slate-800/50 lg:col-span-3" />
-          <div className="h-80 animate-pulse rounded-xl bg-slate-800/50 lg:col-span-2" />
-        </div>
-      </div>
-    );
+    return <LoadingSkeleton variant="dashboard" />;
   }
 
   const { adminMetrics, merchants, activity, revenueData, merchantGrowthData } = data!;

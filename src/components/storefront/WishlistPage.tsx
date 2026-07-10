@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Heart, ShoppingCart, Trash2, Share2, ArrowLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useWishlist } from "@/hooks/useWishlist";
 
 interface Props {
@@ -23,10 +24,19 @@ export default function WishlistPage({ tenant }: Props) {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-4">
-        <div className="h-8 w-48 bg-muted animate-pulse rounded" />
-        <div className="grid grid-cols-1 gap-3">
-          {[1, 2, 3].map((i) => <div key={i} className="h-24 bg-muted animate-pulse rounded" />)}
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
+              <Skeleton className="h-16 w-16 rounded-lg" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+              <Skeleton className="h-8 w-8 rounded-md" />
+            </div>
+          ))}
         </div>
       </div>
     );

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 import { promotionsApi } from "@/services/promotions.service";
 
 interface Props {
@@ -139,7 +140,19 @@ export default function CouponFormView({ mode = "coupon", id }: Props) {
   };
 
   if (loading) {
-    return <div className="p-6 max-w-2xl"><div className="h-8 w-48 bg-muted animate-pulse rounded mb-6" /><div className="space-y-4">{[1,2,3].map((i) => <div key={i} className="h-12 bg-muted animate-pulse rounded" />)}</div></div>;
+    return (
+      <div className="max-w-2xl space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="space-y-4">
+          {[1,2,3].map((i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (isPromotion) {

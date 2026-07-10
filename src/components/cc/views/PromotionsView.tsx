@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Tag, Percent, Truck } from "lucide-react";
 import { promotionsApi } from "@/services/promotions.service";
+import { Skeleton } from "@/components/ui/skeleton";
 import ActionButtons from "@/components/ui/action-buttons";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 
@@ -82,11 +83,31 @@ export default function PromotionsView() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-4">
-        <div className="h-8 w-48 bg-muted animate-pulse rounded" />
-        <div className="h-10 bg-muted animate-pulse rounded" />
-        <div className="space-y-2">
-          {[1,2,3].map((i) => <div key={i} className="h-16 bg-muted animate-pulse rounded" />)}
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="flex gap-1 border-b border-border">
+          {[1,2,3].map((i) => (
+            <Skeleton key={i} className="h-10 w-28 rounded-t-md" />
+          ))}
+        </div>
+        <div className="rounded-xl border border-border bg-card p-5">
+          <div className="space-y-3">
+            {[1,2,3].map((i) => (
+              <div key={i} className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                  <Skeleton className="h-4 w-14" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );

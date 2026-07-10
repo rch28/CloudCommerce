@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Heart, ShoppingCart, ArrowLeft } from "lucide-react";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { wishlistApi } from "@/services/wishlist.service";
 
 interface SharedItem {
@@ -54,7 +54,23 @@ export default function SharedWishlistView({ tenant, shareToken }: Props) {
   };
 
   if (loading) {
-    return <LoadingSpinner size={32} className="min-h-[50vh]" />;
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-8 space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="space-y-3">
+          {[1,2,3].map((i) => (
+            <div key={i} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
+              <Skeleton className="h-16 w-16 rounded-lg" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+              <Skeleton className="h-9 w-24 rounded-lg" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (notFound) {

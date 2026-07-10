@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import ProductCard from "@/components/storefront/product-card";
 import { productsApi } from "@/services/products.service";
 
@@ -40,7 +41,7 @@ export default function ProductGridRenderer({ content, brandColor, tenant }: Pro
         {loading ? (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="aspect-square animate-pulse rounded-xl bg-card" />
+              <Skeleton key={i} className="aspect-square rounded-xl" />
             ))}
           </div>
         ) : products.length === 0 ? (

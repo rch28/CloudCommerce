@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 import { promotionsApi } from "@/services/promotions.service";
 
 interface Props {
@@ -70,7 +71,40 @@ export default function CouponDetailView({ mode = "coupon" }: Props) {
     } catch { /* ignore */ }
   };
 
-  if (loading) return <div className="p-6 space-y-4"><div className="h-8 w-64 bg-muted animate-pulse rounded" /><div className="h-32 bg-muted animate-pulse rounded" /></div>;
+  if (loading) return (
+    <div className="max-w-3xl space-y-6">
+      <Skeleton className="h-4 w-32" />
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-20 rounded-lg" />
+          <Skeleton className="h-9 w-16 rounded-lg" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        {[1,2,3,4].map((i) => (
+          <div key={i} className="rounded-xl border border-border bg-card p-4">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="mt-2 h-6 w-32" />
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl border border-border bg-card p-5">
+        <Skeleton className="mb-4 h-5 w-32" />
+        <div className="space-y-3">
+          {[1,2,3].map((i) => (
+            <div key={i} className="flex items-center justify-between py-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
   if (error) return <div className="p-6"><p className="text-red-500">{error}</p></div>;
   if (!item) return null;
 

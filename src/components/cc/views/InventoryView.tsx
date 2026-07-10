@@ -9,10 +9,10 @@ import {
 import { inventoryApi } from "@/services/inventory.service";
 import ActionButtons from "@/components/ui/action-buttons";
 import DataTable from "@/components/dashboard/data-table";
+import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SearchField from "@/components/ui/form-inputs/SearchField";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import EmptyState from "@/components/dashboard/empty-state";
 import { Label } from "@/components/ui/label";
 import {
@@ -209,53 +209,31 @@ export default function InventoryView() {
       </div>
 
       {/* Data table */}
-      {loading ? (
-        <LoadingSpinner size={20} text="Loading inventory..." className="py-12" />
-      ) : items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border px-4 py-12 text-center">
-          <Package size={32} className="text-muted-foreground/40" />
-          <p className="mt-3 text-sm font-medium text-muted-foreground">
-            {filter === "all"
-              ? "No inventory records found"
-              : "No items match the current filter"}
-          </p>
-          {filter !== "all" && (
-            <Button
-              onClick={() => setFilter("all")}
-              variant="outline"
-              size="sm"
-              className="mt-3 border-border text-muted-foreground"
-            >
-              Show all
-            </Button>
-          )}
-        </div>
-      ) : (
-        <DataTable
-          columns={[
-            {
-              key: "product",
-              label: "Product / Variant",
-              sortable: true,
-              render: (item: Record<string, unknown>) => {
-                const i = item as unknown as InventoryItem;
-                return (
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#1E293B]">
-                      <Package size={16} className="text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-[#F8FAFC]">
-                        {i.variant.product.name}
-                      </p>
-                      <p className="text-xs font-mono text-muted-foreground">
-                        {i.variant.sku}
-                      </p>
-                    </div>
+      <DataTable
+        columns={[
+          {
+            key: "product",
+            label: "Product / Variant",
+            sortable: true,
+            render: (item: Record<string, unknown>) => {
+              const i = item as unknown as InventoryItem;
+              return (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#1E293B]">
+                    <Package size={16} className="text-muted-foreground" />
                   </div>
-                );
-              },
+                  <div>
+                    <p className="font-medium text-[#F8FAFC]">
+                      {i.variant.product.name}
+                    </p>
+                    <p className="text-xs font-mono text-muted-foreground">
+                      {i.variant.sku}
+                    </p>
+                  </div>
+                </div>
+              );
             },
+          },
             {
               key: "stock",
               label: "On Hand",
@@ -348,9 +326,11 @@ export default function InventoryView() {
           ]}
           data={items as unknown as Record<string, unknown>[]}
           searchable={false}
+          loading={loading}
           pageSize={15}
+          emptyTitle={filter === "all" ? "No inventory records found" : "No items match the current filter"}
+          emptyDescription={filter !== "all" ? "Try changing the filter to see more results." : undefined}
         />
-      )}
 
       {/* Stock adjustment dialog */}
       <Dialog
@@ -428,7 +408,7 @@ export default function InventoryView() {
             </DialogDescription>
           </DialogHeader>
           {historyLoading ? (
-            <LoadingSpinner size={16} text="Loading history..." className="py-8" />
+            <LoadingSkeleton variant="table" />
           ) : historyLogs.length === 0 ? (
             <EmptyState message="No stock history found" className="py-8" />
           ) : (

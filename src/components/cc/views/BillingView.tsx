@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Check, ArrowUpRight, Loader2, AlertCircle, Download, Receipt } from "lucide-react";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import { billingApi } from "@/services/billing.service";
 import { PLANS, type PlanFeatures } from "@/lib/features";
 
@@ -81,7 +81,7 @@ export default function BillingView() {
   }
 
   if (loading) {
-    return <LoadingSpinner size={24} className="py-24" spinnerClassName="text-[#7C3AED]" />;
+    return <LoadingSkeleton variant="billing-page" />;
   }
 
   const currentPlan = subscription?.planSlug ? PLANS[subscription.planSlug as keyof typeof PLANS] : null;

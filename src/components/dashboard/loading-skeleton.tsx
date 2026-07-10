@@ -1,7 +1,16 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface LoadingSkeletonProps {
-  variant?: "card" | "chart" | "table" | "page";
+  variant?:
+    | "card"
+    | "chart"
+    | "table"
+    | "page"
+    | "table-page"
+    | "tabbed-page"
+    | "detail-page"
+    | "dashboard"
+    | "billing-page";
 }
 
 function CardSkeleton() {
@@ -36,12 +45,12 @@ function ChartSkeleton() {
   );
 }
 
-function TableSkeleton() {
+function TableSkeleton({ rows = 5 }: { rows?: number }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <Skeleton className="mb-4 h-5 w-32" />
       <div className="space-y-3">
-        {Array.from({ length: 5 }).map((_, i) => (
+        {Array.from({ length: rows }).map((_, i) => (
           <div key={i} className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
               <Skeleton className="h-9 w-9 rounded-full" />
@@ -61,6 +70,119 @@ function TableSkeleton() {
   );
 }
 
+function TablePageSkeleton() {
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center gap-3">
+        <Skeleton className="h-10 flex-1 max-w-sm rounded-lg" />
+        <Skeleton className="h-10 w-32 rounded-lg" />
+        <Skeleton className="h-10 w-32 rounded-lg" />
+        <Skeleton className="h-10 w-36 rounded-lg" />
+      </div>
+      <TableSkeleton rows={5} />
+    </div>
+  );
+}
+
+function TabbedPageSkeleton() {
+  return (
+    <div className="space-y-6">
+      <Skeleton className="h-8 w-56" />
+      <div className="flex gap-1 rounded-lg border border-border bg-background p-1">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-9 flex-1 rounded-md" />
+        ))}
+      </div>
+      <Skeleton className="h-64 w-full rounded-xl" />
+    </div>
+  );
+}
+
+function DetailPageSkeleton() {
+  return (
+    <div className="max-w-3xl space-y-6">
+      <Skeleton className="h-4 w-32" />
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-20 rounded-lg" />
+          <Skeleton className="h-9 w-16 rounded-lg" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-xl border border-border bg-card p-4">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="mt-2 h-6 w-32" />
+          </div>
+        ))}
+      </div>
+      <TableSkeleton rows={3} />
+    </div>
+  );
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <CardSkeleton key={i} />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2"><ChartSkeleton /></div>
+        <div><ChartSkeleton /></div>
+      </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        <div className="lg:col-span-3"><TableSkeleton rows={4} /></div>
+        <div className="lg:col-span-2"><ChartSkeleton /></div>
+      </div>
+    </div>
+  );
+}
+
+function BillingPageSkeleton() {
+  return (
+    <div className="space-y-8">
+      <div className="rounded-xl border border-border bg-card p-6">
+        <div className="flex items-center justify-between mb-4">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-8 w-36 rounded-lg" />
+        </div>
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-6 w-20 rounded-full" />
+        </div>
+      </div>
+      <div className="rounded-xl border border-border bg-card p-6">
+        <Skeleton className="mb-4 h-5 w-24" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-border p-5">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="mt-2 h-8 w-28" />
+              <div className="mt-3 space-y-2">
+                {Array.from({ length: 4 }).map((_, j) => (
+                  <Skeleton key={j} className="h-4 w-full" />
+                ))}
+              </div>
+              <Skeleton className="mt-4 h-10 w-full rounded-lg" />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="rounded-xl border border-border bg-card p-6">
+        <Skeleton className="mb-4 h-5 w-32" />
+        <TableSkeleton rows={3} />
+      </div>
+    </div>
+  );
+}
+
 export default function LoadingSkeleton({ variant = "card" }: LoadingSkeletonProps) {
   switch (variant) {
     case "card":
@@ -69,6 +191,16 @@ export default function LoadingSkeleton({ variant = "card" }: LoadingSkeletonPro
       return <ChartSkeleton />;
     case "table":
       return <TableSkeleton />;
+    case "table-page":
+      return <TablePageSkeleton />;
+    case "tabbed-page":
+      return <TabbedPageSkeleton />;
+    case "detail-page":
+      return <DetailPageSkeleton />;
+    case "dashboard":
+      return <DashboardSkeleton />;
+    case "billing-page":
+      return <BillingPageSkeleton />;
     case "page":
       return (
         <div className="space-y-6">

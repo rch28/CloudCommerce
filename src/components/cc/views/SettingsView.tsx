@@ -18,7 +18,8 @@ import {
   EyeOff,
   AlertTriangle,
 } from "lucide-react";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Skeleton } from "@/components/ui/skeleton";
+import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import ActionButtons from "@/components/ui/action-buttons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -283,7 +284,37 @@ export default function SettingsView() {
   }
 
   if (loading) {
-    return <LoadingSpinner size={32} className="h-64" />;
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-wrap gap-1 rounded-lg border border-border bg-card p-1">
+          {[1,2,3,4,5,6,7,8].map((i) => (
+            <Skeleton key={i} className="h-9 flex-1 min-w-[80px] rounded-md" />
+          ))}
+        </div>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <Skeleton className="h-5 w-24" />
+          <div className="mt-5 space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-12" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full rounded-md" />
+            </div>
+            <div className="flex justify-end">
+              <Skeleton className="h-10 w-20 rounded-lg" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   function renderTabButton(tab: (typeof TABS)[number]) {

@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Mail } from "lucide-react";
 import SearchField from "@/components/ui/form-inputs/SearchField";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import EmptyState from "@/components/dashboard/empty-state";
 import { customersApi } from "@/services/customers.service";
 
@@ -62,7 +62,7 @@ export default function CustomersView() {
       />
 
       {loading ? (
-        <LoadingSpinner className="py-24" />
+        <LoadingSkeleton variant="table-page" />
       ) : customers.length === 0 ? (
         <EmptyState message="No customers found" />
       ) : (

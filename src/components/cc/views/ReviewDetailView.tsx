@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Star, ArrowLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { reviewsApi } from "@/services/reviews.service";
 import Link from "next/link";
 
@@ -63,9 +64,15 @@ export default function ReviewDetailView() {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-3xl space-y-4">
-        <div className="h-8 w-48 bg-muted animate-pulse rounded" />
-        <div className="h-40 bg-muted animate-pulse rounded" />
+      <div className="max-w-3xl space-y-6">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-8 w-48" />
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+        </div>
       </div>
     );
   }

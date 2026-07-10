@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Star, Check, X } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { reviewsApi } from "@/services/reviews.service";
 
 interface PendingReview {
@@ -44,10 +45,24 @@ export default function ReviewModerationView() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-4">
-        <div className="h-8 w-48 bg-muted animate-pulse rounded" />
-        <div className="space-y-2">
-          {[1,2,3].map((i) => <div key={i} className="h-16 bg-muted animate-pulse rounded" />)}
+      <div className="space-y-5">
+        <Skeleton className="h-8 w-48" />
+        <div className="space-y-3">
+          {[1,2,3].map((i) => (
+            <div key={i} className="rounded-xl border border-border bg-card p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Skeleton className="h-8 w-8 rounded-md" />
+                  <Skeleton className="h-8 w-8 rounded-md" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );

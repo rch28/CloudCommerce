@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import RatingStars from "./RatingStars";
 import RatingDistribution from "./RatingDistribution";
 import { reviewsApi } from "@/services/reviews.service";
@@ -55,7 +56,20 @@ export default function ReviewList({ productId, showStats = true }: Props) {
   const totalPages = Math.ceil(total / pageSize);
 
   if (loading && reviews.length === 0) {
-    return <div className="space-y-4">{[1,2,3].map((i) => <div key={i} className="h-24 bg-muted animate-pulse rounded" />)}</div>;
+    return (
+      <div className="space-y-4">
+        {[1,2,3].map((i) => (
+          <div key={i} className="flex gap-3 rounded-lg border border-border bg-card p-4">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   }
 
   return (

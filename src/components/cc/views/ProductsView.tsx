@@ -12,7 +12,6 @@ import {
   Search,
   Edit2,
 } from "lucide-react";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { productsApi } from "@/services/products.service";
 import { categoriesApi } from "@/services/categories.service";
 import { Button } from "@/components/ui/button";
@@ -254,17 +253,6 @@ export default function ProductsView() {
     );
   }
 
-  if (loading) {
-    return (
-      <LoadingSpinner
-        size={28}
-        text="Loading products..."
-        className="rounded-xl border border-border bg-card px-6 py-16 text-center"
-        spinnerClassName="text-[#7C3AED]"
-      />
-    );
-  }
-
   const statusFilters = [
     { label: "All", value: "all" },
     { label: "Active", value: "active" },
@@ -455,6 +443,7 @@ export default function ProductsView() {
         ]}
         data={products as unknown as Record<string, unknown>[]}
         searchable={false}
+        loading={loading}
         serverPagination={{ page, totalPages, total, onPageChange: setPage }}
         emptyTitle="No products yet"
         emptyDescription="Create your first product to start selling."

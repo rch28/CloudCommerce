@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Pencil, Archive, Trash2, RotateCcw, Copy, Loader2, AlertCircle, Package } from "lucide-react";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { productsApi } from "@/services/products.service";
 import { Button } from "@/components/ui/button";
 import Badge from "@/components/cc/Badge";
@@ -102,12 +102,60 @@ export default function ProductDetailView() {
 
   if (loading) {
     return (
-      <LoadingSpinner
-        size={28}
-        text="Loading product..."
-        className="rounded-xl border border-border bg-card px-6 py-24 text-center"
-        spinnerClassName="text-[#7C3AED]"
-      />
+      <div className="space-y-6">
+        <Skeleton className="h-4 w-24" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-16 w-16 rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-7 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-20 rounded-lg" />
+            <Skeleton className="h-9 w-20 rounded-lg" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="rounded-xl border border-border bg-card p-5">
+              <Skeleton className="mb-3 h-5 w-24" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="mt-2 h-4 w-3/4" />
+            </div>
+            <div className="rounded-xl border border-border bg-card p-5">
+              <Skeleton className="mb-4 h-5 w-20" />
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-9 w-9 rounded-full" />
+                    <div className="space-y-1.5">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-3 w-16" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-9 w-9 rounded-full" />
+                    <div className="space-y-1.5">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-3 w-16" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-28 w-full rounded-xl" />
+            <Skeleton className="h-28 w-full rounded-xl" />
+          </div>
+        </div>
+      </div>
     );
   }
 

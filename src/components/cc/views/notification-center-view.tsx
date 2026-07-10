@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Bell, Package, Truck, CheckCircle, XCircle, AlertTriangle, DollarSign, Inbox } from "lucide-react";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useNotifications } from "@/hooks/useNotifications";
 
 function getIcon(type: string) {
@@ -77,7 +77,17 @@ export default function NotificationCenterView() {
       </div>
 
       {loading ? (
-        <LoadingSpinner size={28} className="py-16" />
+        <div className="space-y-2">
+          {[1,2,3,4,5].map((i) => (
+            <div key={i} className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
+              <Skeleton className="h-9 w-9 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-16 text-center">
           <Inbox size={40} className="text-muted-foreground/30" />

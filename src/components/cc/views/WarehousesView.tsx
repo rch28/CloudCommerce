@@ -8,8 +8,9 @@ import {
 } from "lucide-react";
 import ActionButtons from "@/components/ui/action-buttons";
 import DataTable from "@/components/dashboard/data-table";
+import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import EmptyState from "@/components/dashboard/empty-state";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -356,7 +357,26 @@ export default function WarehousesView() {
           </div>
 
           {loading ? (
-            <LoadingSpinner size={20} text="Loading..." className="py-12" />
+            <div className="rounded-xl border border-border bg-card p-5">
+              <Skeleton className="mb-4 h-5 w-32" />
+              <div className="space-y-3">
+                {[1,2,3,4,5].map((i) => (
+                  <div key={i} className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-9 w-9 rounded-full" />
+                      <div className="space-y-1.5">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Skeleton className="h-5 w-16 rounded-full" />
+                      <Skeleton className="h-4 w-14" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : (
             <DataTable
               columns={[
@@ -524,7 +544,7 @@ export default function WarehousesView() {
           {!selectedWarehouseId ? (
             <EmptyState icon={Package} title="Select a Warehouse" description="Choose a warehouse to view its inventory" />
           ) : invLoading ? (
-            <LoadingSpinner size={20} text="Loading inventory..." className="py-12" />
+            <LoadingSkeleton variant="table" />
           ) : (
             <DataTable
               columns={[
@@ -597,7 +617,7 @@ export default function WarehousesView() {
           </div>
 
           {transferLoading ? (
-            <LoadingSpinner size={20} text="Loading transfers..." className="py-12" />
+            <LoadingSkeleton variant="table" />
           ) : (
             <DataTable
               columns={[
