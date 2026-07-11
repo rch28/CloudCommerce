@@ -6,7 +6,7 @@ import Badge from "@/components/cc/Badge";
 import { ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import { TabFilter } from "@/components/ui/tab-filter";
 import SearchField from "@/components/ui/form-inputs/SearchField";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import EmptyState from "@/components/dashboard/empty-state";
 import { ordersApi } from "@/services/orders.service";
 
@@ -94,7 +94,7 @@ export default function MerchantOrdersPage() {
       />
 
       {loading ? (
-        <LoadingSpinner className="py-24" />
+        <LoadingSkeleton variant="table-page" />
       ) : orders.length === 0 ? (
         <EmptyState message="No orders found" />
       ) : (

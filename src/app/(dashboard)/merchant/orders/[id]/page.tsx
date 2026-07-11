@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Package, Loader2, CheckCircle, RefreshCw, AlertCircle, Send } from "lucide-react";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import Badge from "@/components/cc/Badge";
 import { getValidTransitions, STATUS_LABELS } from "@/data/order-status";
@@ -118,7 +118,60 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
   }
 
   if (loading) {
-    return <LoadingSpinner className="py-24" />;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-4 w-24" />
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-48" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-28 rounded-lg" />
+            <Skeleton className="h-9 w-28 rounded-lg" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="rounded-xl border border-border bg-card p-5">
+              <Skeleton className="mb-4 h-5 w-24" />
+              <div className="space-y-2">
+                {[1,2,3].map((i) => (
+                  <div key={i} className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                      <div className="space-y-1">
+                        <Skeleton className="h-3.5 w-32" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-5">
+              <Skeleton className="mb-4 h-5 w-20" />
+              <div className="space-y-3">
+                {[1,2,3,4].map((i) => (
+                  <div key={i} className="flex gap-3">
+                    <Skeleton className="h-6 w-6 rounded-full" />
+                    <div className="flex-1 space-y-1">
+                      <Skeleton className="h-3.5 w-40" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-36 w-full rounded-xl" />
+            <Skeleton className="h-36 w-full rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error || !order) {

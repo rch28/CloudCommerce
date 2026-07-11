@@ -46,25 +46,71 @@ function ChartSkeleton() {
 }
 
 function TableSkeleton({ rows = 5 }: { rows?: number }) {
+  const cols = [
+    { width: "w-6", label: "" },
+    { width: "flex-1 min-w-0", label: "Name" },
+    { width: "w-24 hidden sm:table-cell", label: "Type" },
+    { width: "w-20 hidden md:table-cell", label: "Status" },
+    { width: "w-28 hidden lg:table-cell", label: "Date" },
+    { width: "w-16", label: "" },
+  ];
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
-      <Skeleton className="mb-4 h-5 w-32" />
-      <div className="space-y-3">
-        {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} className="flex items-center justify-between py-2">
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-9 w-9 rounded-full" />
-              <div className="space-y-1.5">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-20" />
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-5 w-16 rounded-full" />
-              <Skeleton className="h-4 w-14" />
-            </div>
-          </div>
-        ))}
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <table className="w-full text-left text-sm">
+        <thead className="border-b border-border">
+          <tr>
+            {cols.map((col, i) => (
+              <th
+                key={i}
+                className={`px-4 py-3.5 ${col.width}`}
+              >
+                <Skeleton className="h-3 w-12" />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border/60">
+          {Array.from({ length: rows }).map((_, rowIdx) => (
+            <tr key={rowIdx}>
+              <td className="px-4 py-3.5">
+                <Skeleton className="h-4 w-4" />
+              </td>
+              <td className="px-4 py-3.5">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-8 w-8 shrink-0 rounded-lg" />
+                  <div className="min-w-0 space-y-1.5">
+                    <Skeleton className="h-3.5 w-32" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                </div>
+              </td>
+              <td className="px-4 py-3.5 hidden sm:table-cell">
+                <Skeleton className="h-4 w-16" />
+              </td>
+              <td className="px-4 py-3.5 hidden md:table-cell">
+                <Skeleton className="h-5 w-14 rounded-full" />
+              </td>
+              <td className="px-4 py-3.5 hidden lg:table-cell">
+                <Skeleton className="h-3.5 w-20" />
+              </td>
+              <td className="px-4 py-3.5">
+                <div className="flex justify-end gap-1">
+                  <Skeleton className="h-7 w-7 rounded-md" />
+                  <Skeleton className="h-7 w-7 rounded-md" />
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="flex items-center justify-between border-t border-border px-4 py-3">
+        <Skeleton className="h-3.5 w-32" />
+        <div className="flex items-center gap-1">
+          <Skeleton className="h-7 w-7 rounded-md" />
+          <Skeleton className="h-7 w-7 rounded-md bg-muted/50" />
+          <Skeleton className="h-7 w-7 rounded-md bg-muted/50" />
+          <Skeleton className="h-7 w-7 rounded-md" />
+        </div>
       </div>
     </div>
   );
@@ -73,11 +119,11 @@ function TableSkeleton({ rows = 5 }: { rows?: number }) {
 function TablePageSkeleton() {
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Skeleton className="h-10 flex-1 max-w-sm rounded-lg" />
+        <Skeleton className="h-10 w-28 rounded-lg" />
+        <Skeleton className="h-10 w-28 rounded-lg" />
         <Skeleton className="h-10 w-32 rounded-lg" />
-        <Skeleton className="h-10 w-32 rounded-lg" />
-        <Skeleton className="h-10 w-36 rounded-lg" />
       </div>
       <TableSkeleton rows={5} />
     </div>

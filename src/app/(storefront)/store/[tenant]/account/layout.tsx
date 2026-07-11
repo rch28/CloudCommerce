@@ -3,7 +3,7 @@ import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { User, Package, MapPin, Heart, Gift, LogOut } from "lucide-react";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { accountApi } from "@/services/account.service";
 
 export default function AccountLayout({ children, params }: { children: React.ReactNode; params: Promise<{ tenant: string }> }) {
@@ -26,7 +26,21 @@ export default function AccountLayout({ children, params }: { children: React.Re
   }, [authState, tenant, pathname, router]);
 
   if (authState === "loading") {
-    return <LoadingSpinner size={32} className="min-h-[50vh]" />;
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        <div className="flex gap-8">
+          <div className="hidden w-56 shrink-0 space-y-1 md:block">
+            {[1,2,3,4,5].map((i) => (
+              <Skeleton key={i} className="h-9 w-full rounded-lg" />
+            ))}
+          </div>
+          <div className="flex-1">
+            <Skeleton className="mb-6 h-8 w-48" />
+            <Skeleton className="h-64 w-full rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const nav = [

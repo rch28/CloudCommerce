@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Gift, Star, Award, TrendingUp, Ticket, Truck } from "lucide-react";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { loyaltyApi } from "@/services/loyalty.service";
 
@@ -64,7 +64,36 @@ export default function CustomerLoyaltyPage({ params }: { params: Promise<{ tena
   }, []);
 
   if (loading) {
-    return <LoadingSpinner size={28} className="min-h-[40vh]" />;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <div className="rounded-xl border border-border bg-card p-6">
+          <div className="mb-6 flex items-center gap-4">
+            <Skeleton className="h-16 w-16 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-20" />
+            </div>
+          </div>
+          <div className="mb-4 space-y-2">
+            <Skeleton className="h-3 w-full" />
+            <div className="flex justify-between">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {[1,2,3,4].map((i) => (
+              <div key={i} className="rounded-lg border border-border p-4">
+                <Skeleton className="mb-2 h-4 w-4" />
+                <Skeleton className="mb-1 h-3.5 w-16" />
+                <Skeleton className="h-6 w-8" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const nextTier = account ? Object.entries(tierMinPoints).find(([, min]) => min > (account?.lifetimePoints ?? 0)) : null;

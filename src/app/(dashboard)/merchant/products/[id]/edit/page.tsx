@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, AlertCircle } from "lucide-react";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import ProductForm from "@/components/dashboard/product-form";
 import { productsApi } from "@/services/products.service";
@@ -47,12 +47,38 @@ export default function ProductEditPage() {
 
   if (loading) {
     return (
-      <LoadingSpinner
-        size={28}
-        text="Loading product..."
-        className="rounded-xl border border-border bg-card px-6 py-24 text-center"
-        spinnerClassName="text-[#7C3AED]"
-      />
+      <div className="space-y-6">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-8 w-56" />
+        <div className="rounded-xl border border-border bg-card p-6">
+          <div className="grid gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {[1,2,3,4].map((i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-3.5 w-20" />
+                  <Skeleton className="h-10 w-full rounded-lg" />
+                </div>
+              ))}
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-3.5 w-16" />
+              <Skeleton className="h-24 w-full rounded-lg" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-3.5 w-24" />
+              <div className="flex gap-3">
+                {[1,2,3].map((i) => (
+                  <Skeleton key={i} className="h-20 w-20 rounded-lg" />
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Skeleton className="h-10 w-28 rounded-lg" />
+              <Skeleton className="h-10 w-20 rounded-lg" />
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
