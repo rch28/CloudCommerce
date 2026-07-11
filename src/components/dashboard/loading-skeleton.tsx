@@ -46,63 +46,46 @@ function ChartSkeleton() {
 }
 
 function TableSkeleton({ rows = 5 }: { rows?: number }) {
-  const cols = [
-    { width: "w-6", label: "" },
-    { width: "flex-1 min-w-0", label: "Name" },
-    { width: "w-24 hidden sm:table-cell", label: "Type" },
-    { width: "w-20 hidden md:table-cell", label: "Status" },
-    { width: "w-28 hidden lg:table-cell", label: "Date" },
-    { width: "w-16", label: "" },
-  ];
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
-      <table className="w-full text-left text-sm">
-        <thead className="border-b border-border">
-          <tr>
-            {cols.map((col, i) => (
-              <th
-                key={i}
-                className={`px-4 py-3.5 ${col.width}`}
-              >
-                <Skeleton className="h-3 w-12" />
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border/60">
-          {Array.from({ length: rows }).map((_, rowIdx) => (
-            <tr key={rowIdx}>
-              <td className="px-4 py-3.5">
-                <Skeleton className="h-4 w-4" />
-              </td>
-              <td className="px-4 py-3.5">
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-8 w-8 shrink-0 rounded-lg" />
-                  <div className="min-w-0 space-y-1.5">
-                    <Skeleton className="h-3.5 w-32" />
-                    <Skeleton className="h-3 w-20" />
-                  </div>
-                </div>
-              </td>
-              <td className="px-4 py-3.5 hidden sm:table-cell">
-                <Skeleton className="h-4 w-16" />
-              </td>
-              <td className="px-4 py-3.5 hidden md:table-cell">
-                <Skeleton className="h-5 w-14 rounded-full" />
-              </td>
-              <td className="px-4 py-3.5 hidden lg:table-cell">
-                <Skeleton className="h-3.5 w-20" />
-              </td>
-              <td className="px-4 py-3.5">
-                <div className="flex justify-end gap-1">
-                  <Skeleton className="h-7 w-7 rounded-md" />
-                  <Skeleton className="h-7 w-7 rounded-md" />
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="overflow-x-auto">
+        {/* header */}
+        <div className="flex items-center gap-3 border-b border-border px-4 py-3.5">
+          <div className="w-10 shrink-0" />
+          <div className="min-w-0 flex-1"><Skeleton className="h-3 w-14" /></div>
+          <div className="w-20 shrink-0 sm:w-24"><Skeleton className="h-3 w-12" /></div>
+          <div className="hidden w-20 shrink-0 sm:block"><Skeleton className="h-3 w-12" /></div>
+          <div className="hidden w-24 shrink-0 md:block"><Skeleton className="h-3 w-12" /></div>
+          <div className="w-16 shrink-0"><Skeleton className="h-3 w-10" /></div>
+        </div>
+        {/* rows */}
+        {Array.from({ length: rows }).map((_, rowIdx) => (
+          <div key={rowIdx} className="flex items-center gap-3 border-b border-border/60 px-4 py-3.5">
+            {/* checkbox */}
+            <div className="w-10 shrink-0"><Skeleton className="h-4 w-4" /></div>
+            {/* name + avatar */}
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <Skeleton className="h-8 w-8 shrink-0 rounded-lg" />
+              <div className="min-w-0 space-y-1.5">
+                <Skeleton className="h-3.5 w-32" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            {/* category/type */}
+            <div className="w-20 shrink-0 sm:w-24"><Skeleton className="h-4 w-14" /></div>
+            {/* status badge - hidden on xs */}
+            <div className="hidden w-20 shrink-0 sm:block"><Skeleton className="h-5 w-14 rounded-full" /></div>
+            {/* date - hidden on sm */}
+            <div className="hidden w-24 shrink-0 md:block"><Skeleton className="h-3.5 w-16" /></div>
+            {/* actions */}
+            <div className="flex w-16 shrink-0 justify-end gap-1">
+              <Skeleton className="h-7 w-7 rounded-md" />
+              <Skeleton className="h-7 w-7 rounded-md" />
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* pagination */}
       <div className="flex items-center justify-between border-t border-border px-4 py-3">
         <Skeleton className="h-3.5 w-32" />
         <div className="flex items-center gap-1">
