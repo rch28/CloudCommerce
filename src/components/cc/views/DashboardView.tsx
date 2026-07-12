@@ -27,11 +27,11 @@ export default function DashboardView() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 lg:col-span-2">
+        <div className="rounded-xl border border-border bg-muted/50 p-5 lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h3 className="font-semibold text-white">Revenue Overview</h3>
-              <p className="text-sm text-slate-400">Monthly performance</p>
+              <p className="text-sm text-muted-foreground">Monthly performance</p>
             </div>
             <span className="flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
               <Activity size={13} /> Live
@@ -56,9 +56,9 @@ export default function DashboardView() {
           </ResponsiveContainer>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-xl border border-border bg-muted/50 p-5">
           <h3 className="font-semibold text-white">Sales by Category</h3>
-          <p className="text-sm text-slate-400">Distribution</p>
+          <p className="text-sm text-muted-foreground">Distribution</p>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie data={categoryData} dataKey="value" innerRadius={55} outerRadius={80} paddingAngle={3}>
@@ -74,7 +74,7 @@ export default function DashboardView() {
           <div className="mt-2 space-y-2">
             {categoryData.map((c) => (
               <div key={c.name} className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-slate-300">
+                <span className="flex items-center gap-2 text-muted-foreground">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ background: c.color }} />
                   {c.name}
                 </span>
@@ -85,13 +85,13 @@ export default function DashboardView() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+      <div className="rounded-xl border border-border bg-muted/50 p-5">
         <h3 className="mb-4 font-semibold text-white">Recent Orders</h3>
         <div className="space-y-2">
           {orders.slice(0, 5).map((o) => (
             <div
               key={o.id}
-              className="flex items-center justify-between rounded-lg border border-transparent px-3 py-2.5 hover:border-slate-800 hover:bg-slate-800/40"
+              className="flex items-center justify-between rounded-lg border border-transparent px-3 py-2.5 hover:border-border hover:bg-accent/40"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/15 text-xs font-bold text-violet-300">

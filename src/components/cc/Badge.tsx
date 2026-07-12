@@ -11,8 +11,8 @@ const styles: Record<string, string> = {
   delivered: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
   cancelled: "bg-rose-500/15 text-rose-400 border-rose-500/30",
   refunded: "bg-orange-500/15 text-orange-400 border-orange-500/30",
-  draft: "bg-slate-500/15 text-slate-400 border-slate-500/30",
-  archived: "bg-slate-500/15 text-slate-400 border-slate-500/30",
+  draft: "bg-slate-500/15 text-muted-foreground border-slate-500/30",
+  archived: "bg-slate-500/15 text-muted-foreground border-slate-500/30",
   trialing: "bg-cyan-500/15 text-cyan-400 border-cyan-500/30",
   past_due: "bg-rose-500/15 text-rose-400 border-rose-500/30",
 };

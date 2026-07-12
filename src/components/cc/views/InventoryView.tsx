@@ -196,7 +196,7 @@ export default function InventoryView() {
             className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
               filter === tab
                 ? "bg-[#7C3AED] text-white"
-                : "text-muted-foreground hover:text-[#F8FAFC]"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {tab === "all"
@@ -223,7 +223,7 @@ export default function InventoryView() {
                     <Package size={16} className="text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="font-medium text-[#F8FAFC]">
+                    <p className="font-medium text-foreground">
                       {i.variant.product.name}
                     </p>
                     <p className="text-xs font-mono text-muted-foreground">
@@ -266,7 +266,7 @@ export default function InventoryView() {
               render: (item: Record<string, unknown>) => {
                 const i = item as unknown as InventoryItem;
                 return (
-                  <span className="font-medium text-[#F8FAFC]">
+                  <span className="font-medium text-foreground">
                     {i.available}
                   </span>
                 );
@@ -339,7 +339,7 @@ export default function InventoryView() {
           if (!o) setAdjustOpen(null);
         }}
       >
-        <DialogContent className="max-w-sm border-border bg-card text-[#F8FAFC]">
+        <DialogContent className="max-w-sm border-border bg-card text-foreground">
           <DialogHeader>
             <DialogTitle>Adjust Stock</DialogTitle>
             <DialogDescription className="text-muted-foreground">
@@ -353,7 +353,7 @@ export default function InventoryView() {
               </Label>
               <Input
                 type="number"
-                className="h-10 border-border bg-background text-[#F8FAFC]"
+                className="h-10 border-border bg-background text-foreground"
                 value={adjustChange}
                 onChange={(e) => setAdjustChange(parseInt(e.target.value) || 0)}
               />
@@ -363,7 +363,7 @@ export default function InventoryView() {
                 Reason <span className="text-red-500">*</span>
               </Label>
               <Input
-                className="h-10 border-border bg-background text-[#F8FAFC]"
+                className="h-10 border-border bg-background text-foreground"
                 placeholder="e.g. Received from supplier"
                 value={adjustReason}
                 onChange={(e) => setAdjustReason(e.target.value)}
@@ -400,7 +400,7 @@ export default function InventoryView() {
 
       {/* Stock history dialog */}
       <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
-        <DialogContent className="max-w-lg border-border bg-card text-[#F8FAFC]">
+        <DialogContent className="max-w-lg border-border bg-card text-foreground">
           <DialogHeader>
             <DialogTitle>Stock History</DialogTitle>
             <DialogDescription className="text-muted-foreground">

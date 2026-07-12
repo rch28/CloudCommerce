@@ -100,7 +100,7 @@ export default function BillingView() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <CreditCard size={18} className="text-[#7C3AED]" />
-            <h2 className="text-lg font-semibold text-[#F8FAFC]">Current Plan</h2>
+            <h2 className="text-lg font-semibold text-foreground">Current Plan</h2>
           </div>
           {subscription && subscription.status !== "canceled" && (
             <button onClick={handleCancel} disabled={changing} className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-rose-400 hover:bg-rose-500/10 disabled:opacity-50 transition-colors">
@@ -112,14 +112,14 @@ export default function BillingView() {
         {subscription ? (
           <div className="flex flex-wrap items-center gap-4">
             <div>
-              <p className="text-2xl font-bold text-[#F8FAFC]">{subscription.planName}</p>
+              <p className="text-2xl font-bold text-foreground">{subscription.planName}</p>
               <p className="text-sm text-muted-foreground">${subscription.planPrice}/mo</p>
             </div>
             <span className={`rounded-full px-3 py-1 text-xs font-medium ${
               subscription.status === "active" ? "bg-emerald-500/20 text-emerald-400" :
               subscription.status === "trialing" ? "bg-amber-500/20 text-amber-400" :
               subscription.status === "past_due" ? "bg-rose-500/20 text-rose-400" :
-              "bg-slate-500/20 text-slate-400"
+              "bg-slate-500/20 text-muted-foreground"
             }`}>
               {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
             </span>
@@ -133,7 +133,7 @@ export default function BillingView() {
       </div>
 
       <div className="rounded-xl border border-border bg-card p-6">
-        <h2 className="text-lg font-semibold text-[#F8FAFC] mb-4">Plans</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Plans</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {planKeys.map((key) => {
             const plan = PLANS[key] as PlanFeatures & { slug: string; name: string; price: number };
@@ -143,10 +143,10 @@ export default function BillingView() {
             return (
               <div key={plan.slug} className={`rounded-xl border p-5 ${isCurrent ? "border-[#7C3AED] bg-[#7C3AED]/10" : "border-border"}`}>
                 <div className="flex items-center justify-between">
-                  <p className="font-semibold text-[#F8FAFC]">{plan.name}</p>
+                  <p className="font-semibold text-foreground">{plan.name}</p>
                   {isCurrent && <span className="rounded-full bg-[#7C3AED] px-2 py-0.5 text-[10px] font-bold text-white">CURRENT</span>}
                 </div>
-                <p className="mt-2 text-2xl font-bold text-[#F8FAFC]">${plan.price}<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
+                <p className="mt-2 text-2xl font-bold text-foreground">${plan.price}<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
                 <ul className="mt-3 space-y-2">
                   <li className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Check size={14} className="text-emerald-400 shrink-0" />
@@ -182,7 +182,7 @@ export default function BillingView() {
       <div className="rounded-xl border border-border bg-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Receipt size={18} className="text-[#7C3AED]" />
-          <h2 className="text-lg font-semibold text-[#F8FAFC]">Invoice History</h2>
+          <h2 className="text-lg font-semibold text-foreground">Invoice History</h2>
         </div>
         {payments.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">No invoices yet</p>
@@ -201,7 +201,7 @@ export default function BillingView() {
               </thead>
               <tbody>
                 {payments.map((p) => (
-                  <tr key={p.id} className="border-b border-border/50 text-[#F8FAFC]">
+                  <tr key={p.id} className="border-b border-border/50 text-foreground">
                     <td className="py-3 pr-4">{new Date(p.createdAt).toLocaleDateString()}</td>
                     <td className="py-3 pr-4 text-muted-foreground">{p.description || "Subscription payment"}</td>
                     <td className="py-3 pr-4 font-medium">${Number(p.amount).toFixed(2)}</td>
@@ -233,7 +233,7 @@ export default function BillingView() {
       <div className="rounded-xl border border-border bg-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <ArrowUpRight size={18} className="text-[#7C3AED]" />
-          <h2 className="text-lg font-semibold text-[#F8FAFC]">Usage</h2>
+          <h2 className="text-lg font-semibold text-foreground">Usage</h2>
         </div>
         {subscription && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -246,7 +246,7 @@ export default function BillingView() {
                 <div key={item.label} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">{item.label}</span>
-                    <span className="text-[#F8FAFC]">{item.limit === -1 ? `${item.used} / Unlimited` : `${item.used} / ${item.limit}`}</span>
+                    <span className="text-foreground">{item.limit === -1 ? `${item.used} / Unlimited` : `${item.used} / ${item.limit}`}</span>
                   </div>
                   {item.limit !== -1 && (
                     <div className="h-2 overflow-hidden rounded-full bg-border">

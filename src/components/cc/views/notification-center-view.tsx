@@ -40,7 +40,7 @@ export default function NotificationCenterView() {
     <div className="mx-auto max-w-3xl">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#F8FAFC]">Notifications</h1>
+          <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {unreadCount > 0
               ? `You have ${unreadCount} unread notification${unreadCount !== 1 ? "s" : ""}`
@@ -50,7 +50,7 @@ export default function NotificationCenterView() {
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
-            className="rounded-lg border border-border bg-card px-4 py-2 text-sm text-[#7C3AED] transition-colors hover:bg-[#1E293B]"
+            className="rounded-lg border border-border bg-card px-4 py-2 text-sm text-[#7C3AED] transition-colors hover:bg-accent"
           >
             Mark all as read
           </button>
@@ -61,7 +61,7 @@ export default function NotificationCenterView() {
         <button
           onClick={() => setFilter("all")}
           className={`rounded-lg px-4 py-1.5 text-sm transition-colors ${
-            filter === "all" ? "bg-[#7C3AED] text-white" : "border border-border bg-card text-muted-foreground hover:text-[#F8FAFC]"
+            filter === "all" ? "bg-[#7C3AED] text-white" : "border border-border bg-card text-muted-foreground hover:text-foreground"
           }`}
         >
           All
@@ -69,7 +69,7 @@ export default function NotificationCenterView() {
         <button
           onClick={() => setFilter("unread")}
           className={`rounded-lg px-4 py-1.5 text-sm transition-colors ${
-            filter === "unread" ? "bg-[#7C3AED] text-white" : "border border-border bg-card text-muted-foreground hover:text-[#F8FAFC]"
+            filter === "unread" ? "bg-[#7C3AED] text-white" : "border border-border bg-card text-muted-foreground hover:text-foreground"
           }`}
         >
           Unread {unreadCount > 0 && `(${unreadCount})`}
@@ -91,7 +91,7 @@ export default function NotificationCenterView() {
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-16 text-center">
           <Inbox size={40} className="text-muted-foreground/30" />
-          <p className="text-lg font-medium text-[#F8FAFC]">No notifications</p>
+          <p className="text-lg font-medium text-foreground">No notifications</p>
           <p className="text-sm text-muted-foreground">
             {filter === "unread" ? "All notifications have been read" : "You haven't received any notifications yet"}
           </p>
@@ -117,7 +117,7 @@ export default function NotificationCenterView() {
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="font-medium text-[#F8FAFC]">{n.title}</p>
+                  <p className="font-medium text-foreground">{n.title}</p>
                   <span className="shrink-0 text-xs text-muted-foreground/60">{timeAgo(n.createdAt)}</span>
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">{n.body}</p>

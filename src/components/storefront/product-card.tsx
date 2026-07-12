@@ -28,7 +28,7 @@ export default function ProductCard({ id, name, slug, price, image, stock, sold,
   return (
     <div className="group overflow-hidden rounded-xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-[#7C3AED]/50 hover:shadow-lg hover:shadow-[#7C3AED]/10">
       <Link href={`${base}/products/${slug}`} className="block">
-        <div className="relative aspect-square overflow-hidden bg-[#18181B]">
+        <div className="relative aspect-square overflow-hidden bg-muted">
           {image ? (
             <Image
               src={image}
@@ -61,7 +61,7 @@ export default function ProductCard({ id, name, slug, price, image, stock, sold,
       <div className="p-4">
         <p className="text-xs text-[#8B5CF6]">{category}</p>
         <Link href={`${base}/products/${slug}`}>
-          <h4 className="mt-0.5 truncate font-medium text-[#F8FAFC] transition-colors hover:text-[#8B5CF6]">{name}</h4>
+          <h4 className="mt-0.5 truncate font-medium text-foreground transition-colors hover:text-[#8B5CF6]">{name}</h4>
         </Link>
         <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
           <span className="flex items-center gap-0.5 text-amber-400">
@@ -70,7 +70,7 @@ export default function ProductCard({ id, name, slug, price, image, stock, sold,
           <span>({sold} sold)</span>
         </div>
         <div className="mt-3 flex items-center justify-between">
-          <span className="text-lg font-bold text-[#F8FAFC]">${Number(price).toFixed(2)}</span>
+          <span className="text-lg font-bold text-foreground">${Number(price).toFixed(2)}</span>
           <Button
             onClick={() => {
               if (!outOfStock) addItem({

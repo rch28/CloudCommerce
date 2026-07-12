@@ -319,7 +319,7 @@ export default function WarehousesView() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#F8FAFC]">Warehouse & Inventory</h1>
+          <h1 className="text-2xl font-bold text-foreground">Warehouse & Inventory</h1>
           <p className="mt-1 text-sm text-muted-foreground">Manage warehouses, stock levels, transfers, and allocation</p>
         </div>
       </div>
@@ -333,7 +333,7 @@ export default function WarehousesView() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                activeTab === tab.id ? "bg-[#7C3AED] text-white" : "text-muted-foreground hover:text-[#F8FAFC]"
+                activeTab === tab.id ? "bg-[#7C3AED] text-white" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Icon size={16} />
@@ -392,7 +392,7 @@ export default function WarehousesView() {
                           <Building2 size={16} className={w.isActive ? "text-emerald-400" : "text-muted-foreground"} />
                         </div>
                         <div>
-                          <p className="font-medium text-[#F8FAFC]">{w.name}</p>
+                          <p className="font-medium text-foreground">{w.name}</p>
                           <p className="text-xs font-mono text-muted-foreground">{w.code}</p>
                         </div>
                       </div>
@@ -463,7 +463,7 @@ export default function WarehousesView() {
 
           {/* Warehouse Form Dialog */}
           <Dialog open={formOpen} onOpenChange={setFormOpen}>
-            <DialogContent className="max-w-lg border-border bg-card text-[#F8FAFC]">
+            <DialogContent className="max-w-lg border-border bg-card text-foreground">
               <DialogHeader>
                 <DialogTitle>{editingWarehouse ? "Edit Warehouse" : "Add Warehouse"}</DialogTitle>
                 <DialogDescription className="text-muted-foreground">
@@ -473,15 +473,15 @@ export default function WarehousesView() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2 col-span-2 sm:col-span-1">
                   <Label>Name <span className="text-red-500">*</span></Label>
-                  <Input className="h-10 border-border bg-background text-[#F8FAFC]" value={formData.name} onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))} />
+                  <Input className="h-10 border-border bg-background text-foreground" value={formData.name} onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))} />
                 </div>
                 <div className="space-y-2 col-span-2 sm:col-span-1">
                   <Label>Code <span className="text-red-500">*</span></Label>
-                  <Input className="h-10 border-border bg-background text-[#F8FAFC]" value={formData.code} onChange={(e) => setFormData((p) => ({ ...p, code: e.target.value }))} placeholder="WH-XXX" />
+                  <Input className="h-10 border-border bg-background text-foreground" value={formData.code} onChange={(e) => setFormData((p) => ({ ...p, code: e.target.value }))} placeholder="WH-XXX" />
                 </div>
                 <div className="space-y-2 col-span-2 sm:col-span-1">
                   <Label>Type</Label>
-                  <select className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-[#F8FAFC]" value={formData.type} onChange={(e) => setFormData((p) => ({ ...p, type: e.target.value }))}>
+                  <select className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground" value={formData.type} onChange={(e) => setFormData((p) => ({ ...p, type: e.target.value }))}>
                     <option value="main">Main</option>
                     <option value="secondary">Secondary</option>
                     <option value="dropshipping">Dropshipping</option>
@@ -490,27 +490,27 @@ export default function WarehousesView() {
                 </div>
                 <div className="space-y-2 col-span-2 sm:col-span-1">
                   <Label>Sort Order</Label>
-                  <Input type="number" className="h-10 border-border bg-background text-[#F8FAFC]" value={formData.sortOrder} onChange={(e) => setFormData((p) => ({ ...p, sortOrder: parseInt(e.target.value) || 0 }))} />
+                  <Input type="number" className="h-10 border-border bg-background text-foreground" value={formData.sortOrder} onChange={(e) => setFormData((p) => ({ ...p, sortOrder: parseInt(e.target.value) || 0 }))} />
                 </div>
                 <div className="space-y-2 col-span-2">
                   <Label>Address</Label>
-                  <Input className="h-10 border-border bg-background text-[#F8FAFC]" value={formData.address} onChange={(e) => setFormData((p) => ({ ...p, address: e.target.value }))} />
+                  <Input className="h-10 border-border bg-background text-foreground" value={formData.address} onChange={(e) => setFormData((p) => ({ ...p, address: e.target.value }))} />
                 </div>
                 <div className="space-y-2 col-span-2 sm:col-span-1">
                   <Label>City</Label>
-                  <Input className="h-10 border-border bg-background text-[#F8FAFC]" value={formData.city} onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))} />
+                  <Input className="h-10 border-border bg-background text-foreground" value={formData.city} onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))} />
                 </div>
                 <div className="space-y-2 col-span-2 sm:col-span-1">
                   <Label>State</Label>
-                  <Input className="h-10 border-border bg-background text-[#F8FAFC]" value={formData.state} onChange={(e) => setFormData((p) => ({ ...p, state: e.target.value }))} />
+                  <Input className="h-10 border-border bg-background text-foreground" value={formData.state} onChange={(e) => setFormData((p) => ({ ...p, state: e.target.value }))} />
                 </div>
                 <div className="space-y-2 col-span-2 sm:col-span-1">
                   <Label>Country</Label>
-                  <Input className="h-10 border-border bg-background text-[#F8FAFC]" value={formData.country} onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))} />
+                  <Input className="h-10 border-border bg-background text-foreground" value={formData.country} onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))} />
                 </div>
                 <div className="space-y-2 col-span-2 sm:col-span-1">
                   <Label>ZIP Code</Label>
-                  <Input className="h-10 border-border bg-background text-[#F8FAFC]" value={formData.zip} onChange={(e) => setFormData((p) => ({ ...p, zip: e.target.value }))} />
+                  <Input className="h-10 border-border bg-background text-foreground" value={formData.zip} onChange={(e) => setFormData((p) => ({ ...p, zip: e.target.value }))} />
                 </div>
               </div>
               <DialogFooter>
@@ -530,7 +530,7 @@ export default function WarehousesView() {
           <div className="flex items-center gap-3">
             <Label className="whitespace-nowrap">Warehouse:</Label>
             <select
-              className="h-10 flex-1 max-w-xs rounded-md border border-border bg-background px-3 text-sm text-[#F8FAFC]"
+              className="h-10 flex-1 max-w-xs rounded-md border border-border bg-background px-3 text-sm text-foreground"
               value={selectedWarehouseId}
               onChange={(e) => { setSelectedWarehouseId(e.target.value); }}
             >
@@ -556,7 +556,7 @@ export default function WarehousesView() {
                     const i = item as unknown as InvItem;
                     return (
                       <div>
-                        <p className="font-medium text-[#F8FAFC]">{i.variant.product.name}</p>
+                        <p className="font-medium text-foreground">{i.variant.product.name}</p>
                         <p className="text-xs font-mono text-muted-foreground">{i.variant.sku}</p>
                       </div>
                     );
@@ -585,7 +585,7 @@ export default function WarehousesView() {
                   sortable: true,
                   render: (item: Record<string, unknown>) => {
                     const i = item as unknown as InvItem;
-                    return <span className="font-medium text-[#F8FAFC]">{i.available}</span>;
+                    return <span className="font-medium text-foreground">{i.available}</span>;
                   },
                 },
                 {
@@ -626,7 +626,7 @@ export default function WarehousesView() {
                   label: "From",
                   render: (item: Record<string, unknown>) => {
                     const t = item as unknown as TransferItem;
-                    return <span className="text-sm text-[#F8FAFC]">{t.fromWarehouse.name}</span>;
+                    return <span className="text-sm text-foreground">{t.fromWarehouse.name}</span>;
                   },
                 },
                 {
@@ -634,7 +634,7 @@ export default function WarehousesView() {
                   label: "To",
                   render: (item: Record<string, unknown>) => {
                     const t = item as unknown as TransferItem;
-                    return <span className="text-sm text-[#F8FAFC]">{t.toWarehouse.name}</span>;
+                    return <span className="text-sm text-foreground">{t.toWarehouse.name}</span>;
                   },
                 },
                 {
@@ -694,7 +694,7 @@ export default function WarehousesView() {
 
           {/* Transfer Form Dialog */}
           <Dialog open={transferFormOpen} onOpenChange={setTransferFormOpen}>
-            <DialogContent className="max-w-md border-border bg-card text-[#F8FAFC]">
+            <DialogContent className="max-w-md border-border bg-card text-foreground">
               <DialogHeader>
                 <DialogTitle>Create Stock Transfer</DialogTitle>
                 <DialogDescription className="text-muted-foreground">Move stock between warehouses</DialogDescription>
@@ -702,29 +702,29 @@ export default function WarehousesView() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>From Warehouse <span className="text-red-500">*</span></Label>
-                  <select className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-[#F8FAFC]" value={transferData.fromWarehouseId} onChange={(e) => setTransferData((p) => ({ ...p, fromWarehouseId: e.target.value }))}>
+                  <select className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground" value={transferData.fromWarehouseId} onChange={(e) => setTransferData((p) => ({ ...p, fromWarehouseId: e.target.value }))}>
                     <option value="">Select source</option>
                     {warehouses.map((wh) => <option key={wh.id} value={wh.id}>{wh.name} ({wh.code})</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
                   <Label>To Warehouse <span className="text-red-500">*</span></Label>
-                  <select className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-[#F8FAFC]" value={transferData.toWarehouseId} onChange={(e) => setTransferData((p) => ({ ...p, toWarehouseId: e.target.value }))}>
+                  <select className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground" value={transferData.toWarehouseId} onChange={(e) => setTransferData((p) => ({ ...p, toWarehouseId: e.target.value }))}>
                     <option value="">Select destination</option>
                     {warehouses.filter((w) => w.id !== transferData.fromWarehouseId).map((wh) => <option key={wh.id} value={wh.id}>{wh.name} ({wh.code})</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
                   <Label>Variant ID <span className="text-red-500">*</span></Label>
-                  <Input className="h-10 border-border bg-background text-[#F8FAFC]" value={transferData.variantId} onChange={(e) => setTransferData((p) => ({ ...p, variantId: e.target.value }))} placeholder="v-xxx" />
+                  <Input className="h-10 border-border bg-background text-foreground" value={transferData.variantId} onChange={(e) => setTransferData((p) => ({ ...p, variantId: e.target.value }))} placeholder="v-xxx" />
                 </div>
                 <div className="space-y-2">
                   <Label>Quantity</Label>
-                  <Input type="number" min={1} className="h-10 border-border bg-background text-[#F8FAFC]" value={transferData.quantity} onChange={(e) => setTransferData((p) => ({ ...p, quantity: parseInt(e.target.value) || 1 }))} />
+                  <Input type="number" min={1} className="h-10 border-border bg-background text-foreground" value={transferData.quantity} onChange={(e) => setTransferData((p) => ({ ...p, quantity: parseInt(e.target.value) || 1 }))} />
                 </div>
                 <div className="space-y-2">
                   <Label>Notes (optional)</Label>
-                  <Input className="h-10 border-border bg-background text-[#F8FAFC]" value={transferData.notes} onChange={(e) => setTransferData((p) => ({ ...p, notes: e.target.value }))} placeholder="Rebalance stock" />
+                  <Input className="h-10 border-border bg-background text-foreground" value={transferData.notes} onChange={(e) => setTransferData((p) => ({ ...p, notes: e.target.value }))} placeholder="Rebalance stock" />
                 </div>
               </div>
               <DialogFooter>
@@ -742,11 +742,11 @@ export default function WarehousesView() {
       {activeTab === "allocation" && (
         <div className="space-y-6">
           <div className="rounded-lg border border-border bg-card p-5">
-            <h3 className="font-semibold text-[#F8FAFC]">Test Allocation Engine</h3>
+            <h3 className="font-semibold text-foreground">Test Allocation Engine</h3>
             <p className="mt-1 text-sm text-muted-foreground">Enter variant IDs and quantities (comma-separated) to simulate stock allocation</p>
             <div className="mt-4 flex gap-3">
               <Input
-                className="flex-1 h-10 border-border bg-background text-[#F8FAFC] font-mono"
+                className="flex-1 h-10 border-border bg-background text-foreground font-mono"
                 value={allocInput}
                 onChange={(e) => setAllocInput(e.target.value)}
                 placeholder="v-1:10, v-2:20"
@@ -771,13 +771,13 @@ export default function WarehousesView() {
               {allocationResult.allocations.length > 0 && (
                 <div className="rounded-lg border border-border bg-card">
                   <div className="border-b border-border px-5 py-3">
-                    <h4 className="text-sm font-semibold text-[#F8FAFC]">Allocation Plan</h4>
+                    <h4 className="text-sm font-semibold text-foreground">Allocation Plan</h4>
                   </div>
                   <div className="divide-y divide-border/60">
                     {allocationResult.allocations.map((a, i) => (
                       <div key={i} className="flex items-center justify-between px-5 py-3">
                         <div>
-                          <p className="text-sm font-medium text-[#F8FAFC]">{a.warehouseName}</p>
+                          <p className="text-sm font-medium text-foreground">{a.warehouseName}</p>
                           <p className="text-xs text-muted-foreground font-mono">Variant: {a.variantId}</p>
                         </div>
                         <Badge variant="success">{a.allocated} units</Badge>
@@ -795,7 +795,7 @@ export default function WarehousesView() {
                   <div className="divide-y divide-rose-500/10">
                     {allocationResult.shortages.map((s, i) => (
                       <div key={i} className="flex items-center justify-between px-5 py-3">
-                        <span className="text-sm font-mono text-[#F8FAFC]">{s.variantId}</span>
+                        <span className="text-sm font-mono text-foreground">{s.variantId}</span>
                         <div className="text-sm">
                           <span className="text-muted-foreground">{s.available} / {s.requested} available</span>
                           <span className="ml-2 text-rose-400 font-medium">short {s.requested - s.available}</span>

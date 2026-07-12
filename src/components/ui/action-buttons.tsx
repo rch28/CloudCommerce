@@ -59,7 +59,7 @@ const iconMap: Record<ActionType, React.ReactNode> = {
 };
 
 const hoverColorMap: Record<ActionType, string> = {
-  edit: "hover:text-[#F8FAFC]",
+  edit: "hover:text-foreground",
   view: "hover:text-blue-400",
   delete: "hover:text-rose-400",
   copy: "hover:text-cyan-400",
@@ -68,8 +68,8 @@ const hoverColorMap: Record<ActionType, string> = {
   publish: "hover:text-emerald-400",
   unpublish: "hover:text-amber-400",
   preview: "hover:text-blue-400",
-  history: "hover:text-[#F8FAFC]",
-  adjust: "hover:text-[#F8FAFC]",
+  history: "hover:text-foreground",
+  adjust: "hover:text-foreground",
 };
 
 export default function ActionButtons({ actions }: ActionButtonsProps) {
@@ -81,7 +81,7 @@ export default function ActionButtons({ actions }: ActionButtonsProps) {
             <button
               onClick={action.onClick}
               disabled={action.disabled}
-              className={`rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] ${hoverColorMap[action.type]} disabled:opacity-30 cursor-pointer`}
+              className={`rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-accent ${hoverColorMap[action.type]} disabled:opacity-30 cursor-pointer`}
             >
               {action.loading ? (
                 <Loader2 size={14} className="animate-spin" />

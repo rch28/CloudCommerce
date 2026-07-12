@@ -137,7 +137,7 @@ export default function AdminDashboardView() {
                 <XAxis dataKey="month" stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#A1A1AA" fontSize={12} tickFormatter={(v) => `$${v / 1000}k`} tickLine={false} axisLine={false} />
                 <Tooltip
-                  contentStyle={{ background: "#18181B", border: "1px solid #27272A", borderRadius: 8, color: "#F8FAFC" }}
+                  contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--foreground)" }}
                   cursor={{ fill: "#7C3AED11" }}
                 />
                 <Bar dataKey="revenue" fill="#7C3AED" radius={[6, 6, 0, 0]} barSize={36} />
@@ -164,7 +164,7 @@ export default function AdminDashboardView() {
                 <XAxis dataKey="month" stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip
-                  contentStyle={{ background: "#18181B", border: "1px solid #27272A", borderRadius: 8, color: "#F8FAFC" }}
+                  contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--foreground)" }}
                   cursor={{ stroke: "#27272A" }}
                 />
                 <Area type="monotone" dataKey="active" stroke="#7C3AED" strokeWidth={2.5} fill="url(#growthGrad)" name="Active" />
@@ -180,9 +180,9 @@ export default function AdminDashboardView() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 lg:col-span-3">
+        <div className="overflow-hidden rounded-xl border border-border bg-muted/50 lg:col-span-3">
           <div className="border-b border-border px-5 py-4">
-            <h3 className="font-semibold text-[#F8FAFC]">Recent Merchants</h3>
+            <h3 className="font-semibold text-foreground">Recent Merchants</h3>
           </div>
           {merchants.length > 0 ? (
             <div className="overflow-x-auto">
@@ -199,13 +199,13 @@ export default function AdminDashboardView() {
                 </thead>
                 <tbody className="divide-y divide-border/60">
                   {merchants.map((m) => (
-                    <tr key={m.id} className="transition-colors hover:bg-[#1E293B]">
-                      <td className="px-5 py-4 font-medium text-[#F8FAFC]">{m.name}</td>
+                    <tr key={m.id} className="transition-colors hover:bg-accent">
+                      <td className="px-5 py-4 font-medium text-foreground">{m.name}</td>
                       <td className="px-5 py-4 text-muted-foreground">{m.subdomain}.cloudcommerce.com</td>
                       <td className="px-5 py-4 font-medium text-[#8B5CF6]">{m.plan}</td>
                       <td className="px-5 py-4 text-muted-foreground">{m.orders.toLocaleString()}</td>
                       <td className="px-5 py-4"><Badge status={m.status} /></td>
-                      <td className="px-5 py-4 text-right font-semibold text-[#F8FAFC]">${m.revenue.toLocaleString()}</td>
+                      <td className="px-5 py-4 text-right font-semibold text-foreground">${m.revenue.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -230,7 +230,7 @@ export default function AdminDashboardView() {
                     {activityIcon(a.type)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm text-[#F8FAFC]">
+                    <p className="text-sm text-foreground">
                       {a.message}{a.user ? ` — ` : ""}
                       {a.user && <span className="font-medium text-[#8B5CF6]">{a.user}</span>}
                     </p>

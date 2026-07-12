@@ -46,7 +46,7 @@ export default function NotificationDropdown() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="relative rounded-lg border border-slate-800 bg-slate-900/60  p-2 text-muted-foreground transition-colors hover:text-[#F8FAFC]"
+        className="relative rounded-lg border border-border bg-muted/50  p-2 text-muted-foreground transition-colors hover:text-foreground"
       >
         <Bell size={17} />
         {unreadCount > 0 && (
@@ -57,9 +57,9 @@ export default function NotificationDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60  shadow-2xl shadow-black/40">
+        <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border border-border bg-muted/50  shadow-2xl shadow-black/10">
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
-            <h3 className="text-sm font-semibold text-[#F8FAFC]">Notifications</h3>
+            <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
@@ -83,7 +83,7 @@ export default function NotificationDropdown() {
                 <button
                   key={n.id}
                   onClick={() => { if (!n.readAt) markAsRead(n.id); }}
-                  className={`flex w-full gap-3 px-4 py-3 text-left transition-colors hover:bg-[#1E293B] ${
+                  className={`flex w-full gap-3 px-4 py-3 text-left transition-colors hover:bg-accent ${
                     n.readAt ? "opacity-60" : ""
                   }`}
                 >
@@ -91,7 +91,7 @@ export default function NotificationDropdown() {
                     {getIcon(n.type)}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-[#F8FAFC]">{n.title}</p>
+                    <p className="truncate text-sm font-medium text-foreground">{n.title}</p>
                     <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{n.body}</p>
                     <p className="mt-1 text-[10px] text-muted-foreground/60">{timeAgo(n.createdAt)}</p>
                   </div>

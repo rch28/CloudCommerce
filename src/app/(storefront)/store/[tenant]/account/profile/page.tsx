@@ -48,7 +48,7 @@ export default function AccountProfilePage({ params }: { params: Promise<{ tenan
         <div className="mb-6 h-4 w-48 animate-pulse rounded bg-border" />
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-14 animate-pulse rounded-lg border border-border bg-[#09090B]" />
+            <div key={i} className="h-14 animate-pulse rounded-lg border border-border bg-background" />
           ))}
         </div>
       </div>
@@ -57,40 +57,40 @@ export default function AccountProfilePage({ params }: { params: Promise<{ tenan
 
   return (
     <div className="rounded-xl border border-border bg-card p-6">
-      <h2 className="mb-4 text-lg font-semibold text-[#F8FAFC]">Profile</h2>
+      <h2 className="mb-4 text-lg font-semibold text-foreground">Profile</h2>
       <p className="mb-6 text-sm text-muted-foreground">Manage your account information.</p>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex items-center gap-3 rounded-lg border border-border bg-[#09090B] px-4 py-3">
+        <div className="flex items-center gap-3 rounded-lg border border-border bg-background px-4 py-3">
           <User size={16} className="text-muted-foreground shrink-0" />
           <div className="flex-1">
             <label className="text-xs text-muted-foreground">Name</label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-transparent text-sm text-[#F8FAFC] outline-none placeholder:text-muted-foreground"
+              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
               placeholder="Your name"
             />
           </div>
         </div>
-        <div className="flex items-center gap-3 rounded-lg border border-border bg-[#09090B] px-4 py-3">
+        <div className="flex items-center gap-3 rounded-lg border border-border bg-background px-4 py-3">
           <Mail size={16} className="text-muted-foreground shrink-0" />
           <div className="flex-1">
             <label className="text-xs text-muted-foreground">Email</label>
             <input
               value={email}
               disabled
-              className="w-full bg-transparent text-sm text-[#F8FAFC] outline-none placeholder:text-muted-foreground disabled:opacity-50"
+              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50"
             />
           </div>
         </div>
-        <div className="flex items-center gap-3 rounded-lg border border-border bg-[#09090B] px-4 py-3">
+        <div className="flex items-center gap-3 rounded-lg border border-border bg-background px-4 py-3">
           <Phone size={16} className="text-muted-foreground shrink-0" />
           <div className="flex-1">
             <label className="text-xs text-muted-foreground">Phone</label>
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full bg-transparent text-sm text-[#F8FAFC] outline-none placeholder:text-muted-foreground"
+              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
               placeholder="Optional"
             />
           </div>

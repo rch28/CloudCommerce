@@ -14,7 +14,7 @@ import Badge from "../Badge";
 import { merchants } from "@/data/mock";
 
 const planColor: Record<string, string> = {
-  Starter: "text-slate-300",
+  Starter: "text-muted-foreground",
   Growth: "text-cyan-400",
   Scale: "text-violet-400",
 };
@@ -32,7 +32,7 @@ export default function AdminView() {
         <StatCard label="Custom Domains" value="87" change={6.2} icon={Globe} accent="#f59e0b" />
       </div>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+      <div className="rounded-xl border border-border bg-muted/50 p-5">
         <h3 className="mb-4 font-semibold text-white">Revenue by Merchant</h3>
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={chartData}>
@@ -48,11 +48,11 @@ export default function AdminView() {
         </ResponsiveContainer>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
-        <h3 className="border-b border-slate-800 px-5 py-4 font-semibold text-white">All Merchants</h3>
+      <div className="overflow-hidden rounded-xl border border-border bg-muted/50">
+        <h3 className="border-b border-border px-5 py-4 font-semibold text-white">All Merchants</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-800 text-xs uppercase tracking-wide text-slate-500">
+            <thead className="border-b border-border text-xs uppercase tracking-wide text-slate-500">
               <tr>
                 <th className="px-5 py-3.5">Merchant</th>
                 <th className="px-5 py-3.5">Domain</th>
@@ -64,11 +64,11 @@ export default function AdminView() {
             </thead>
             <tbody className="divide-y divide-slate-800/70">
               {merchants.map((m) => (
-                <tr key={m.id} className="hover:bg-slate-800/40">
+                <tr key={m.id} className="hover:bg-accent/40">
                   <td className="px-5 py-4 font-medium text-white">{m.name}</td>
-                  <td className="px-5 py-4 text-slate-400">{m.subdomain}.cloudcommerce.com</td>
+                  <td className="px-5 py-4 text-muted-foreground">{m.subdomain}.cloudcommerce.com</td>
                   <td className={`px-5 py-4 font-medium ${planColor[m.plan]}`}>{m.plan}</td>
-                  <td className="px-5 py-4 text-slate-300">{m.orders.toLocaleString()}</td>
+                  <td className="px-5 py-4 text-muted-foreground">{m.orders.toLocaleString()}</td>
                   <td className="px-5 py-4"><Badge status={m.status} /></td>
                   <td className="px-5 py-4 text-right font-semibold text-white">${m.revenue.toLocaleString()}</td>
                 </tr>

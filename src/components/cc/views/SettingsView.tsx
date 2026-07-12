@@ -76,7 +76,7 @@ function Section({
     <div className="rounded-xl border border-border bg-card p-6">
       <div className="mb-5 flex items-center gap-2">
         <Icon size={18} className="text-primary" />
-        <h3 className="font-semibold text-[#F8FAFC]">{title}</h3>
+        <h3 className="font-semibold text-foreground">{title}</h3>
       </div>
       {children}
     </div>
@@ -326,7 +326,7 @@ export default function SettingsView() {
         className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
           activeTab === tab.id
             ? "bg-[#7C3AED] text-white"
-            : "text-muted-foreground hover:text-[#F8FAFC]"
+            : "text-muted-foreground hover:text-foreground"
         }`}
       >
         <Icon size={15} />
@@ -692,7 +692,7 @@ export default function SettingsView() {
       {activeTab === "users" && (
         <Section icon={Users} title="Users (Staff)">
           <div className="mb-6 rounded-lg border border-border bg-background p-4">
-            <p className="mb-3 text-sm font-medium text-[#F8FAFC]">
+            <p className="mb-3 text-sm font-medium text-foreground">
               Invite Staff Member
             </p>
             <div className="flex flex-wrap items-end gap-3">
@@ -764,7 +764,7 @@ export default function SettingsView() {
               ) : (
                 staff.map((m) => (
                   <TableRow key={m.id}>
-                    <TableCell className="text-[#F8FAFC]">{m.email}</TableCell>
+                    <TableCell className="text-foreground">{m.email}</TableCell>
                     <TableCell>
                       <Select
                         value={m.role}
@@ -786,7 +786,7 @@ export default function SettingsView() {
                             ? "bg-emerald-500/10 text-emerald-400"
                             : m.status === "invited"
                               ? "bg-amber-500/10 text-amber-400"
-                              : "bg-slate-500/10 text-slate-400"
+                              : "bg-slate-500/10 text-muted-foreground"
                         }`}
                       >
                         {m.status}
@@ -818,7 +818,7 @@ export default function SettingsView() {
                     <p className="text-sm font-medium text-emerald-400">
                       API Key Created
                     </p>
-                    <p className="mt-1 break-all font-mono text-sm text-[#F8FAFC]">
+                    <p className="mt-1 break-all font-mono text-sm text-foreground">
                       {newKey}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
@@ -836,7 +836,7 @@ export default function SettingsView() {
                   </div>
                   <button
                     onClick={() => setNewKey(null)}
-                    className="text-muted-foreground hover:text-[#F8FAFC]"
+                    className="text-muted-foreground hover:text-foreground"
                   >
                     <X size={16} />
                   </button>
@@ -845,7 +845,7 @@ export default function SettingsView() {
             )}
 
             <div className="rounded-lg border border-border bg-background p-4">
-              <p className="mb-3 text-sm font-medium text-[#F8FAFC]">
+              <p className="mb-3 text-sm font-medium text-foreground">
                 Create API Key
               </p>
               <div className="flex flex-wrap items-end gap-3">
@@ -915,7 +915,7 @@ export default function SettingsView() {
                   const isRevealed = revealedKeys.has(k.id);
                   return (
                     <TableRow key={k.id}>
-                      <TableCell className="text-[#F8FAFC]">{k.name}</TableCell>
+                      <TableCell className="text-foreground">{k.name}</TableCell>
                       <TableCell>
                         <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
                           {isRevealed ? k.fullKey || k.prefix : k.prefix}
@@ -928,7 +928,7 @@ export default function SettingsView() {
                               else next.add(k.id);
                               setRevealedKeys(next);
                             }}
-                            className="ml-2 text-muted-foreground hover:text-[#F8FAFC]"
+                            className="ml-2 text-muted-foreground hover:text-foreground"
                           >
                             <EyeOff size={13} />
                           </button>

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Store, Zap } from "lucide-react";
 import { authApi } from "@/services/auth.service";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const features = [
   {
@@ -81,6 +82,7 @@ export default function MarketingPage() {
             <span className="text-lg font-semibold">CloudCommerce</span>
           </div>
           <nav className="flex items-center gap-4">
+            <ThemeToggle />
             {loading ? null : session ? (
               <>
                 <Link href={session.role === "admin" ? "/admin" : "/merchant/dashboard"}>

@@ -57,7 +57,7 @@ export default function ProductFilters({
           className={`rounded-lg border px-3 py-1.5 text-sm transition-colors ${
             category === cat.id
               ? "border-[#7C3AED] bg-[#7C3AED]/20 text-[#7C3AED]"
-              : "border-border text-muted-foreground hover:border-[#7C3AED]/50 hover:text-[#F8FAFC]"
+              : "border-border text-muted-foreground hover:border-[#7C3AED]/50 hover:text-foreground"
           }`}
         >
           {cat.name}
@@ -70,7 +70,7 @@ export default function ProductFilters({
             e.preventDefault();
             router.push(buildUrl({ sort, minPrice, maxPrice }));
           }}
-          className="text-sm text-muted-foreground hover:text-[#F8FAFC] transition-colors"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           &times; Clear
         </a>
@@ -89,7 +89,7 @@ export default function ProductFilters({
               url.searchParams.delete("page");
               window.location.href = url.toString();
             }}
-            className="w-20 rounded-lg border border-border bg-card px-2 py-1.5 text-sm text-[#F8FAFC] outline-none"
+            className="w-20 rounded-lg border border-border bg-card px-2 py-1.5 text-sm text-foreground outline-none"
           />
           <span className="text-muted-foreground text-xs">&ndash;</span>
           <input
@@ -103,7 +103,7 @@ export default function ProductFilters({
               url.searchParams.delete("page");
               window.location.href = url.toString();
             }}
-            className="w-20 rounded-lg border border-border bg-card px-2 py-1.5 text-sm text-[#F8FAFC] outline-none"
+            className="w-20 rounded-lg border border-border bg-card px-2 py-1.5 text-sm text-foreground outline-none"
           />
         </div>
         <select
@@ -115,7 +115,7 @@ export default function ProductFilters({
             url.searchParams.delete("page");
             window.location.href = url.toString();
           }}
-          className="rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-[#F8FAFC] outline-none"
+          className="rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-foreground outline-none"
         >
           <option value="">Default</option>
           <option value="price_asc">Price: Low to High</option>

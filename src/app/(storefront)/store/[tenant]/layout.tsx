@@ -41,7 +41,7 @@ export default async function TenantLayout({ children, params }: { children: Rea
 
   return (
     <div
-      className="flex min-h-screen flex-col bg-[#09090B]"
+      className="flex min-h-screen flex-col bg-background"
       style={{
         "--brand-primary": brandPrimary,
         "--brand-secondary": brandSecondary,

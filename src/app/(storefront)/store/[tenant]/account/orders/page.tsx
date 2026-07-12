@@ -37,12 +37,12 @@ export default function AccountOrdersPage({ params }: { params: Promise<{ tenant
   if (loading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-[#F8FAFC]">Order History</h2>
+        <h2 className="text-lg font-semibold text-foreground">Order History</h2>
         {[1, 2, 3].map((i) => (
           <div key={i} className="animate-pulse rounded-xl border border-border bg-card p-4">
-            <div className="mb-2 h-4 w-1/3 rounded bg-[#18181B]" />
-            <div className="mb-1 h-3 w-1/2 rounded bg-[#18181B]" />
-            <div className="h-3 w-1/4 rounded bg-[#18181B]" />
+            <div className="mb-2 h-4 w-1/3 rounded bg-muted/70" />
+            <div className="mb-1 h-3 w-1/2 rounded bg-muted/70" />
+            <div className="h-3 w-1/4 rounded bg-muted/70" />
           </div>
         ))}
       </div>
@@ -51,7 +51,7 @@ export default function AccountOrdersPage({ params }: { params: Promise<{ tenant
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-[#F8FAFC]">Order History</h2>
+      <h2 className="text-lg font-semibold text-foreground">Order History</h2>
       {orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-16 text-center">
           <Package size={48} className="text-muted-foreground mb-4" />
@@ -67,7 +67,7 @@ export default function AccountOrdersPage({ params }: { params: Promise<{ tenant
           <Link key={order.id} href={`/store/${tenant}/account/orders/${order.id}`} className="flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:border-[#7C3AED]/50">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-sm font-medium text-[#F8FAFC]">#{order.number}</span>
+                <span className="font-mono text-sm font-medium text-foreground">#{order.number}</span>
                 <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${statusColors[order.status] || "text-muted-foreground bg-muted/10"}`}>
                   {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                 </span>

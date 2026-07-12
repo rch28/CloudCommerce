@@ -54,7 +54,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
           isActive
             ? "bg-gradient-to-r from-violet-600/90 to-violet-700/70 text-white shadow-lg shadow-violet-900/30"
-            : "text-slate-400 hover:bg-slate-800/70 hover:text-white"
+            : "text-muted-foreground hover:bg-accent/70 hover:text-white"
         }`}
       >
         <Icon size={18} />
@@ -67,7 +67,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     <>
       {open && <div className="fixed inset-0 z-30 bg-black/60 lg:hidden" onClick={onClose} />}
       <aside
-        className={`fixed z-40 flex h-full w-64 flex-col border-r border-slate-800 bg-slate-950 transition-transform lg:static lg:translate-x-0 ${
+        className={`fixed z-40 flex h-full w-64 flex-col border-r border-border bg-background transition-transform lg:static lg:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -81,7 +81,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               <p className="mt-1 text-[11px] text-slate-500">{storeLabel}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-slate-400 lg:hidden">
+          <button onClick={onClose} className="text-muted-foreground lg:hidden">
             <X size={20} />
           </button>
         </div>
@@ -104,8 +104,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
         <div className="m-3 rounded-xl border border-violet-800/40 bg-gradient-to-br from-violet-900/40 to-slate-900 p-4">
           <p className="text-sm font-semibold text-white">{session?.plan || "Scale"} Plan</p>
-          <p className="mt-1 text-xs text-slate-400">Real-time sync · Unlimited products</p>
-          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+          <p className="mt-1 text-xs text-muted-foreground">Real-time sync · Unlimited products</p>
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
             <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500" />
           </div>
           <p className="mt-2 text-[11px] text-slate-500">7,500 / 10,000 orders this month</p>

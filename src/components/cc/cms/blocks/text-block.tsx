@@ -11,8 +11,8 @@ interface TextBlockProps {
 export default function TextBlock({ content, onChange }: TextBlockProps) {
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
-        <div className="mb-4 flex items-center gap-2 text-sm text-slate-400">
+      <div className="rounded-xl border border-border bg-muted/50 p-6">
+        <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
           <Type size={16} /> Text Section
         </div>
         <div className="space-y-3">
@@ -27,9 +27,9 @@ export default function TextBlock({ content, onChange }: TextBlockProps) {
           </div>
         </div>
       </div>
-      <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-4">
+      <div className="rounded-xl border border-border bg-muted/30 p-4">
         <p className="mb-2 text-xs font-medium text-slate-500">Preview</p>
-        <div className="prose prose-invert prose-sm max-w-none rounded-lg bg-slate-800/50 p-4">
+        <div className="prose prose-invert prose-sm max-w-none rounded-lg bg-muted/50 p-4">
           <div dangerouslySetInnerHTML={{ __html: (content.body as string) || "<p>Your text content will appear here.</p>" }} />
         </div>
       </div>

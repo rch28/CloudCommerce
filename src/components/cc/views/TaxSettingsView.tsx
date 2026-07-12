@@ -177,8 +177,8 @@ export default function TaxSettingsView() {
             onClick={() => setTab("zones")}
             className={`pb-3 text-sm font-medium transition-colors border-b-2 ${
               tab === "zones"
-                ? "border-[#7C3AED] text-[#F8FAFC]"
-                : "border-transparent text-muted-foreground hover:text-[#F8FAFC]"
+                ? "border-[#7C3AED] text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <Globe size={15} className="inline mr-1.5" />
@@ -188,8 +188,8 @@ export default function TaxSettingsView() {
             onClick={() => setTab("rates")}
             className={`pb-3 text-sm font-medium transition-colors border-b-2 ${
               tab === "rates"
-                ? "border-[#7C3AED] text-[#F8FAFC]"
-                : "border-transparent text-muted-foreground hover:text-[#F8FAFC]"
+                ? "border-[#7C3AED] text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <Percent size={15} className="inline mr-1.5" />
@@ -199,8 +199,8 @@ export default function TaxSettingsView() {
             onClick={() => setTab("settings")}
             className={`pb-3 text-sm font-medium transition-colors border-b-2 ${
               tab === "settings"
-                ? "border-[#7C3AED] text-[#F8FAFC]"
-                : "border-transparent text-muted-foreground hover:text-[#F8FAFC]"
+                ? "border-[#7C3AED] text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <Settings size={15} className="inline mr-1.5" />
@@ -259,7 +259,7 @@ export default function TaxSettingsView() {
                 <div key={zone.id} className="rounded-xl border border-border bg-card p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-medium text-[#F8FAFC]">{zone.name}</h3>
+                      <h3 className="font-medium text-foreground">{zone.name}</h3>
                       <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-purple-500/10 text-purple-400 capitalize">{zone.type}</span>
                       {!zone.isActive && (
                         <span className="px-2 py-0.5 rounded bg-muted text-[10px] text-muted-foreground">Inactive</span>
@@ -271,7 +271,7 @@ export default function TaxSettingsView() {
                           setEditingZone(zone);
                           setZoneDialog(true);
                         }}
-                        className="p-1.5 text-muted-foreground hover:text-[#F8FAFC] transition-colors"
+                        className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <Pencil size={14} />
                       </button>
@@ -335,7 +335,7 @@ export default function TaxSettingsView() {
                   <div className="flex items-center gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-[#F8FAFC] text-sm">{rate.name}</h3>
+                        <h3 className="font-medium text-foreground text-sm">{rate.name}</h3>
                         <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${
                           rate.type === "percentage"
                             ? "bg-blue-500/10 text-blue-400"
@@ -358,7 +358,7 @@ export default function TaxSettingsView() {
                         setEditingRate(rate);
                         setRateDialog(true);
                       }}
-                      className="p-1.5 text-muted-foreground hover:text-[#F8FAFC] transition-colors"
+                      className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
                     >
                       <Pencil size={14} />
                     </button>
@@ -378,7 +378,7 @@ export default function TaxSettingsView() {
 
       {tab === "settings" && (
         <div className="rounded-xl border border-border bg-card p-6 space-y-4 max-w-md">
-          <h3 className="font-semibold text-[#F8FAFC] flex items-center gap-2">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
             <Settings size={16} /> Tax Provider
           </h3>
           <p className="text-sm text-muted-foreground">
@@ -389,7 +389,7 @@ export default function TaxSettingsView() {
             <select
               value={provider}
               onChange={(e) => setProvider(e.target.value)}
-              className="mt-1.5 w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+              className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
             >
               {PROVIDERS.map((p) => (
                 <option key={p.value} value={p.value}>{p.label}</option>
@@ -422,7 +422,7 @@ export default function TaxSettingsView() {
               <select
                 value={editingZone?.type ?? "country"}
                 onChange={(e) => setEditingZone((prev) => ({ ...prev!, type: e.target.value }))}
-                className="mt-1.5 w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
               >
                 {TAX_TYPES.map((t) => (
                   <option key={t} value={t} className="capitalize">{t}</option>
@@ -494,7 +494,7 @@ export default function TaxSettingsView() {
               <select
                 value={editingRate?.zoneId ?? ""}
                 onChange={(e) => setEditingRate((prev) => ({ ...prev!, zoneId: e.target.value }))}
-                className="mt-1.5 w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
               >
                 <option value="">Select zone</option>
                 {zones.map((z) => (
@@ -507,7 +507,7 @@ export default function TaxSettingsView() {
               <select
                 value={editingRate?.type ?? "percentage"}
                 onChange={(e) => setEditingRate((prev) => ({ ...prev!, type: e.target.value }))}
-                className="mt-1.5 w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
               >
                 {RATE_TYPES.map((t) => (
                   <option key={t} value={t} className="capitalize">{t}</option>

@@ -88,7 +88,7 @@ export default function CategoryForm({ open, onOpenChange, category, categories,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg border-border bg-card text-[#F8FAFC]">
+      <DialogContent className="max-w-lg border-border bg-card text-foreground">
         <DialogHeader>
           <DialogTitle>{category ? "Edit Category" : "Add Category"}</DialogTitle>
           <DialogDescription className="text-muted-foreground">
@@ -100,12 +100,12 @@ export default function CategoryForm({ open, onOpenChange, category, categories,
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name <span className="text-red-500">*</span></Label>
-              <Input id="name" className="border-border bg-background text-[#F8FAFC]" {...form.register("name")} />
+              <Input id="name" className="border-border bg-background text-foreground" {...form.register("name")} />
               {errors.name && <p className="text-xs text-rose-400">{errors.name}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="slug">Slug <span className="text-red-500">*</span></Label>
-              <Input id="slug" className="border-border bg-background text-[#F8FAFC]" {...form.register("slug")} />
+              <Input id="slug" className="border-border bg-background text-foreground" {...form.register("slug")} />
               {errors.slug && <p className="text-xs text-rose-400">{errors.slug}</p>}
             </div>
           </div>
@@ -115,14 +115,14 @@ export default function CategoryForm({ open, onOpenChange, category, categories,
             <textarea
               id="description"
               rows={3}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
               {...form.register("description")}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="image">Image URL</Label>
-            <Input id="image" className="border-border bg-background text-[#F8FAFC]" placeholder="https://..." {...form.register("image")} />
+            <Input id="image" className="border-border bg-background text-foreground" placeholder="https://..." {...form.register("image")} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -130,7 +130,7 @@ export default function CategoryForm({ open, onOpenChange, category, categories,
               <Label htmlFor="parentId">Parent Category</Label>
               <select
                 id="parentId"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                 {...form.register("parentId")}
               >
                 <option value="">None (top level)</option>
@@ -143,7 +143,7 @@ export default function CategoryForm({ open, onOpenChange, category, categories,
               <Label htmlFor="status">Status</Label>
               <select
                 id="status"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                 {...form.register("status")}
               >
                 <option value="active">Active</option>
@@ -157,7 +157,7 @@ export default function CategoryForm({ open, onOpenChange, category, categories,
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC]"
+              className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
               Cancel
             </button>

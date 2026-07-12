@@ -25,7 +25,7 @@ export default function EmptyState({ icon: Icon = Inbox, title, description, mes
       <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
         <Icon size={28} className="text-muted-foreground" />
       </div>
-      <h3 className="mb-1 text-lg font-semibold text-[#F8FAFC]">{title}</h3>
+      <h3 className="mb-1 text-lg font-semibold text-foreground">{title}</h3>
       {description && <p className="mb-6 max-w-sm text-center text-sm text-muted-foreground">{description}</p>}
       {action}
     </div>

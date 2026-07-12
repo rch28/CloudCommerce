@@ -42,7 +42,7 @@ export default function MetricWidget({
             <p className="text-sm font-medium text-muted-foreground">{label}</p>
             {polling && <span className="h-1.5 w-1.5 rounded-full bg-[#7C3AED] animate-pulse" />}
           </div>
-          <p className="text-2xl font-bold tracking-tight text-[#F8FAFC]">{value}</p>
+          <p className="text-2xl font-bold tracking-tight text-foreground">{value}</p>
         </div>
         {Icon && (
           <div

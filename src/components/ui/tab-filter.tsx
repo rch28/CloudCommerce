@@ -25,7 +25,7 @@ function TabFilter({ options, value, onChange }: TabFilterProps) {
             "rounded-lg px-3.5 py-1.5 text-sm font-medium capitalize transition-all cursor-pointer",
             value === option.value
               ? "bg-primary text-primary-foreground"
-              : "border border-border bg-card text-muted-foreground hover:text-[#F8FAFC]"
+              : "border border-border bg-card text-muted-foreground hover:text-foreground"
           )}
         >
           {option.label}

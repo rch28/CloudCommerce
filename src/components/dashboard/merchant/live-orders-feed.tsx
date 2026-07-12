@@ -83,7 +83,7 @@ export default function LiveOrdersFeed() {
   const { events, connected, error, clearEvents } = useOrderWebSocket();
 
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-900/60">
+    <div className="rounded-lg border border-border bg-muted/50">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-foreground">Live Orders</h3>

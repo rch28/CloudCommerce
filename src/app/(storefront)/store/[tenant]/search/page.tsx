@@ -36,7 +36,7 @@ export default async function SearchPage({
   if (!query) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-24 text-center">
-        <h1 className="text-2xl font-bold text-[#F8FAFC]">Search</h1>
+        <h1 className="text-2xl font-bold text-foreground">Search</h1>
         <p className="mt-2 text-muted-foreground">Enter a search term to find products.</p>
       </div>
     );
@@ -47,7 +47,7 @@ export default async function SearchPage({
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#F8FAFC]">
+        <h1 className="text-3xl font-bold text-foreground">
           Search results for &ldquo;{query}&rdquo;
         </h1>
         <p className="mt-1 text-muted-foreground">{result.total} result{result.total !== 1 ? "s" : ""}</p>
@@ -83,7 +83,7 @@ export default async function SearchPage({
               {page > 1 && (
                 <Link
                   href={`/store/${tenant}/search?q=${encodeURIComponent(query)}&page=${page - 1}`}
-                  className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-[#F8FAFC]"
+                  className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   &larr; Previous
                 </Link>
@@ -94,7 +94,7 @@ export default async function SearchPage({
               {page < result.totalPages && (
                 <Link
                   href={`/store/${tenant}/search?q=${encodeURIComponent(query)}&page=${page + 1}`}
-                  className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-[#F8FAFC]"
+                  className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Next &rarr;
                 </Link>

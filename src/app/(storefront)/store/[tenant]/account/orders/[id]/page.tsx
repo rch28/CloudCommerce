@@ -69,14 +69,14 @@ export default function AccountOrderDetailPage({ params }: { params: Promise<{ t
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="mb-6 h-4 w-24 animate-pulse rounded bg-[#18181B]" />
-        <div className="mb-4 h-6 w-1/3 animate-pulse rounded bg-[#18181B]" />
-        <div className="h-3 w-1/4 animate-pulse rounded bg-[#18181B]" />
+        <div className="mb-6 h-4 w-24 animate-pulse rounded bg-muted/70" />
+        <div className="mb-4 h-6 w-1/3 animate-pulse rounded bg-muted/70" />
+        <div className="h-3 w-1/4 animate-pulse rounded bg-muted/70" />
         <div className="mt-6 space-y-3">
           {[1, 2].map((i) => (
             <div key={i} className="animate-pulse rounded-xl border border-border bg-card p-4">
-              <div className="mb-2 h-4 w-2/3 rounded bg-[#18181B]" />
-              <div className="h-3 w-1/3 rounded bg-[#18181B]" />
+              <div className="mb-2 h-4 w-2/3 rounded bg-muted/70" />
+              <div className="h-3 w-1/3 rounded bg-muted/70" />
             </div>
           ))}
         </div>
@@ -88,12 +88,12 @@ export default function AccountOrderDetailPage({ params }: { params: Promise<{ t
 
   return (
     <div className="space-y-6">
-      <Link href={base} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-[#F8FAFC] transition-colors">
+      <Link href={base} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft size={14} /> Back to orders
       </Link>
 
       <div className="flex items-center gap-3">
-        <h2 className="text-lg font-semibold text-[#F8FAFC] font-mono">#{order.number}</h2>
+        <h2 className="text-lg font-semibold text-foreground font-mono">#{order.number}</h2>
         <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${statusColors[order.status] || "text-muted-foreground bg-muted/10"}`}>
           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
         </span>
@@ -102,11 +102,11 @@ export default function AccountOrderDetailPage({ params }: { params: Promise<{ t
       <p className="text-sm text-muted-foreground">Placed on {new Date(order.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
 
       <div>
-        <h3 className="mb-3 text-sm font-medium text-[#F8FAFC]">Items ({order.items.length})</h3>
+        <h3 className="mb-3 text-sm font-medium text-foreground">Items ({order.items.length})</h3>
         <div className="divide-y divide-border rounded-xl border border-border bg-card">
           {order.items.map((item) => (
             <div key={item.id} className="flex items-center gap-4 p-4">
-              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-[#18181B]">
+              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-muted/70">
                 {item.image ? (
                   <img src={item.image} alt={item.productName} className="h-full w-full object-cover" />
                 ) : (
@@ -116,11 +116,11 @@ export default function AccountOrderDetailPage({ params }: { params: Promise<{ t
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-[#F8FAFC] truncate">{item.productName}</p>
+                <p className="text-sm font-medium text-foreground truncate">{item.productName}</p>
                 <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>
               </div>
               <div className="text-right text-sm">
-                <p className="text-[#F8FAFC]">${item.price.toFixed(2)}</p>
+                <p className="text-foreground">${item.price.toFixed(2)}</p>
                 <p className="text-xs text-muted-foreground">x{item.quantity}</p>
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function AccountOrderDetailPage({ params }: { params: Promise<{ t
       </div>
 
       <div className="rounded-xl border border-border bg-card p-4">
-        <h3 className="mb-3 text-sm font-medium text-[#F8FAFC]">Order Summary</h3>
+        <h3 className="mb-3 text-sm font-medium text-foreground">Order Summary</h3>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between text-muted-foreground">
             <span>Subtotal</span>
@@ -143,7 +143,7 @@ export default function AccountOrderDetailPage({ params }: { params: Promise<{ t
             <span>Tax</span>
             <span>${order.tax.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-[#F8FAFC]">
+          <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-foreground">
             <span>Total</span>
             <span>${order.total.toFixed(2)}</span>
           </div>
@@ -152,9 +152,9 @@ export default function AccountOrderDetailPage({ params }: { params: Promise<{ t
 
       {order.address && (
         <div className="rounded-xl border border-border bg-card p-4">
-          <h3 className="mb-3 text-sm font-medium text-[#F8FAFC]">Shipping Address</h3>
+          <h3 className="mb-3 text-sm font-medium text-foreground">Shipping Address</h3>
           <div className="text-sm text-muted-foreground space-y-0.5">
-            <p className="font-medium text-[#F8FAFC]">{order.address.label}</p>
+            <p className="font-medium text-foreground">{order.address.label}</p>
             <p>{order.address.line1}</p>
             {order.address.line2 && <p>{order.address.line2}</p>}
             <p>{order.address.city}, {order.address.state} {order.address.zip}</p>
@@ -165,7 +165,7 @@ export default function AccountOrderDetailPage({ params }: { params: Promise<{ t
 
       {order.notes && (
         <div className="rounded-xl border border-border bg-card p-4">
-          <h3 className="mb-2 text-sm font-medium text-[#F8FAFC]">Notes</h3>
+          <h3 className="mb-2 text-sm font-medium text-foreground">Notes</h3>
           <p className="text-sm text-muted-foreground">{order.notes}</p>
         </div>
       )}

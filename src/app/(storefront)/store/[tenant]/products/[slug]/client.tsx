@@ -67,17 +67,17 @@ export default function ProductDetailClient({ tenant, product, inventoryMap }: {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href={`${base}/products`} className="hover:text-[#F8FAFC] transition-colors">Products</Link>
+        <Link href={`${base}/products`} className="hover:text-foreground transition-colors">Products</Link>
         <span>/</span>
-        {product.category && <><Link href={`${base}/products?category=${product.category.name}`} className="hover:text-[#F8FAFC] transition-colors">{product.category.name}</Link><span>/</span></>}
-        <span className="text-[#F8FAFC]">{product.name}</span>
+        {product.category && <><Link href={`${base}/products?category=${product.category.name}`} className="hover:text-foreground transition-colors">{product.category.name}</Link><span>/</span></>}
+        <span className="text-foreground">{product.name}</span>
       </nav>
 
       <p className={`mb-2 text-xs font-medium ${status.color}`}>{status.label}</p>
 
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="space-y-3">
-          <div className="relative aspect-square overflow-hidden rounded-xl bg-[#18181B]">
+          <div className="relative aspect-square overflow-hidden rounded-xl bg-muted">
             {images[selectedImage] ? (
               <Image
                 src={images[selectedImage]}
@@ -94,7 +94,7 @@ export default function ProductDetailClient({ tenant, product, inventoryMap }: {
           {images.length > 1 && (
             <div className="flex gap-2">
               {images.map((img, i) => (
-                <button key={i} onClick={() => setSelectedImage(i)} className={`relative h-16 w-16 overflow-hidden rounded-lg border bg-[#18181B] ${i === selectedImage ? "border-[#7C3AED]" : "border-border"}`}>
+                <button key={i} onClick={() => setSelectedImage(i)} className={`relative h-16 w-16 overflow-hidden rounded-lg border bg-muted ${i === selectedImage ? "border-[#7C3AED]" : "border-border"}`}>
                   {img ? (
                     <Image src={img} alt="" fill sizes="64px" className="object-cover" />
                   ) : (
@@ -108,14 +108,14 @@ export default function ProductDetailClient({ tenant, product, inventoryMap }: {
 
         <div className="flex flex-col">
           <p className="text-xs text-[#8B5CF6]">{product.category?.name ?? "General"}</p>
-          <h1 className="mt-1 text-3xl font-bold text-[#F8FAFC]">{product.name}</h1>
+          <h1 className="mt-1 text-3xl font-bold text-foreground">{product.name}</h1>
           <div className="mt-2 flex items-center gap-3 text-sm">
             <span className="flex items-center gap-1 text-amber-400"><Star size={14} fill="currentColor" /> {((product.sold ?? 0) % 45 + 1) / 10}</span>
             <span className="text-muted-foreground">({product.sold ?? 0} sold)</span>
           </div>
 
           <div className="mt-4 flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-[#F8FAFC]">${selectedVariant.price.toFixed(2)}</span>
+            <span className="text-3xl font-bold text-foreground">${selectedVariant.price.toFixed(2)}</span>
             {selectedVariant.comparePrice && (
               <span className="text-lg text-muted-foreground line-through">${selectedVariant.comparePrice.toFixed(2)}</span>
             )}
@@ -123,7 +123,7 @@ export default function ProductDetailClient({ tenant, product, inventoryMap }: {
 
           {product.variants.length > 1 && (
             <div className="mt-6">
-              <p className="mb-2 text-sm text-muted-foreground">Variant: <span className="text-[#F8FAFC]">{selectedVariant.name}</span></p>
+              <p className="mb-2 text-sm text-muted-foreground">Variant: <span className="text-foreground">{selectedVariant.name}</span></p>
               <div className="flex flex-wrap gap-2">
                 {product.variants.map((v) => {
                   const vInv = inventoryMap[v.id];
@@ -134,7 +134,7 @@ export default function ProductDetailClient({ tenant, product, inventoryMap }: {
                       className={`rounded-lg border px-4 py-2 text-sm transition-colors ${
                         selectedVariant.id === v.id
                           ? "border-[#7C3AED] bg-[#7C3AED]/20 text-[#7C3AED]"
-                          : "border-border text-muted-foreground hover:border-[#7C3AED]/50 hover:text-[#F8FAFC]"
+                          : "border-border text-muted-foreground hover:border-[#7C3AED]/50 hover:text-foreground"
                       } disabled:cursor-not-allowed disabled:opacity-30`}
                     >
                       {v.name} — ${v.price.toFixed(2)}
@@ -151,9 +151,9 @@ export default function ProductDetailClient({ tenant, product, inventoryMap }: {
 
           <div className="mt-6 flex items-center gap-4">
             <div className="flex items-center rounded-lg border border-border">
-              <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 text-muted-foreground hover:text-[#F8FAFC] transition-colors"><Minus size={14} /></button>
-              <span className="w-10 text-center text-sm text-[#F8FAFC]">{quantity}</span>
-              <button onClick={() => setQuantity(quantity + 1)} className="p-2 text-muted-foreground hover:text-[#F8FAFC] transition-colors"><Plus size={14} /></button>
+              <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 text-muted-foreground hover:text-foreground transition-colors"><Minus size={14} /></button>
+              <span className="w-10 text-center text-sm text-foreground">{quantity}</span>
+              <button onClick={() => setQuantity(quantity + 1)} className="p-2 text-muted-foreground hover:text-foreground transition-colors"><Plus size={14} /></button>
             </div>
             <Button
               onClick={handleAdd}

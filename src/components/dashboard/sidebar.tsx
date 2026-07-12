@@ -81,7 +81,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       <aside
         className={cn(
           "fixed z-40 flex h-full w-64 flex-col border-r border-border transition-transform duration-300 ease-in-out lg:static lg:translate-x-0",
-          "bg-[#111827]",
+          "bg-sidebar-background",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -91,11 +91,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               <Zap size={17} className="text-white" fill="white" />
             </div>
             <div>
-              <p className="text-sm font-bold leading-none text-[#F8FAFC]">CloudCommerce</p>
+              <p className="text-sm font-bold leading-none text-foreground">CloudCommerce</p>
               <p className="mt-1 text-[11px] text-muted-foreground">{storeLabel}</p>
             </div>
           </div>
-          <button onClick={onClose} className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC] lg:hidden">
+          <button onClick={onClose} className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground lg:hidden">
             <X size={18} />
           </button>
         </div>
@@ -117,7 +117,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         </nav>
 
         <div className="mx-3 mb-3 mt-auto rounded-xl border border-[#7C3AED]/20 bg-gradient-to-br from-[#7C3AED]/10 to-transparent p-4">
-          <p className="text-sm font-semibold text-[#F8FAFC]">{session?.plan || "Starter"} Plan</p>
+          <p className="text-sm font-semibold text-foreground">{session?.plan || "Starter"} Plan</p>
           <p className="mt-1 text-xs text-muted-foreground">Logged in as {isAdmin ? "Admin" : "Merchant"}</p>
           <button
             onClick={() => window.open(`/store/demo`, "_blank")}

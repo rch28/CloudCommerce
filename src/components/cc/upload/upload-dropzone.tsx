@@ -83,7 +83,7 @@ export default function UploadDropzone({ onUpload, path = "products", maxSize = 
         className={`relative cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all duration-200 ${
           dragging
             ? "border-[#7C3AED] bg-[#7C3AED]/10"
-            : "border-border hover:border-[#7C3AED]/50 hover:bg-[#1E293B]/50"
+            : "border-border hover:border-[#7C3AED]/50 hover:bg-accent/50"
         } ${uploading ? "pointer-events-none opacity-60" : ""}`}
       >
         <input
@@ -104,7 +104,7 @@ export default function UploadDropzone({ onUpload, path = "products", maxSize = 
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#7C3AED]/10">
               <Upload size={22} className="text-[#7C3AED]" />
             </div>
-            <p className="text-sm font-medium text-[#F8FAFC]">
+            <p className="text-sm font-medium text-foreground">
               {dragging ? "Drop to upload" : "Drag & drop or click to upload"}
             </p>
             <p className="text-xs text-muted-foreground">

@@ -28,7 +28,7 @@ export default function TimeFilter({ value, onChange, showCustom = true }: TimeF
             className={`px-3 py-1.5 text-xs font-medium transition-colors ${
               value === opt.value
                 ? "bg-[#7C3AED] text-white"
-                : "text-muted-foreground hover:text-[#F8FAFC] hover:bg-card"
+                : "text-muted-foreground hover:text-foreground hover:bg-card"
             }`}
           >
             {opt.label}
@@ -40,13 +40,13 @@ export default function TimeFilter({ value, onChange, showCustom = true }: TimeF
           <input
             type="date"
             onChange={(e) => onChange("custom", e.target.value, undefined)}
-            className="rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-[#F8FAFC] outline-none"
+            className="rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground outline-none"
           />
           <span className="text-xs text-muted-foreground">to</span>
           <input
             type="date"
             onChange={(e) => onChange("custom", undefined, e.target.value)}
-            className="rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-[#F8FAFC] outline-none"
+            className="rounded-lg border border-border bg-card px-2 py-1.5 text-xs text-foreground outline-none"
           />
         </div>
       )}

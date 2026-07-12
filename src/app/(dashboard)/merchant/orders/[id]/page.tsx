@@ -192,11 +192,11 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/merchant/orders" className="rounded-lg p-1.5 text-muted-foreground hover:text-[#F8FAFC] transition-colors">
+        <Link href="/merchant/orders" className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft size={18} />
         </Link>
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold text-[#F8FAFC] font-mono">#{order.number}</h1>
+          <h1 className="text-xl font-bold text-foreground font-mono">#{order.number}</h1>
           <Badge status={order.status} />
         </div>
       </div>
@@ -210,11 +210,11 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <div className="rounded-xl border border-border bg-card p-5">
-            <h2 className="text-sm font-semibold text-[#F8FAFC] mb-4">Items ({order.items.length})</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-4">Items ({order.items.length})</h2>
             <div className="divide-y divide-border">
               {order.items.map((item) => (
                 <div key={item.id} className="flex items-center gap-4 py-3 text-sm">
-                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#18181B]">
+                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
                     {item.image ? (
                       <img src={item.image} alt={item.productName} className="h-full w-full object-cover" />
                     ) : (
@@ -224,11 +224,11 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-[#F8FAFC] truncate">{item.productName}</p>
+                    <p className="font-medium text-foreground truncate">{item.productName}</p>
                     <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[#F8FAFC] font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="text-foreground font-medium">${(item.price * item.quantity).toFixed(2)}</p>
                     <p className="text-xs text-muted-foreground">{item.quantity} × ${item.price.toFixed(2)}</p>
                   </div>
                 </div>
@@ -237,7 +237,7 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5">
-            <h2 className="text-sm font-semibold text-[#F8FAFC] mb-3">Order Summary</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3">Order Summary</h2>
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between text-muted-foreground">
                 <span>Subtotal</span>
@@ -251,7 +251,7 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
                 <span>Tax</span>
                 <span>${order.tax.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-[#F8FAFC]">
+              <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-foreground">
                 <span>Total</span>
                 <span>${order.total.toFixed(2)}</span>
               </div>
@@ -259,16 +259,16 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
             {order.notes && (
               <div className="mt-3 border-t border-border pt-3">
                 <p className="text-xs text-muted-foreground mb-1">Notes</p>
-                <p className="text-sm text-[#F8FAFC]">{order.notes}</p>
+                <p className="text-sm text-foreground">{order.notes}</p>
               </div>
             )}
           </div>
 
           {order.address && (
             <div className="rounded-xl border border-border bg-card p-5">
-              <h2 className="text-sm font-semibold text-[#F8FAFC] mb-3">Shipping Address</h2>
+              <h2 className="text-sm font-semibold text-foreground mb-3">Shipping Address</h2>
               <div className="text-sm text-muted-foreground space-y-0.5">
-                <p className="font-medium text-[#F8FAFC]">{order.address.label}</p>
+                <p className="font-medium text-foreground">{order.address.label}</p>
                 <p>{order.address.line1}</p>
                 {order.address.line2 && <p>{order.address.line2}</p>}
                 <p>{order.address.city}, {order.address.state} {order.address.zip}</p>
@@ -278,7 +278,7 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
           )}
 
           <div className="rounded-xl border border-border bg-card p-5">
-            <h2 className="text-sm font-semibold text-[#F8FAFC] mb-3">Timeline</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3">Timeline</h2>
             {order.timeline.length === 0 ? (
               <p className="text-sm text-muted-foreground">No timeline entries</p>
             ) : (
@@ -296,7 +296,7 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-[#F8FAFC] capitalize">
+                      <p className="text-sm font-medium text-foreground capitalize">
                         {entry.action === "created" ? "Order Created" : "Status Updated"}
                       </p>
                       {entry.changes && (() => {
@@ -326,10 +326,10 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
 
         <div className="space-y-6">
           <div className="rounded-xl border border-border bg-card p-5">
-            <h2 className="text-sm font-semibold text-[#F8FAFC] mb-3">Customer</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3">Customer</h2>
             {order.customer ? (
               <div className="space-y-1.5 text-sm">
-                <p className="font-medium text-[#F8FAFC]">{order.customer.name}</p>
+                <p className="font-medium text-foreground">{order.customer.name}</p>
                 <p className="text-muted-foreground">{order.customer.email}</p>
                 {order.customer.phone && <p className="text-muted-foreground">{order.customer.phone}</p>}
               </div>
@@ -340,30 +340,30 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
 
           {order.stripeSessionId && (
             <div className="rounded-xl border border-border bg-card p-5">
-              <h2 className="text-sm font-semibold text-[#F8FAFC] mb-3">Payment</h2>
+              <h2 className="text-sm font-semibold text-foreground mb-3">Payment</h2>
               <div className="space-y-1.5 text-sm text-muted-foreground">
                 {order.paymentIntentId && (
                   <div>
                     <p className="text-xs text-muted-foreground">Payment Intent</p>
-                    <p className="font-mono text-xs text-[#F8FAFC] break-all">{order.paymentIntentId}</p>
+                    <p className="font-mono text-xs text-foreground break-all">{order.paymentIntentId}</p>
                   </div>
                 )}
                 {order.chargeId && (
                   <div>
                     <p className="text-xs text-muted-foreground">Charge ID</p>
-                    <p className="font-mono text-xs text-[#F8FAFC] break-all">{order.chargeId}</p>
+                    <p className="font-mono text-xs text-foreground break-all">{order.chargeId}</p>
                   </div>
                 )}
                 <div>
                   <p className="text-xs text-muted-foreground">Stripe Session</p>
-                  <p className="font-mono text-xs text-[#F8FAFC] break-all">{order.stripeSessionId}</p>
+                  <p className="font-mono text-xs text-foreground break-all">{order.stripeSessionId}</p>
                 </div>
               </div>
             </div>
           )}
 
           <div className="rounded-xl border border-border bg-card p-5">
-            <h2 className="text-sm font-semibold text-[#F8FAFC] mb-3">Actions</h2>
+            <h2 className="text-sm font-semibold text-foreground mb-3">Actions</h2>
             {validTransitions.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground">Update Status</p>
@@ -409,7 +409,7 @@ export default function MerchantOrderDetailPage({ params }: { params: Promise<{ 
               <button
                 disabled={actionLoading === "resend"}
                 onClick={handleResendConfirmation}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium text-[#F8FAFC] hover:bg-[#1E293B] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {actionLoading === "resend" ? (
                   <Loader2 size={14} className="animate-spin" />

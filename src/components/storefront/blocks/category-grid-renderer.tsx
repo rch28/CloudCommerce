@@ -37,7 +37,7 @@ export default function CategoryGridRenderer({ content, brandColor, tenant }: Ca
     <section className="border-b border-border">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         {title && (
-          <h2 className="mb-8 text-2xl font-bold text-[#F8FAFC]">{title}</h2>
+          <h2 className="mb-8 text-2xl font-bold text-foreground">{title}</h2>
         )}
         {loading ? (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
@@ -55,7 +55,7 @@ export default function CategoryGridRenderer({ content, brandColor, tenant }: Ca
                 href={`/store/${tenant}/products?category=${cat.slug}`}
                 className="group overflow-hidden rounded-xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:border-[#7C3AED]/50"
               >
-                <div className="aspect-square overflow-hidden bg-[#18181B]">
+                <div className="aspect-square overflow-hidden bg-muted">
                   {cat.image ? (
                     <img src={cat.image} alt={cat.name} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
                   ) : (
@@ -65,7 +65,7 @@ export default function CategoryGridRenderer({ content, brandColor, tenant }: Ca
                   )}
                 </div>
                 <div className="p-4 text-center">
-                  <h3 className="font-medium text-[#F8FAFC] group-hover:text-[#8B5CF6] transition-colors">
+                  <h3 className="font-medium text-foreground group-hover:text-[#8B5CF6] transition-colors">
                     {cat.name}
                   </h3>
                 </div>

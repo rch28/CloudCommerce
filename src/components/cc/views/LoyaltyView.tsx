@@ -84,8 +84,8 @@ function RuleFormDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-lg">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-[#F8FAFC]">{initial ? "Edit Rule" : "New Rule"}</h3>
-          <button onClick={onClose} className="rounded-lg p-1 text-muted-foreground hover:text-[#F8FAFC]">
+          <h3 className="text-lg font-semibold text-foreground">{initial ? "Edit Rule" : "New Rule"}</h3>
+          <button onClick={onClose} className="rounded-lg p-1 text-muted-foreground hover:text-foreground">
             <X size={18} />
           </button>
         </div>
@@ -95,7 +95,7 @@ function RuleFormDialog({
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
               placeholder="e.g. 10 points per $1"
             />
           </div>
@@ -105,7 +105,7 @@ function RuleFormDialog({
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
               >
                 <option value="earn_points">Earn Points</option>
                 <option value="redeem_discount">Redeem Discount</option>
@@ -117,7 +117,7 @@ function RuleFormDialog({
               <select
                 value={eventType}
                 onChange={(e) => setEventType(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
               >
                 <option value="purchase">Purchase</option>
                 <option value="signup">Sign Up</option>
@@ -134,7 +134,7 @@ function RuleFormDialog({
                 type="number"
                 value={points}
                 onChange={(e) => setPoints(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                 min="1"
               />
             </div>
@@ -145,7 +145,7 @@ function RuleFormDialog({
                   type="number"
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                   min="0"
                   step="0.01"
                 />
@@ -159,7 +159,7 @@ function RuleFormDialog({
                 <select
                   value={valueType}
                   onChange={(e) => setValueType(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                 >
                   <option value="fixed">Fixed ($)</option>
                   <option value="percentage">Percentage (%)</option>
@@ -171,7 +171,7 @@ function RuleFormDialog({
                   type="number"
                   value={minPoints}
                   onChange={(e) => setMinPoints(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                   min="0"
                 />
               </div>
@@ -184,7 +184,7 @@ function RuleFormDialog({
                 type="number"
                 value={maxRedemptions}
                 onChange={(e) => setMaxRedemptions(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                 min="0"
               />
             </div>
@@ -196,12 +196,12 @@ function RuleFormDialog({
               onChange={(e) => setIsActive(e.target.checked)}
               className="rounded border-border"
             />
-            <span className="text-sm text-[#F8FAFC]">Active</span>
+            <span className="text-sm text-foreground">Active</span>
           </label>
           <div className="flex justify-end gap-2 pt-2">
             <button
               onClick={onClose}
-              className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground hover:text-[#F8FAFC]"
+              className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
             >
               Cancel
             </button>
@@ -335,7 +335,7 @@ export default function LoyaltyView() {
   };
 
   const ruleColumns: Column[] = [
-    { key: "name", label: "Name", sortable: true, render: (item) => <span className="font-medium text-[#F8FAFC]">{String(item.name)}</span> },
+    { key: "name", label: "Name", sortable: true, render: (item) => <span className="font-medium text-foreground">{String(item.name)}</span> },
     {
       key: "type",
       label: "Type",
@@ -418,7 +418,7 @@ export default function LoyaltyView() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#F8FAFC]">Loyalty Program</h1>
+          <h1 className="text-2xl font-bold text-foreground">Loyalty Program</h1>
           <p className="text-sm text-muted-foreground">Manage reward rules, view customer points, and configure settings.</p>
         </div>
         {activeTab === "Rules" && (
@@ -441,7 +441,7 @@ export default function LoyaltyView() {
               className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab
                   ? "border-[#7C3AED] text-[#7C3AED]"
-                  : "border-transparent text-muted-foreground hover:text-[#F8FAFC]"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               <Icon size={15} />
@@ -484,10 +484,10 @@ export default function LoyaltyView() {
                     </td>
                   </tr>
                 ) : customers.map((c) => (
-                  <tr key={c.id} className="transition-colors hover:bg-[#1E293B]">
+                  <tr key={c.id} className="transition-colors hover:bg-accent">
                     <td className="px-5 py-4">
                       <div>
-                        <p className="font-medium text-[#F8FAFC]">{c.customer?.name || "Unknown"}</p>
+                        <p className="font-medium text-foreground">{c.customer?.name || "Unknown"}</p>
                         <p className="text-xs text-muted-foreground">{c.customer?.email}</p>
                       </div>
                     </td>
@@ -498,7 +498,7 @@ export default function LoyaltyView() {
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      <span className="font-mono font-medium text-[#F8FAFC]">{c.points.toLocaleString()}</span>
+                      <span className="font-mono font-medium text-foreground">{c.points.toLocaleString()}</span>
                     </td>
                     <td className="px-5 py-4">
                       <span className="font-mono text-sm text-muted-foreground">{c.lifetimePoints.toLocaleString()}</span>
@@ -528,7 +528,7 @@ export default function LoyaltyView() {
       {activeTab === "Settings" && settings && (
         <div className="max-w-lg space-y-6">
           <div className="rounded-xl border border-border bg-card p-5">
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[#F8FAFC]">
+            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
               <TrendingUp size={15} />
               Points Earning
             </h3>
@@ -539,7 +539,7 @@ export default function LoyaltyView() {
                   type="number"
                   value={settings.pointsPerCurrency}
                   onChange={(e) => setSettings({ ...settings, pointsPerCurrency: Number(e.target.value) })}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                   min="0.01"
                   step="0.01"
                 />
@@ -549,7 +549,7 @@ export default function LoyaltyView() {
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5">
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[#F8FAFC]">
+            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
               <Award size={15} />
               Bonus Points
             </h3>
@@ -563,7 +563,7 @@ export default function LoyaltyView() {
                     type="number"
                     value={settings[key]}
                     onChange={(e) => setSettings({ ...settings, [key]: Number(e.target.value) })}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                     min="0"
                   />
                 </div>

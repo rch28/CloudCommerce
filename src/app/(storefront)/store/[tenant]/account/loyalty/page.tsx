@@ -103,12 +103,12 @@ export default function CustomerLoyaltyPage({ params }: { params: Promise<{ tena
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-[#F8FAFC]">Loyalty Program</h2>
+      <h2 className="text-lg font-semibold text-foreground">Loyalty Program</h2>
 
       {!account ? (
         <div className="rounded-xl border border-border bg-card p-8 text-center">
           <Gift size={48} className="mx-auto mb-4 text-muted-foreground" />
-          <h3 className="mb-2 text-lg font-semibold text-[#F8FAFC]">Join Our Loyalty Program</h3>
+          <h3 className="mb-2 text-lg font-semibold text-foreground">Join Our Loyalty Program</h3>
           <p className="mb-6 text-sm text-muted-foreground">Earn points on every purchase and unlock exclusive rewards.</p>
           <Button
             onClick={async () => {
@@ -137,13 +137,13 @@ export default function CustomerLoyaltyPage({ params }: { params: Promise<{ tena
                   </span>
                 </div>
                 <div className="mt-4">
-                  <p className="text-3xl font-bold text-[#F8FAFC]">{account.points.toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-foreground">{account.points.toLocaleString()}</p>
                   <p className="text-sm text-muted-foreground">Available Points</p>
                 </div>
               </div>
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Lifetime Points</p>
-                <p className="text-xl font-semibold text-[#F8FAFC]">{account.lifetimePoints.toLocaleString()}</p>
+                <p className="text-xl font-semibold text-foreground">{account.lifetimePoints.toLocaleString()}</p>
               </div>
             </div>
 
@@ -164,7 +164,7 @@ export default function CustomerLoyaltyPage({ params }: { params: Promise<{ tena
           </div>
 
           <div className="rounded-xl border border-border bg-card p-6">
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[#F8FAFC]">
+            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
               <TrendingUp size={15} />
               Recent Activity
             </h3>
@@ -175,7 +175,7 @@ export default function CustomerLoyaltyPage({ params }: { params: Promise<{ tena
                 {account.transactions.slice(0, 10).map((tx) => (
                   <div key={tx.id} className="flex items-center justify-between border-b border-border/60 pb-2 last:border-0">
                     <div>
-                      <p className="text-sm text-[#F8FAFC] capitalize">{tx.referenceType || tx.type}</p>
+                      <p className="text-sm text-foreground capitalize">{tx.referenceType || tx.type}</p>
                       <p className="text-xs text-muted-foreground">{tx.description || new Date(tx.createdAt).toLocaleDateString()}</p>
                     </div>
                     <span className={`font-mono text-sm font-medium ${tx.points > 0 ? "text-emerald-400" : "text-rose-400"}`}>
@@ -188,7 +188,7 @@ export default function CustomerLoyaltyPage({ params }: { params: Promise<{ tena
           </div>
 
           <div className="rounded-xl border border-border bg-card p-6">
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[#F8FAFC]">
+            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
               <Award size={15} />
               How to Earn Points
             </h3>
@@ -197,8 +197,8 @@ export default function CustomerLoyaltyPage({ params }: { params: Promise<{ tena
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 {rules.filter((r) => r.type === "earn_points").map((rule) => (
-                  <div key={rule.id} className="rounded-lg border border-border bg-[#09090B] p-3">
-                    <p className="mb-1 text-sm font-medium text-[#F8FAFC]">{rule.name}</p>
+                  <div key={rule.id} className="rounded-lg border border-border bg-background p-3">
+                    <p className="mb-1 text-sm font-medium text-foreground">{rule.name}</p>
                     <p className="text-xs text-muted-foreground capitalize">{rule.eventType} &middot; {rule.points} pts</p>
                   </div>
                 ))}
@@ -207,7 +207,7 @@ export default function CustomerLoyaltyPage({ params }: { params: Promise<{ tena
           </div>
 
           <div className="rounded-xl border border-border bg-card p-6">
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[#F8FAFC]">
+            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
               <Ticket size={15} />
               Redeem Options
             </h3>
@@ -221,7 +221,7 @@ export default function CustomerLoyaltyPage({ params }: { params: Promise<{ tena
                     <div key={rule.id} className={`rounded-lg border p-3 ${canRedeem ? "border-[#7C3AED]/30" : "border-border opacity-60"}`}>
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="mb-1 text-sm font-medium text-[#F8FAFC]">{rule.name}</p>
+                          <p className="mb-1 text-sm font-medium text-foreground">{rule.name}</p>
                           <p className="text-xs text-muted-foreground">
                             {rule.type === "redeem_free_shipping" ? "Free Shipping" : rule.value ? `${rule.valueType === "percentage" ? rule.value + "%" : "$" + rule.value + " off"}` : ""}
                           </p>

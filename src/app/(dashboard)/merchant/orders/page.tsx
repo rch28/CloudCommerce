@@ -115,14 +115,14 @@ export default function MerchantOrdersPage() {
                 {orders.map((o) => (
                   <tr
                     key={o.id}
-                    className="transition-colors hover:bg-[#1E293B] cursor-pointer"
+                    className="transition-colors hover:bg-accent cursor-pointer"
                     onClick={() => window.location.href = `/merchant/orders/${o.id}`}
                   >
                     <td className="px-5 py-4 font-mono text-sm font-medium text-[#7C3AED]">
                       #{o.number}
                     </td>
                     <td className="px-5 py-4">
-                      <p className="font-medium text-[#F8FAFC]">{o.customerName || "Guest"}</p>
+                      <p className="font-medium text-foreground">{o.customerName || "Guest"}</p>
                       {o.customerEmail && (
                         <p className="text-xs text-muted-foreground">{o.customerEmail}</p>
                       )}
@@ -138,7 +138,7 @@ export default function MerchantOrdersPage() {
                     <td className="px-5 py-4">
                       <Badge status={o.status} />
                     </td>
-                    <td className="px-5 py-4 text-right font-semibold text-[#F8FAFC]">
+                    <td className="px-5 py-4 text-right font-semibold text-foreground">
                       ${o.total.toFixed(2)}
                     </td>
                   </tr>
@@ -156,7 +156,7 @@ export default function MerchantOrdersPage() {
                 <button
                   disabled={page <= 1}
                   onClick={() => setPage((p) => p - 1)}
-                  className="rounded-lg p-1.5 transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC] disabled:opacity-40"
+                  className="rounded-lg p-1.5 transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
                 >
                   <ChevronLeft size={16} />
                 </button>
@@ -171,7 +171,7 @@ export default function MerchantOrdersPage() {
                       className={`min-w-[28px] rounded-lg px-2 py-1 text-sm font-medium transition-colors ${
                         p === page
                           ? "bg-[#7C3AED] text-white"
-                          : "hover:bg-[#1E293B] hover:text-[#F8FAFC]"
+                          : "hover:bg-accent hover:text-foreground"
                       }`}
                     >
                       {p}
@@ -181,7 +181,7 @@ export default function MerchantOrdersPage() {
                 <button
                   disabled={page >= totalPages}
                   onClick={() => setPage((p) => p + 1)}
-                  className="rounded-lg p-1.5 transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC] disabled:opacity-40"
+                  className="rounded-lg p-1.5 transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
                 >
                   <ChevronRight size={16} />
                 </button>

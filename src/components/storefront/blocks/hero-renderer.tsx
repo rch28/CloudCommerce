@@ -29,7 +29,7 @@ export default function HeroRenderer({ content, styles, brandColor, tenant }: He
       <div className="relative mx-auto flex min-h-[400px] max-w-7xl flex-col justify-center px-4 py-24 sm:px-6 lg:py-32">
         <div className={`flex flex-col ${alignClass} max-w-2xl`}>
           {title && (
-            <h1 className="text-4xl font-bold tracking-tight text-[#F8FAFC] sm:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
               {title}
             </h1>
           )}

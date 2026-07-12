@@ -11,8 +11,8 @@ interface ImageBlockProps {
 export default function ImageBlock({ content, onChange }: ImageBlockProps) {
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
-        <div className="mb-4 flex items-center gap-2 text-sm text-slate-400">
+      <div className="rounded-xl border border-border bg-muted/50 p-6">
+        <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
           <ImageIcon size={16} /> Image Section
         </div>
         <div className="space-y-3">
@@ -42,16 +42,16 @@ export default function ImageBlock({ content, onChange }: ImageBlockProps) {
           </div>
         </div>
       </div>
-      <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-4">
+      <div className="rounded-xl border border-border bg-muted/30 p-4">
         <p className="mb-2 text-xs font-medium text-slate-500">Preview</p>
-        <div className="overflow-hidden rounded-lg bg-slate-800/50">
+        <div className="overflow-hidden rounded-lg bg-muted/50">
           {(content.src as string) ? (
             <img src={content.src as string} alt={(content.alt as string) || ""} className="max-h-48 w-full object-cover" />
           ) : (
             <div className="flex h-32 items-center justify-center text-slate-500"><ImageIcon size={32} /></div>
           )}
           {(content.caption as string) && (
-            <p className="p-2 text-center text-xs text-slate-400">{content.caption as string}</p>
+            <p className="p-2 text-center text-xs text-muted-foreground">{content.caption as string}</p>
           )}
         </div>
       </div>

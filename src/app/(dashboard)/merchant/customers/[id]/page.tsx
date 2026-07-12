@@ -113,12 +113,12 @@ export default function CustomerDetailPage() {
       <div className="flex items-center gap-4">
         <button
           onClick={() => router.push("/merchant/customers")}
-          className="rounded-lg border border-border bg-card p-2 text-muted-foreground transition-colors hover:border-[#7C3AED]/30 hover:text-[#F8FAFC]"
+          className="rounded-lg border border-border bg-card p-2 text-muted-foreground transition-colors hover:border-[#7C3AED]/30 hover:text-foreground"
         >
           <ArrowLeft size={18} />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-[#F8FAFC]">{customer.name}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{customer.name}</h1>
           <p className="text-sm text-muted-foreground">Customer details</p>
         </div>
       </div>
@@ -130,7 +130,7 @@ export default function CustomerDetailPage() {
               {customer.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-[#F8FAFC]">{customer.name}</h2>
+              <h2 className="text-lg font-semibold text-foreground">{customer.name}</h2>
               <p className="text-sm text-muted-foreground">{customer.email}</p>
             </div>
           </div>
@@ -138,12 +138,12 @@ export default function CustomerDetailPage() {
           <div className="space-y-3">
             <div className="flex items-center gap-3 text-sm">
               <Mail size={15} className="text-muted-foreground shrink-0" />
-              <span className="text-[#F8FAFC]">{customer.email}</span>
+              <span className="text-foreground">{customer.email}</span>
             </div>
             {customer.phone && (
               <div className="flex items-center gap-3 text-sm">
                 <Phone size={15} className="text-muted-foreground shrink-0" />
-                <span className="text-[#F8FAFC]">{customer.phone}</span>
+                <span className="text-foreground">{customer.phone}</span>
               </div>
             )}
             <div className="flex items-center gap-3 text-sm">
@@ -163,7 +163,7 @@ export default function CustomerDetailPage() {
               <ShoppingBag size={16} className="shrink-0" />
               Total Orders
             </div>
-            <p className="mt-2 text-3xl font-bold text-[#F8FAFC]">{customer.orderCount}</p>
+            <p className="mt-2 text-3xl font-bold text-foreground">{customer.orderCount}</p>
           </div>
           <div className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">

@@ -86,10 +86,10 @@ export default function AuthModal({ open, onClose }: { open: boolean; onClose: (
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={close}>
       <div
-        className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-2xl"
+        className="relative w-full max-w-md overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <button onClick={close} className="absolute right-4 top-4 z-10 text-slate-400 hover:text-white">
+        <button onClick={close} className="absolute right-4 top-4 z-10 text-muted-foreground hover:text-white">
           <X size={20} />
         </button>
 
@@ -101,7 +101,7 @@ export default function AuthModal({ open, onClose }: { open: boolean; onClose: (
           {mode === "signin" ? (
             <>
               <h2 className="mt-3 text-xl font-bold text-white">Welcome back</h2>
-              <p className="mt-1 text-sm text-slate-400">Sign in to your account</p>
+              <p className="mt-1 text-sm text-muted-foreground">Sign in to your account</p>
 
               <form onSubmit={loginForm.handleSubmit(handleSignIn)} className="mt-6 w-full space-y-4">
                 <InputField
@@ -132,7 +132,7 @@ export default function AuthModal({ open, onClose }: { open: boolean; onClose: (
                 </Button>
               </form>
 
-              <p className="mt-4 text-sm text-slate-400">
+              <p className="mt-4 text-sm text-muted-foreground">
                 No account?{" "}
                 <button onClick={() => { setMode("signup"); setStep(1); setApiError(""); }} className="font-medium text-violet-400 hover:underline">
                   Create one
@@ -142,7 +142,7 @@ export default function AuthModal({ open, onClose }: { open: boolean; onClose: (
           ) : step === 1 ? (
             <>
               <h2 className="mt-3 text-xl font-bold text-white">Create account</h2>
-              <p className="mt-1 text-sm text-slate-400">Choose your account type</p>
+              <p className="mt-1 text-sm text-muted-foreground">Choose your account type</p>
 
               <div className="mt-6 w-full space-y-3">
                 {ROLES.map((r) => {
@@ -154,7 +154,7 @@ export default function AuthModal({ open, onClose }: { open: boolean; onClose: (
                       className={`flex w-full items-center gap-4 rounded-xl border p-4 text-left transition-colors ${
                         role === r.id
                           ? "border-violet-600 bg-violet-600/10"
-                          : "border-slate-800 bg-slate-900 hover:border-violet-600/50"
+                          : "border-border bg-card hover:border-violet-600/50"
                       }`}
                     >
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-600/20">
@@ -162,14 +162,14 @@ export default function AuthModal({ open, onClose }: { open: boolean; onClose: (
                       </div>
                       <div>
                         <p className="font-medium text-white">{r.label}</p>
-                        <p className="text-sm text-slate-400">{r.desc}</p>
+                        <p className="text-sm text-muted-foreground">{r.desc}</p>
                       </div>
                     </button>
                   );
                 })}
               </div>
 
-              <p className="mt-4 text-sm text-slate-400">
+              <p className="mt-4 text-sm text-muted-foreground">
                 Already have an account?{" "}
                 <button onClick={() => setMode("signin")} className="font-medium text-violet-400 hover:underline">Sign in</button>
               </p>
@@ -177,7 +177,7 @@ export default function AuthModal({ open, onClose }: { open: boolean; onClose: (
           ) : (
             <>
               <h2 className="mt-3 text-xl font-bold text-white">Account details</h2>
-              <p className="mt-1 text-sm text-slate-400">Fill in your information</p>
+              <p className="mt-1 text-sm text-muted-foreground">Fill in your information</p>
 
               <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="mt-6 w-full space-y-4">
                 <InputField
@@ -210,7 +210,7 @@ export default function AuthModal({ open, onClose }: { open: boolean; onClose: (
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="rounded-lg border border-slate-800 px-4 py-2.5 text-sm text-slate-400 hover:text-white"
+                    className="rounded-lg border border-border px-4 py-2.5 text-sm text-muted-foreground hover:text-white"
                   >
                     <ArrowLeft size={16} className="inline" /> Back
                   </button>

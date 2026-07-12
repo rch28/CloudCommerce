@@ -64,7 +64,7 @@ export default async function ProductsPage({
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#F8FAFC]">Products</h1>
+        <h1 className="text-3xl font-bold text-foreground">Products</h1>
         <p className="mt-1 text-muted-foreground">{productsResult.total} product{productsResult.total !== 1 ? "s" : ""} available</p>
       </div>
 
@@ -104,7 +104,7 @@ export default async function ProductsPage({
               {page > 1 && (
                 <Link
                   href={pageUrl({ page: String(page - 1) })}
-                  className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-[#F8FAFC]"
+                  className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   &larr; Previous
                 </Link>
@@ -115,7 +115,7 @@ export default async function ProductsPage({
               {page < totalPages && (
                 <Link
                   href={pageUrl({ page: String(page + 1) })}
-                  className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-[#F8FAFC]"
+                  className="rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Next &rarr;
                 </Link>

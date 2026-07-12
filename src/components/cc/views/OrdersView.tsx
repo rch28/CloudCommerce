@@ -33,7 +33,7 @@ export default function OrdersView() {
           value={status}
           onChange={setStatus}
         />
-        <button className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-300 hover:text-white">
+        <button className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:text-white">
           <Download size={16} /> Export CSV
         </button>
       </div>
@@ -45,10 +45,10 @@ export default function OrdersView() {
         className="max-w-sm"
       />
 
-      <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60">
+      <div className="overflow-hidden rounded-xl border border-border bg-muted/50">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-800 text-xs uppercase tracking-wide text-slate-500">
+            <thead className="border-b border-border text-xs uppercase tracking-wide text-slate-500">
               <tr>
                 <th className="px-5 py-3.5">Order</th>
                 <th className="px-5 py-3.5">Customer</th>
@@ -60,14 +60,14 @@ export default function OrdersView() {
             </thead>
             <tbody className="divide-y divide-slate-800/70">
               {filtered.map((o) => (
-                <tr key={o.id} className="hover:bg-slate-800/40">
+                <tr key={o.id} className="hover:bg-accent/40">
                   <td className="px-5 py-4 font-medium text-violet-400">{o.id}</td>
                   <td className="px-5 py-4">
                     <p className="font-medium text-white">{o.customer}</p>
                     <p className="text-xs text-slate-500">{o.email}</p>
                   </td>
-                  <td className="px-5 py-4 text-slate-300">{o.items}</td>
-                  <td className="px-5 py-4 text-slate-400">{o.date}</td>
+                  <td className="px-5 py-4 text-muted-foreground">{o.items}</td>
+                  <td className="px-5 py-4 text-muted-foreground">{o.date}</td>
                   <td className="px-5 py-4"><Badge status={o.status} /></td>
                   <td className="px-5 py-4 text-right font-semibold text-white">${o.total.toFixed(2)}</td>
                 </tr>

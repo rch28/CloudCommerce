@@ -22,7 +22,7 @@ export default function CtaRenderer({ content, brandColor }: CtaRendererProps) {
         style={{ textAlign: alignment as any }}
       >
         {title && (
-          <h2 className="text-3xl font-bold tracking-tight text-[#F8FAFC] sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             {title}
           </h2>
         )}

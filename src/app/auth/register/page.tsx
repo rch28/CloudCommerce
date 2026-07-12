@@ -55,13 +55,13 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#09090B] p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-lg shadow-violet-900/40">
             <Zap size={22} className="text-white" fill="white" />
           </div>
-          <h1 className="mt-4 text-xl font-bold text-[#F8FAFC]">Create your account</h1>
+          <h1 className="mt-4 text-xl font-bold text-foreground">Create your account</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {step === 1 ? "Choose your account type" : "Fill in your details"}
           </p>
@@ -85,7 +85,7 @@ export default function RegisterPage() {
                     <Icon size={20} className="text-violet-400" />
                   </div>
                   <div>
-                    <p className="font-medium text-[#F8FAFC]">{r.label}</p>
+                    <p className="font-medium text-foreground">{r.label}</p>
                     <p className="text-sm text-muted-foreground">{r.desc}</p>
                   </div>
                 </button>
@@ -129,7 +129,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="rounded-lg border border-border px-4 py-2.5 text-sm text-muted-foreground hover:text-[#F8FAFC]"
+                  className="rounded-lg border border-border px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground"
                 >
                   Back
                 </button>

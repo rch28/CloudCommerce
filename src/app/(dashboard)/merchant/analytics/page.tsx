@@ -56,7 +56,7 @@ export default function AnalyticsPage() {
             <TimeFilter value={range} onChange={handleRangeChange} />
             <button
               onClick={fetchMetrics}
-              className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-[#F8FAFC] hover:bg-card transition-colors"
+              className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-card transition-colors"
             >
               <BarChart3 size={14} /> Refresh
             </button>
@@ -127,7 +127,7 @@ export default function AnalyticsPage() {
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileText size={18} className="text-[#7C3AED]" />
-              <h3 className="font-semibold text-[#F8FAFC]">Reports</h3>
+              <h3 className="font-semibold text-foreground">Reports</h3>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -138,7 +138,7 @@ export default function AnalyticsPage() {
                     `revenue-report-${range}`
                   );
                 }}
-                className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-[#F8FAFC] hover:bg-card transition-colors"
+                className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-card transition-colors"
               >
                 <Download size={13} /> CSV
               </button>
@@ -155,7 +155,7 @@ export default function AnalyticsPage() {
                 href={r.href}
                 className="rounded-lg border border-border p-4 transition-colors hover:border-[#7C3AED]/50 hover:bg-card"
               >
-                <p className="text-sm font-medium text-[#F8FAFC]">{r.name}</p>
+                <p className="text-sm font-medium text-foreground">{r.name}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{r.desc}</p>
                 <span className="mt-2 inline-flex items-center gap-1 text-xs text-[#7C3AED]">
                   <Download size={11} /> Download CSV

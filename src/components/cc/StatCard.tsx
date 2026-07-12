@@ -12,10 +12,10 @@ interface StatCardProps {
 export default function StatCard({ label, value, change, icon: Icon, accent = "#7C3AED" }: StatCardProps) {
   const up = change >= 0;
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 transition-all hover:-translate-y-0.5 hover:border-violet-700/50 hover:shadow-lg hover:shadow-violet-900/20">
+    <div className="rounded-xl border border-border bg-muted/50 p-5 transition-all hover:-translate-y-0.5 hover:border-violet-700/50 hover:shadow-lg hover:shadow-primary/20">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-slate-400">{label}</p>
+          <p className="text-sm text-muted-foreground">{label}</p>
           <p className="mt-2 text-2xl font-bold text-white">{value}</p>
         </div>
         <div

@@ -36,7 +36,7 @@ export default function PageHeader({
     <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div className="space-y-1">
         {/* <nav className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Link href="/merchant/dashboard" className="transition-colors hover:text-[#F8FAFC]">
+          <Link href="/merchant/dashboard" className="transition-colors hover:text-foreground">
             <Home size={14} />
           </Link>
           {segments.map((segment, index) => {
@@ -47,9 +47,9 @@ export default function PageHeader({
               <span key={href} className="flex items-center gap-1">
                 <ChevronRight size={13} className="text-muted-foreground/40" />
                 {isLast ? (
-                  <span className="font-medium text-[#F8FAFC]">{label}</span>
+                  <span className="font-medium text-foreground">{label}</span>
                 ) : (
-                  <Link href={href} className="transition-colors hover:text-[#F8FAFC]">
+                  <Link href={href} className="transition-colors hover:text-foreground">
                     {label}
                   </Link>
                 )}
@@ -57,7 +57,7 @@ export default function PageHeader({
             );
           })}
         </nav> */}
-        <h1 className="text-xl font-bold tracking-tight text-[#F8FAFC] sm:text-2xl">
+        <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
           {title}
         </h1>
         {description && (

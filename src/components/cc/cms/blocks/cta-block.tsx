@@ -20,8 +20,8 @@ export default function CtaBlock({ content, styles, onChange }: CtaBlockProps) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
-        <div className="mb-4 flex items-center gap-2 text-sm text-slate-400">
+      <div className="rounded-xl border border-border bg-muted/50 p-6">
+        <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
           <MousePointerClick size={16} /> Call to Action Section
         </div>
         <div className="space-y-3">
@@ -70,15 +70,15 @@ export default function CtaBlock({ content, styles, onChange }: CtaBlockProps) {
           </div>
         </div>
       </div>
-      <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-4">
+      <div className="rounded-xl border border-border bg-muted/30 p-4">
         <p className="mb-2 text-xs font-medium text-slate-500">Preview</p>
         <div
-          className="rounded-lg bg-slate-800/50 p-6"
+          className="rounded-lg bg-muted/50 p-6"
           style={{ textAlign: alignment as "left" | "center" | "right" }}
         >
-          <h3 className="text-lg font-bold text-[#F8FAFC]">{(content.title as string) || "Call to Action"}</h3>
+          <h3 className="text-lg font-bold text-foreground">{(content.title as string) || "Call to Action"}</h3>
           {(content.description as string) && (
-            <p className="mt-1 text-sm text-slate-400">{content.description as string}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{content.description as string}</p>
           )}
           <span className="mt-3 inline-block rounded-lg bg-[#7C3AED] px-5 py-2 text-sm font-medium text-white">
             {(content.buttonText as string) || "Button"}

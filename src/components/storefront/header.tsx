@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart, Menu, Zap, X, Heart } from "lucide-react";
 import SearchField from "@/components/ui/form-inputs/SearchField";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -29,9 +30,9 @@ export default function StoreHeader({ tenant, storeName, logo, primaryColor }: S
   ];
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-[#09090B]/90 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
-        <button onClick={() => setMobileOpen((v) => !v)} className="text-muted-foreground hover:text-[#F8FAFC] lg:hidden">
+        <button onClick={() => setMobileOpen((v) => !v)} className="text-muted-foreground hover:text-foreground lg:hidden">
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
 
@@ -43,12 +44,12 @@ export default function StoreHeader({ tenant, storeName, logo, primaryColor }: S
               <Zap size={16} className="text-white" fill="white" />
             </div>
           )}
-          <span className="text-sm font-bold text-[#F8FAFC]">{storeName}</span>
+          <span className="text-sm font-bold text-foreground">{storeName}</span>
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
           {nav.map((n) => (
-            <Link key={n.href} href={n.href} className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-[#F8FAFC]">
+            <Link key={n.href} href={n.href} className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
               {n.label}
             </Link>
           ))}
@@ -66,7 +67,7 @@ export default function StoreHeader({ tenant, storeName, logo, primaryColor }: S
 
         <Link
           href={`${base}/wishlist`}
-          className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground transition-colors hover:text-[#F8FAFC]"
+          className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground transition-colors hover:text-foreground"
         >
           <Heart size={18} />
           {wishlistCount > 0 && (
@@ -78,7 +79,7 @@ export default function StoreHeader({ tenant, storeName, logo, primaryColor }: S
 
         <Link
           href={`${base}/cart`}
-          className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground transition-colors hover:text-[#F8FAFC]"
+          className="relative rounded-lg border border-border bg-card p-2 text-muted-foreground transition-colors hover:text-foreground"
         >
           <ShoppingCart size={18} />
           {itemCount > 0 && (
@@ -87,6 +88,7 @@ export default function StoreHeader({ tenant, storeName, logo, primaryColor }: S
             </span>
           )}
         </Link>
+        <ThemeToggle />
       </div>
 
       {mobileOpen && (
@@ -101,12 +103,12 @@ export default function StoreHeader({ tenant, storeName, logo, primaryColor }: S
             />
           </div>
           {nav.map((n) => (
-            <Link key={n.href} href={n.href} onClick={() => setMobileOpen(false)} className="block px-3 py-2 text-sm text-muted-foreground hover:text-[#F8FAFC]">
+            <Link key={n.href} href={n.href} onClick={() => setMobileOpen(false)} className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground">
               {n.label}
             </Link>
           ))}
           <div className="mt-2 flex gap-3 border-t border-border pt-3 px-3">
-            <Link href={`${base}/wishlist`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-[#F8FAFC] transition-colors">
+            <Link href={`${base}/wishlist`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
               <Heart size={16} />
               Wishlist
               {wishlistCount > 0 && (
@@ -115,7 +117,7 @@ export default function StoreHeader({ tenant, storeName, logo, primaryColor }: S
                 </span>
               )}
             </Link>
-            <Link href={`${base}/cart`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-[#F8FAFC] transition-colors">
+            <Link href={`${base}/cart`} onClick={() => setMobileOpen(false)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
               <ShoppingCart size={16} />
               Cart
               {itemCount > 0 && (

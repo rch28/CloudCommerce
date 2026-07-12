@@ -17,7 +17,7 @@ export default function ErrorState({
       <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-500/10">
         <AlertTriangle size={28} className="text-rose-400" />
       </div>
-      <h3 className="mb-1 text-lg font-semibold text-[#F8FAFC]">{title}</h3>
+      <h3 className="mb-1 text-lg font-semibold text-foreground">{title}</h3>
       <p className="mb-6 max-w-sm text-center text-sm text-muted-foreground">{message}</p>
       {onRetry && (
         <Button onClick={onRetry} className="gap-2">

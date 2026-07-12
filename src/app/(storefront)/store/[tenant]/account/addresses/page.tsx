@@ -150,7 +150,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-[#F8FAFC]">Addresses</h2>
+        <h2 className="text-lg font-semibold text-foreground">Addresses</h2>
         {!formOpen && (
           <Button onClick={() => openForm()} size="sm" className="gap-1.5">
             <Plus size={14} /> Add Address
@@ -160,7 +160,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
 
       {formOpen && (
         <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-4 space-y-4">
-          <h3 className="text-sm font-semibold text-[#F8FAFC]">
+          <h3 className="text-sm font-semibold text-foreground">
             {editingId ? "Edit Address" : "New Address"}
           </h3>
 
@@ -169,7 +169,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
             <select
               value={form.label}
               onChange={(e) => setForm({ ...form, label: e.target.value })}
-              className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none"
             >
               {LABELS.map((l) => (
                 <option key={l} value={l}>{l}</option>
@@ -185,7 +185,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
               value={form.line1}
               onChange={(e) => setForm({ ...form, line1: e.target.value })}
               required
-              className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none placeholder:text-muted-foreground"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
               placeholder="123 Main St"
             />
           </div>
@@ -195,7 +195,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
             <input
               value={form.line2}
               onChange={(e) => setForm({ ...form, line2: e.target.value })}
-              className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none placeholder:text-muted-foreground"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
               placeholder="Apt, suite, etc."
             />
           </div>
@@ -209,7 +209,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
                 required
-                className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none placeholder:text-muted-foreground"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 placeholder="San Francisco"
               />
             </div>
@@ -221,7 +221,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
                 value={form.state}
                 onChange={(e) => setForm({ ...form, state: e.target.value })}
                 required
-                className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none"
               >
                 <option value="">Select</option>
                 {US_STATES.map((s) => (
@@ -240,7 +240,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
                 value={form.zip}
                 onChange={(e) => setForm({ ...form, zip: e.target.value })}
                 required
-                className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none placeholder:text-muted-foreground"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 placeholder="94105"
               />
             </div>
@@ -249,7 +249,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
               <input
                 value={form.country}
                 onChange={(e) => setForm({ ...form, country: e.target.value })}
-                className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none placeholder:text-muted-foreground"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
               />
             </div>
           </div>
@@ -261,7 +261,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
               onChange={(e) => setForm({ ...form, isDefault: e.target.checked })}
               className="h-4 w-4 rounded border-border accent-[#7C3AED]"
             />
-            <span className="text-sm text-[#F8FAFC]">Set as default address</span>
+            <span className="text-sm text-foreground">Set as default address</span>
           </label>
 
           <div className="flex gap-2">
@@ -271,7 +271,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
             <button
               type="button"
               onClick={closeForm}
-              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-[#F8FAFC]"
+              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Cancel
             </button>
@@ -291,7 +291,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
               <div className="flex items-start justify-between">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-[#F8FAFC]">{addr.label}</span>
+                    <span className="font-medium text-foreground">{addr.label}</span>
                     {addr.isDefault && (
                       <span className="rounded-full bg-[#7C3AED]/20 px-2 py-0.5 text-[10px] font-medium text-[#7C3AED]">
                         Default
@@ -316,7 +316,7 @@ export default function AccountAddressesPage({ params }: { params: Promise<{ ten
                   )}
                   <button
                     onClick={() => openForm(addr)}
-                    className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-card hover:text-[#F8FAFC]"
+                    className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
                     title="Edit"
                   >
                     <Pencil size={14} />

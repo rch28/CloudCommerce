@@ -212,8 +212,8 @@ export default function ShippingPage() {
             onClick={() => setTab("zones")}
             className={`pb-3 text-sm font-medium transition-colors border-b-2 ${
               tab === "zones"
-                ? "border-[#7C3AED] text-[#F8FAFC]"
-                : "border-transparent text-muted-foreground hover:text-[#F8FAFC]"
+                ? "border-[#7C3AED] text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <Globe size={15} className="inline mr-1.5" />
@@ -223,8 +223,8 @@ export default function ShippingPage() {
             onClick={() => setTab("methods")}
             className={`pb-3 text-sm font-medium transition-colors border-b-2 ${
               tab === "methods"
-                ? "border-[#7C3AED] text-[#F8FAFC]"
-                : "border-transparent text-muted-foreground hover:text-[#F8FAFC]"
+                ? "border-[#7C3AED] text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <Truck size={15} className="inline mr-1.5" />
@@ -256,7 +256,7 @@ export default function ShippingPage() {
 
           {showZoneForm && editingZone && (
             <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-              <h3 className="font-semibold text-[#F8FAFC]">
+              <h3 className="font-semibold text-foreground">
                 {editingZone.id ? "Edit Zone" : "New Zone"}
               </h3>
               <div>
@@ -268,7 +268,7 @@ export default function ShippingPage() {
                   onChange={(e) =>
                     setEditingZone({ ...editingZone, name: e.target.value })
                   }
-                  className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                   placeholder="e.g., Domestic, International, West Coast"
                 />
               </div>
@@ -289,7 +289,7 @@ export default function ShippingPage() {
                       className={`px-3 py-1 rounded-md text-xs border transition-colors ${
                         (editingZone.countries || []).includes(c)
                           ? "border-[#7C3AED] bg-[#7C3AED]/20 text-[#7C3AED]"
-                          : "border-border text-muted-foreground hover:text-[#F8FAFC]"
+                          : "border-border text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       {c}
@@ -314,7 +314,7 @@ export default function ShippingPage() {
                       className={`px-2 py-0.5 rounded text-[11px] border transition-colors ${
                         (editingZone.states || []).includes(s)
                           ? "border-[#7C3AED] bg-[#7C3AED]/20 text-[#7C3AED]"
-                          : "border-border text-muted-foreground hover:text-[#F8FAFC]"
+                          : "border-border text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       {s}
@@ -328,7 +328,7 @@ export default function ShippingPage() {
                     setShowZoneForm(false);
                     setEditingZone(null);
                   }}
-                  className="px-4 py-2 text-sm text-muted-foreground hover:text-[#F8FAFC] transition-colors"
+                  className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Cancel
                 </button>
@@ -357,14 +357,14 @@ export default function ShippingPage() {
                   className="rounded-xl border border-border bg-card p-4"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-medium text-[#F8FAFC]">{zone.name}</h3>
+                    <h3 className="font-medium text-foreground">{zone.name}</h3>
                     <div className="flex gap-2">
                       <button
                         onClick={() => {
                           setEditingZone(zone);
                           setShowZoneForm(true);
                         }}
-                        className="p-1.5 text-muted-foreground hover:text-[#F8FAFC] transition-colors"
+                        className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <Pencil size={14} />
                       </button>
@@ -414,7 +414,7 @@ export default function ShippingPage() {
                             key={rate.id}
                             className="flex items-center justify-between text-sm"
                           >
-                            <span className="text-[#F8FAFC]">
+                            <span className="text-foreground">
                               {rate.method.name}
                             </span>
                             <div className="flex items-center gap-2">
@@ -456,7 +456,7 @@ export default function ShippingPage() {
                               methodId: e.target.value,
                             })
                           }
-                          className="flex-1 rounded-lg border border-border bg-[#09090B] px-2 py-1.5 text-xs text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                          className="flex-1 rounded-lg border border-border bg-background px-2 py-1.5 text-xs text-foreground outline-none focus:border-[#7C3AED]"
                         >
                           <option value="">Select method</option>
                           {methods
@@ -475,7 +475,7 @@ export default function ShippingPage() {
                           onChange={(e) =>
                             setRateForm({ ...rateForm, price: e.target.value })
                           }
-                          className="w-24 rounded-lg border border-border bg-[#09090B] px-2 py-1.5 text-xs text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                          className="w-24 rounded-lg border border-border bg-background px-2 py-1.5 text-xs text-foreground outline-none focus:border-[#7C3AED]"
                           placeholder="0.00"
                         />
                         <Button onClick={saveRate} size="sm">
@@ -483,7 +483,7 @@ export default function ShippingPage() {
                         </Button>
                         <button
                           onClick={() => setRateForm(null)}
-                          className="px-2 py-1.5 text-xs text-muted-foreground hover:text-[#F8FAFC] transition-colors"
+                          className="px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                         >
                           Cancel
                         </button>
@@ -520,7 +520,7 @@ export default function ShippingPage() {
 
           {showMethodForm && editingMethod && (
             <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-              <h3 className="font-semibold text-[#F8FAFC]">
+              <h3 className="font-semibold text-foreground">
                 {editingMethod.id ? "Edit Method" : "New Method"}
               </h3>
               <div className="grid grid-cols-2 gap-4">
@@ -536,7 +536,7 @@ export default function ShippingPage() {
                         name: e.target.value,
                       })
                     }
-                    className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                     placeholder="e.g., Standard, Express"
                   />
                 </div>
@@ -552,7 +552,7 @@ export default function ShippingPage() {
                         type: e.target.value,
                       })
                     }
-                    className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                   >
                     <option value="flat">Flat Rate</option>
                     <option value="weight_based">Weight Based</option>
@@ -585,7 +585,7 @@ export default function ShippingPage() {
                         },
                       })
                     }
-                    className="w-full max-w-xs rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                    className="w-full max-w-xs rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                   />
                 </div>
               )}
@@ -612,7 +612,7 @@ export default function ShippingPage() {
                           },
                         })
                       }
-                      className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                     />
                   </div>
                   <div>
@@ -638,7 +638,7 @@ export default function ShippingPage() {
                           },
                         });
                       }}
-                      className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                       placeholder="No max"
                     />
                   </div>
@@ -667,7 +667,7 @@ export default function ShippingPage() {
                           },
                         })
                       }
-                      className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                     />
                   </div>
                   <div>
@@ -693,7 +693,7 @@ export default function ShippingPage() {
                           },
                         });
                       }}
-                      className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                       placeholder="No max"
                     />
                   </div>
@@ -729,7 +729,7 @@ export default function ShippingPage() {
                         sortOrder: parseInt(e.target.value) || 0,
                       })
                     }
-                    className="w-20 rounded-lg border border-border bg-[#09090B] px-2 py-1.5 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]"
+                    className="w-20 rounded-lg border border-border bg-background px-2 py-1.5 text-sm text-foreground outline-none focus:border-[#7C3AED]"
                   />
                 </div>
               </div>
@@ -740,7 +740,7 @@ export default function ShippingPage() {
                     setShowMethodForm(false);
                     setEditingMethod(null);
                   }}
-                  className="px-4 py-2 text-sm text-muted-foreground hover:text-[#F8FAFC] transition-colors"
+                  className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Cancel
                 </button>
@@ -775,7 +775,7 @@ export default function ShippingPage() {
                     />
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-[#F8FAFC] text-sm">
+                        <h3 className="font-medium text-foreground text-sm">
                           {method.name}
                         </h3>
                         <span
@@ -814,7 +814,7 @@ export default function ShippingPage() {
                         setEditingMethod(method);
                         setShowMethodForm(true);
                       }}
-                      className="p-1.5 text-muted-foreground hover:text-[#F8FAFC] transition-colors"
+                      className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
                     >
                       <Pencil size={14} />
                     </button>

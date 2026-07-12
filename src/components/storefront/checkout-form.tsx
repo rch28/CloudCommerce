@@ -201,7 +201,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
     return (
       <div className="mx-auto max-w-2xl space-y-6">
         <div className="rounded-xl border border-border bg-card p-6">
-          <h2 className="text-lg font-semibold text-[#F8FAFC] mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
             <MapPin size={18} className="text-[#7C3AED]" />
             Shipping Address
           </h2>
@@ -232,7 +232,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                       )}
                     </div>
                     <div className="text-sm">
-                      <p className="font-medium text-[#F8FAFC]">{addr.label}</p>
+                      <p className="font-medium text-foreground">{addr.label}</p>
                       <p className="text-muted-foreground">{addr.line1}</p>
                       {addr.line2 && (
                         <p className="text-muted-foreground">{addr.line2}</p>
@@ -250,7 +250,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                   setShowNewAddress(true);
                   setSelectedAddressId("");
                 }}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground hover:text-[#F8FAFC] hover:border-muted-foreground/50 transition-colors"
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:border-muted-foreground/50 transition-colors"
               >
                 <Plus size={16} /> Add a new address
               </button>
@@ -281,7 +281,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                     onChange={(e) =>
                       setAddress({ ...address, label: e.target.value })
                     }
-                    className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
                     placeholder="Home"
                   />
                 </div>
@@ -296,7 +296,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                   onChange={(e) =>
                     setAddress({ ...address, line1: e.target.value })
                   }
-                  className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
                   placeholder="123 Main St"
                 />
               </div>
@@ -309,7 +309,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                   onChange={(e) =>
                     setAddress({ ...address, line2: e.target.value })
                   }
-                  className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
                   placeholder="Apt 4B"
                 />
               </div>
@@ -324,7 +324,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                     onChange={(e) =>
                       setAddress({ ...address, city: e.target.value })
                     }
-                    className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
                     placeholder="Portland"
                   />
                 </div>
@@ -338,7 +338,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                     onChange={(e) =>
                       setAddress({ ...address, state: e.target.value })
                     }
-                    className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
                     placeholder="OR"
                   />
                 </div>
@@ -352,7 +352,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                     onChange={(e) =>
                       setAddress({ ...address, zip: e.target.value })
                     }
-                    className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted-foreground outline-none focus:border-[#7C3AED]"
                     placeholder="97201"
                   />
                 </div>
@@ -415,15 +415,15 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
     return (
       <div className="mx-auto max-w-2xl space-y-6">
         <div className="rounded-xl border border-border bg-card p-6">
-          <h2 className="text-lg font-semibold text-[#F8FAFC] mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
             <Truck size={18} className="text-[#7C3AED]" />
             Shipping Method
           </h2>
 
           {shippingSelectedAddr && (
-            <div className="mb-4 rounded-lg bg-[#09090B] p-3 text-sm">
+            <div className="mb-4 rounded-lg bg-background p-3 text-sm">
               <p className="text-muted-foreground">Shipping to</p>
-              <p className="text-[#F8FAFC] font-medium">
+              <p className="text-foreground font-medium">
                 {shippingSelectedAddr.line1}, {shippingSelectedAddr.city},{" "}
                 {shippingSelectedAddr.state} {shippingSelectedAddr.zip}
               </p>
@@ -469,7 +469,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                         )}
                       </div>
                       <div>
-                        <p className="font-medium text-[#F8FAFC] text-sm">
+                        <p className="font-medium text-foreground text-sm">
                           {opt.methodName}
                         </p>
                         {opt.carrier && (
@@ -479,7 +479,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                         )}
                       </div>
                     </div>
-                    <span className="text-sm font-bold text-[#F8FAFC]">
+                    <span className="text-sm font-bold text-foreground">
                       {opt.price === 0 ? "Free" : `$${opt.price.toFixed(2)}`}
                     </span>
                   </div>
@@ -493,7 +493,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
           <button
             type="button"
             onClick={() => setStep("address")}
-            className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-[#F8FAFC] hover:bg-card transition-colors"
+            className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-card transition-colors"
           >
             Back
           </button>
@@ -515,7 +515,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="rounded-xl border border-border bg-card p-6">
-        <h2 className="text-lg font-semibold text-[#F8FAFC] mb-4">
+        <h2 className="text-lg font-semibold text-foreground mb-4">
           Review Order
         </h2>
 
@@ -530,7 +530,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                   key={item.variantId}
                   className="flex items-center gap-3 p-3 text-sm"
                 >
-                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#18181B]">
+                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
                     {item.image ? (
                       <img
                         src={item.image}
@@ -544,7 +544,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-[#F8FAFC]">
+                    <p className="truncate font-medium text-foreground">
                       {item.productName}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -552,7 +552,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[#F8FAFC]">
+                    <p className="text-foreground">
                       ${(item.price * item.quantity).toFixed(2)}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -569,8 +569,8 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
               <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Shipping Address
               </h3>
-              <div className="rounded-lg border border-border bg-[#09090B] p-3 text-sm">
-                <p className="font-medium text-[#F8FAFC]">
+              <div className="rounded-lg border border-border bg-background p-3 text-sm">
+                <p className="font-medium text-foreground">
                   {selectedAddr.label}
                 </p>
                 <p className="text-muted-foreground">{selectedAddr.line1}</p>
@@ -592,7 +592,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full rounded-lg border border-border bg-[#09090B] px-3 py-2 text-sm text-[#F8FAFC] placeholder-muted-foreground outline-none focus:border-[#7C3AED] resize-none"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder-muted-foreground outline-none focus:border-[#7C3AED] resize-none"
               placeholder="Any special instructions?"
             />
           </div>
@@ -602,9 +602,9 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
               <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Shipping Method
               </h3>
-              <div className="rounded-lg border border-border bg-[#09090B] p-3 text-sm">
+              <div className="rounded-lg border border-border bg-background p-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-[#F8FAFC]">
+                  <span className="text-foreground">
                     {selectedShipping.methodName}
                   </span>
                   <span className="text-muted-foreground">
@@ -633,7 +633,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
                 <span>Tax (8%)</span>
                 <span>${tax.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-[#F8FAFC]">
+              <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-foreground">
                 <span>Total</span>
                 <span>${total.toFixed(2)}</span>
               </div>
@@ -653,7 +653,7 @@ export default function CheckoutForm({ tenant }: CheckoutFormProps) {
           type="button"
           onClick={() => setStep("address")}
           disabled={loading}
-          className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-[#F8FAFC] hover:bg-card transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-card transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         >
           Back
         </button>

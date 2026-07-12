@@ -132,7 +132,7 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto border-border bg-card text-[#F8FAFC]">
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto border-border bg-card text-foreground">
         <DialogHeader>
           <DialogTitle>{product ? "Edit Product" : "Add Product"}</DialogTitle>
           <DialogDescription className="text-muted-foreground">
@@ -147,22 +147,22 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Product Name <span className="text-red-500">*</span></Label>
-                <Input id="name" className="border-border bg-background text-[#F8FAFC]" {...form.register("name", { onChange: (e) => { if (!product) { const slug = generateSlug(e.target.value); form.setValue("slug", slug); } } })} />
+                <Input id="name" className="border-border bg-background text-foreground" {...form.register("name", { onChange: (e) => { if (!product) { const slug = generateSlug(e.target.value); form.setValue("slug", slug); } } })} />
                 {errors.name && <p className="text-xs text-rose-400">{errors.name}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="slug">Slug <span className="text-red-500">*</span></Label>
-                <Input id="slug" className="border-border bg-background text-[#F8FAFC] font-mono text-xs" {...form.register("slug")} />
+                <Input id="slug" className="border-border bg-background text-foreground font-mono text-xs" {...form.register("slug")} />
                 {errors.slug && <p className="text-xs text-rose-400">{errors.slug}</p>}
               </div>
             </div>
             <div className="mt-4 space-y-2">
               <Label htmlFor="shortDescription">Short Description</Label>
-              <Input id="shortDescription" className="border-border bg-background text-[#F8FAFC]" placeholder="Brief summary for listings" {...form.register("shortDescription")} />
+              <Input id="shortDescription" className="border-border bg-background text-foreground" placeholder="Brief summary for listings" {...form.register("shortDescription")} />
             </div>
             <div className="mt-4 space-y-2">
               <Label htmlFor="description">Full Description</Label>
-              <textarea id="description" rows={4} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]" {...form.register("description")} />
+              <textarea id="description" rows={4} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]" {...form.register("description")} />
             </div>
           </div>
 
@@ -170,7 +170,7 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
           <div>
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Media / Images</h3>
-              <Button type="button" variant="outline" size="sm" onClick={() => appendImage({ url: "", alt: "", sortOrder: imageFields.length })} className="border-border text-muted-foreground hover:text-[#F8FAFC]">
+              <Button type="button" variant="outline" size="sm" onClick={() => appendImage({ url: "", alt: "", sortOrder: imageFields.length })} className="border-border text-muted-foreground hover:text-foreground">
                 <Plus size={14} className="mr-1" /> Add Image
               </Button>
             </div>
@@ -193,10 +193,10 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
                       )}
                     </div>
                     <div className="flex-1 space-y-1.5">
-                      <Input className="h-8 border-border bg-card text-xs text-[#F8FAFC]" placeholder="Image URL" {...form.register(`images.${index}.url`)} />
-                      <Input className="h-8 border-border bg-card text-xs text-[#F8FAFC]" placeholder="Alt text" {...form.register(`images.${index}.alt`)} />
+                      <Input className="h-8 border-border bg-card text-xs text-foreground" placeholder="Image URL" {...form.register(`images.${index}.url`)} />
+                      <Input className="h-8 border-border bg-card text-xs text-foreground" placeholder="Alt text" {...form.register(`images.${index}.alt`)} />
                     </div>
-                    <button type="button" onClick={() => removeImage(index)} className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-rose-400">
+                    <button type="button" onClick={() => removeImage(index)} className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-rose-400">
                       <X size={14} />
                     </button>
                   </div>
@@ -212,20 +212,20 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
               <div className="space-y-2">
                 <Label>Price ($) <span className="text-red-500">*</span></Label>
                 <Controller control={form.control} name="variants.0.price" render={({ field: f }) => (
-                  <Input type="number" step="0.01" className="border-border bg-background text-[#F8FAFC]" value={f.value || ""} onChange={(e) => f.onChange(parseFloat(e.target.value) || 0)} />
+                  <Input type="number" step="0.01" className="border-border bg-background text-foreground" value={f.value || ""} onChange={(e) => f.onChange(parseFloat(e.target.value) || 0)} />
                 )} />
                 {errors["variants.0.price"] && <p className="text-xs text-rose-400">{errors["variants.0.price"]}</p>}
               </div>
               <div className="space-y-2">
                 <Label>Compare Price ($)</Label>
                 <Controller control={form.control} name="variants.0.comparePrice" render={({ field: f }) => (
-                  <Input type="number" step="0.01" className="border-border bg-background text-[#F8FAFC]" value={f.value ?? ""} onChange={(e) => f.onChange(e.target.value ? parseFloat(e.target.value) : null)} />
+                  <Input type="number" step="0.01" className="border-border bg-background text-foreground" value={f.value ?? ""} onChange={(e) => f.onChange(e.target.value ? parseFloat(e.target.value) : null)} />
                 )} />
               </div>
               <div className="space-y-2">
                 <Label>Cost Price ($)</Label>
                 <Controller control={form.control} name="variants.0.costPrice" render={({ field: f }) => (
-                  <Input type="number" step="0.01" className="border-border bg-background text-[#F8FAFC]" value={f.value ?? ""} onChange={(e) => f.onChange(e.target.value ? parseFloat(e.target.value) : null)} />
+                  <Input type="number" step="0.01" className="border-border bg-background text-foreground" value={f.value ?? ""} onChange={(e) => f.onChange(e.target.value ? parseFloat(e.target.value) : null)} />
                 )} />
               </div>
             </div>
@@ -237,7 +237,7 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="categoryId">Category</Label>
-                <select id="categoryId" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]" {...form.register("categoryId")}>
+                <select id="categoryId" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]" {...form.register("categoryId")}>
                   <option value="">No category</option>
                   {activeCategories.map((cat) => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -246,7 +246,7 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
               </div>
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
-                <select id="status" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]" {...form.register("status")}>
+                <select id="status" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]" {...form.register("status")}>
                   <option value="draft">Draft</option>
                   <option value="active">Active</option>
                   <option value="archived">Archived</option>
@@ -261,12 +261,12 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="seoTitle">SEO Title</Label>
-                <Input id="seoTitle" className="border-border bg-background text-[#F8FAFC]" placeholder="Optional — overrides title in search results" {...form.register("seoTitle")} />
+                <Input id="seoTitle" className="border-border bg-background text-foreground" placeholder="Optional — overrides title in search results" {...form.register("seoTitle")} />
                 <p className="text-[10px] text-muted-foreground">{form.watch("seoTitle")?.length ?? 0}/70 characters</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="seoDescription">SEO Description</Label>
-                <textarea id="seoDescription" rows={2} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]" {...form.register("seoDescription")} />
+                <textarea id="seoDescription" rows={2} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]" {...form.register("seoDescription")} />
                 <p className="text-[10px] text-muted-foreground">{form.watch("seoDescription")?.length ?? 0}/160 characters</p>
               </div>
             </div>
@@ -276,7 +276,7 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
           <div>
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Variants</h3>
-              <Button type="button" variant="outline" size="sm" onClick={() => appendVariant({ sku: "", price: 0, comparePrice: null, costPrice: null, quantity: 0, isDefault: variantFields.length === 0, status: "active" })} className="border-border text-muted-foreground hover:text-[#F8FAFC]">
+              <Button type="button" variant="outline" size="sm" onClick={() => appendVariant({ sku: "", price: 0, comparePrice: null, costPrice: null, quantity: 0, isDefault: variantFields.length === 0, status: "active" })} className="border-border text-muted-foreground hover:text-foreground">
                 <Plus size={14} className="mr-1" /> Add Variant
               </Button>
             </div>
@@ -295,7 +295,7 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
                       {!form.watch(`variants.${index}.isDefault`) && (
                         <button type="button" onClick={() => {
                           variantFields.forEach((_, i) => form.setValue(`variants.${i}.isDefault`, i === index));
-                        }} className="rounded px-1.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:text-[#F8FAFC]">
+                        }} className="rounded px-1.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground">
                           Set default
                         </button>
                       )}
@@ -309,36 +309,36 @@ export default function ProductForm({ open, onOpenChange, product, categories, o
                   <div className="grid grid-cols-6 gap-3">
                     <div className="space-y-1">
                       <Label className="text-[11px]">SKU <span className="text-red-500">*</span></Label>
-                      <Input className="h-8 border-border bg-card text-[#F8FAFC]" {...form.register(`variants.${index}.sku`)} />
+                      <Input className="h-8 border-border bg-card text-foreground" {...form.register(`variants.${index}.sku`)} />
                       {errors[`variants.${index}.sku`] && <p className="text-[10px] text-rose-400">{errors[`variants.${index}.sku`]}</p>}
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[11px]">Price <span className="text-red-500">*</span></Label>
                       <Controller control={form.control} name={`variants.${index}.price`} render={({ field: f }) => (
-                        <Input type="number" step="0.01" className="h-8 border-border bg-card text-[#F8FAFC]" value={f.value || ""} onChange={(e) => f.onChange(parseFloat(e.target.value) || 0)} />
+                        <Input type="number" step="0.01" className="h-8 border-border bg-card text-foreground" value={f.value || ""} onChange={(e) => f.onChange(parseFloat(e.target.value) || 0)} />
                       )} />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[11px]">Compare</Label>
                       <Controller control={form.control} name={`variants.${index}.comparePrice`} render={({ field: f }) => (
-                        <Input type="number" step="0.01" className="h-8 border-border bg-card text-[#F8FAFC]" value={f.value ?? ""} onChange={(e) => f.onChange(e.target.value ? parseFloat(e.target.value) : null)} />
+                        <Input type="number" step="0.01" className="h-8 border-border bg-card text-foreground" value={f.value ?? ""} onChange={(e) => f.onChange(e.target.value ? parseFloat(e.target.value) : null)} />
                       )} />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[11px]">Cost</Label>
                       <Controller control={form.control} name={`variants.${index}.costPrice`} render={({ field: f }) => (
-                        <Input type="number" step="0.01" className="h-8 border-border bg-card text-[#F8FAFC]" value={f.value ?? ""} onChange={(e) => f.onChange(e.target.value ? parseFloat(e.target.value) : null)} />
+                        <Input type="number" step="0.01" className="h-8 border-border bg-card text-foreground" value={f.value ?? ""} onChange={(e) => f.onChange(e.target.value ? parseFloat(e.target.value) : null)} />
                       )} />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[11px]">Qty</Label>
                       <Controller control={form.control} name={`variants.${index}.quantity`} render={({ field: f }) => (
-                        <Input type="number" className="h-8 border-border bg-card text-[#F8FAFC]" value={f.value ?? 0} onChange={(e) => f.onChange(parseInt(e.target.value) || 0)} />
+                        <Input type="number" className="h-8 border-border bg-card text-foreground" value={f.value ?? 0} onChange={(e) => f.onChange(parseInt(e.target.value) || 0)} />
                       )} />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-[11px]">Status</Label>
-                      <select className="h-8 w-full rounded-md border border-border bg-card px-2 text-xs text-[#F8FAFC] outline-none" {...form.register(`variants.${index}.status`)}>
+                      <select className="h-8 w-full rounded-md border border-border bg-card px-2 text-xs text-foreground outline-none" {...form.register(`variants.${index}.status`)}>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
                       </select>

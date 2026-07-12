@@ -23,8 +23,8 @@ export default function HeroBlock({ content, styles, onChange }: HeroBlockProps)
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
-        <div className="mb-4 flex items-center gap-2 text-sm text-slate-400">
+      <div className="rounded-xl border border-border bg-muted/50 p-6">
+        <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
           <Image size={16} /> Hero Section
         </div>
         <div className="space-y-3">
@@ -91,18 +91,18 @@ export default function HeroBlock({ content, styles, onChange }: HeroBlockProps)
           )}
         </div>
       </div>
-      <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-4">
+      <div className="rounded-xl border border-border bg-muted/30 p-4">
         <p className="mb-2 text-xs font-medium text-slate-500">Preview</p>
         <div
-          className="flex min-h-[120px] items-center rounded-lg bg-slate-800/50 p-4"
+          className="flex min-h-[120px] items-center rounded-lg bg-muted/50 p-4"
           style={{
             textAlign: alignment as any,
             ...(content.backgroundImage ? { backgroundImage: `url(${content.backgroundImage})`, backgroundSize: "cover", backgroundPosition: "center" } : {}),
           }}
         >
           <div className={alignment === "center" ? "mx-auto" : alignment === "right" ? "ml-auto" : ""}>
-            <h3 className="text-lg font-bold text-[#F8FAFC]">{((content.title as string) || "Hero Title")}</h3>
-            <p className="mt-1 text-sm text-slate-400">{((content.subtitle as string) || "Subtitle text")}</p>
+            <h3 className="text-lg font-bold text-foreground">{((content.title as string) || "Hero Title")}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">{((content.subtitle as string) || "Subtitle text")}</p>
             {(content.ctaText as string) && (
               <span className="mt-2 inline-block rounded-lg bg-[#7C3AED] px-4 py-1.5 text-xs font-medium text-white">
                 {(content.ctaText as string)}

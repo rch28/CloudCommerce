@@ -49,7 +49,7 @@ function LoginForm() {
         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-lg shadow-violet-900/40">
           <Zap size={22} className="text-white" fill="white" />
         </div>
-        <h1 className="mt-4 text-xl font-bold text-[#F8FAFC]">Sign in to CloudCommerce</h1>
+        <h1 className="mt-4 text-xl font-bold text-foreground">Sign in to CloudCommerce</h1>
         <p className="mt-1 text-sm text-muted-foreground">Enter your credentials to continue</p>
       </div>
 
@@ -98,8 +98,8 @@ function LoginForm() {
         <div className="mt-8 rounded-lg border border-border bg-card p-4">
           <p className="text-xs font-medium text-muted-foreground mb-2">Dev credentials</p>
           <div className="space-y-1 text-xs text-muted-foreground">
-            <p>Admin: <span className="text-[#F8FAFC]">admin@cloudcommerce.com</span> / <span className="text-[#F8FAFC]">admin123</span></p>
-            <p>Merchant: <span className="text-[#F8FAFC]">merchant@demo.com</span> / <span className="text-[#F8FAFC]">merchant123</span></p>
+            <p>Admin: <span className="text-foreground">admin@cloudcommerce.com</span> / <span className="text-foreground">admin123</span></p>
+            <p>Merchant: <span className="text-foreground">merchant@demo.com</span> / <span className="text-foreground">merchant123</span></p>
           </div>
         </div>
       )}
@@ -109,8 +109,8 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#09090B] p-4">
-      <Suspense fallback={<div className="h-32 w-full max-w-sm animate-pulse rounded-xl bg-slate-800" />}>
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Suspense fallback={<div className="h-32 w-full max-w-sm animate-pulse rounded-xl bg-muted" />}>
         <LoginForm />
       </Suspense>
     </div>

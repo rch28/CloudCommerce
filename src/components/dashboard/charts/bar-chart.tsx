@@ -25,7 +25,7 @@ export default function BarChart({ data, accent = "#7C3AED", height = 260, forma
         <XAxis dataKey="label" stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
         <YAxis stroke="#A1A1AA" fontSize={12} tickFormatter={(v: any) => formatter ? formatter(Number(v)) : v} tickLine={false} axisLine={false} />
         <Tooltip
-          contentStyle={{ background: "#18181B", border: "1px solid #27272A", borderRadius: 8, color: "#F8FAFC" }}
+          contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--foreground)" }}
           cursor={{ fill: `${accent}11` }}
           formatter={(value: any) => [formatter ? formatter(Number(value)) : value, ""]}
         />

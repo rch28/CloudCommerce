@@ -87,7 +87,7 @@ export default function CustomersView() {
                           {c.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                         </div>
                         <div>
-                          <p className="font-medium text-[#F8FAFC]">{c.name}</p>
+                          <p className="font-medium text-foreground">{c.name}</p>
                           <p className="text-xs text-muted-foreground">{c.email}</p>
                         </div>
                       </div>
@@ -97,7 +97,7 @@ export default function CustomersView() {
                         {c.orderCount} orders
                       </span>
                     </td>
-                    <td className="px-5 py-4 font-medium text-[#F8FAFC]">
+                    <td className="px-5 py-4 font-medium text-foreground">
                       ${c.totalSpent.toLocaleString()}
                     </td>
                     <td className="px-5 py-4 text-muted-foreground">
@@ -106,7 +106,7 @@ export default function CustomersView() {
                     <td className="px-5 py-4 text-right">
                       <Link
                         href={`/merchant/customers/${c.id}`}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-[#7C3AED]/30 hover:text-[#F8FAFC]"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-[#7C3AED]/30 hover:text-foreground"
                       >
                         <Mail size={13} /> View
                       </Link>
@@ -126,14 +126,14 @@ export default function CustomersView() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page <= 1}
-                  className="flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-[#7C3AED]/30 hover:text-[#F8FAFC] disabled:opacity-40 disabled:pointer-events-none"
+                  className="flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-[#7C3AED]/30 hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
                 >
                   <ChevronLeft size={14} /> Previous
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page >= totalPages}
-                  className="flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-[#7C3AED]/30 hover:text-[#F8FAFC] disabled:opacity-40 disabled:pointer-events-none"
+                  className="flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-[#7C3AED]/30 hover:text-foreground disabled:opacity-40 disabled:pointer-events-none"
                 >
                   Next <ChevronRight size={14} />
                 </button>

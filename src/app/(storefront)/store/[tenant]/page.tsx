@@ -25,7 +25,7 @@ export default async function StoreHomePage({ params }: { params: Promise<{ tena
       <section className="relative overflow-hidden border-b border-border">
         <div className="absolute inset-0 bg-gradient-to-br" style={{ background: `linear-gradient(135deg, ${brandColor}33, transparent)` }} />
         <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:py-32">
-          <h1 className="max-w-2xl text-4xl font-bold tracking-tight text-[#F8FAFC] sm:text-5xl lg:text-6xl">
+          <h1 className="max-w-2xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             Welcome to <span style={{ color: brandColor }}>{name}</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
@@ -52,7 +52,7 @@ export default async function StoreHomePage({ params }: { params: Promise<{ tena
                   <feat.icon size={20} style={{ color: brandColor }} />
                 </div>
                 <div>
-                  <h3 className="font-medium text-[#F8FAFC]">{feat.title}</h3>
+                  <h3 className="font-medium text-foreground">{feat.title}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{feat.desc}</p>
                 </div>
               </div>
@@ -63,7 +63,7 @@ export default async function StoreHomePage({ params }: { params: Promise<{ tena
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-[#F8FAFC]">Featured Products</h2>
+          <h2 className="text-2xl font-bold text-foreground">Featured Products</h2>
           <Link href={`/store/${tenant}/products`} className="text-sm font-medium transition-colors" style={{ color: brandColor }}>
             View all &rarr;
           </Link>

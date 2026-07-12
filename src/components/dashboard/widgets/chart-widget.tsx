@@ -31,7 +31,7 @@ export default function ChartWidget({
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div>
-            <h3 className="font-semibold text-[#F8FAFC]">{title}</h3>
+            <h3 className="font-semibold text-foreground">{title}</h3>
             {description && <p className="text-sm text-muted-foreground">{description}</p>}
           </div>
           {polling && <RefreshCw size={13} className="animate-spin text-[#7C3AED]" />}

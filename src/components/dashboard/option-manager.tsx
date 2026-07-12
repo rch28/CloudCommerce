@@ -106,7 +106,7 @@ export default function OptionManager({ productId, onVariantsGenerated }: Option
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Option Groups</h3>
-        <Button type="button" variant="outline" size="sm" onClick={addGroup} className="border-border text-muted-foreground hover:text-[#F8FAFC]">
+        <Button type="button" variant="outline" size="sm" onClick={addGroup} className="border-border text-muted-foreground hover:text-foreground">
           <Plus size={14} className="mr-1" /> Add Group
         </Button>
       </div>
@@ -123,13 +123,13 @@ export default function OptionManager({ productId, onVariantsGenerated }: Option
             <div className="mb-2 flex items-center justify-between">
               <div className="flex-1">
                 <Input
-                  className="h-8 border-border bg-card text-sm text-[#F8FAFC]"
+                  className="h-8 border-border bg-card text-sm text-foreground"
                   placeholder="Option name (e.g. Size, Color)"
                   value={group.name}
                   onChange={(e) => updateGroupName(gi, e.target.value)}
                 />
               </div>
-              <button type="button" onClick={() => removeGroup(gi)} className="ml-2 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-rose-400">
+              <button type="button" onClick={() => removeGroup(gi)} className="ml-2 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-rose-400">
                 <X size={14} />
               </button>
             </div>
@@ -137,18 +137,18 @@ export default function OptionManager({ productId, onVariantsGenerated }: Option
               {group.values.map((val, vi) => (
                 <div key={vi} className="flex items-center gap-2">
                   <Input
-                    className="h-8 flex-1 border-border bg-card text-xs text-[#F8FAFC]"
+                    className="h-8 flex-1 border-border bg-card text-xs text-foreground"
                     placeholder="Label (e.g. Small)"
                     value={val.label}
                     onChange={(e) => updateValue(gi, vi, "label", e.target.value)}
                   />
                   <Input
-                    className="h-8 flex-1 border-border bg-card text-xs text-[#F8FAFC] font-mono"
+                    className="h-8 flex-1 border-border bg-card text-xs text-foreground font-mono"
                     placeholder="Value (e.g. S)"
                     value={val.value}
                     onChange={(e) => updateValue(gi, vi, "value", e.target.value)}
                   />
-                  <button type="button" onClick={() => removeValue(gi, vi)} className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-rose-400">
+                  <button type="button" onClick={() => removeValue(gi, vi)} className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-rose-400">
                     <X size={12} />
                   </button>
                 </div>
@@ -169,7 +169,7 @@ export default function OptionManager({ productId, onVariantsGenerated }: Option
               <Label className="text-[11px] text-muted-foreground">Base Price ($) <span className="text-red-500">*</span></Label>
               <Input
                 type="number" step="0.01"
-                className="h-8 border-border bg-card text-[#F8FAFC]"
+                className="h-8 border-border bg-card text-foreground"
                 value={basePrice || ""}
                 onChange={(e) => setBasePrice(parseFloat(e.target.value) || 0)}
               />
@@ -177,7 +177,7 @@ export default function OptionManager({ productId, onVariantsGenerated }: Option
             <div className="space-y-1">
               <Label className="text-[11px] text-muted-foreground">Base SKU <span className="text-red-500">*</span></Label>
               <Input
-                className="h-8 border-border bg-card text-[#F8FAFC]"
+                className="h-8 border-border bg-card text-foreground"
                 placeholder="e.g. PROD-BASE"
                 value={baseSku}
                 onChange={(e) => setBaseSku(e.target.value)}

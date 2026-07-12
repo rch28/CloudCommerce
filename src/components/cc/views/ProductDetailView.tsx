@@ -163,7 +163,7 @@ export default function ProductDetailView() {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-rose-500/30 bg-rose-500/10 px-6 py-24 text-center">
         <AlertCircle size={32} className="text-rose-400" />
-        <h3 className="mt-4 text-lg font-semibold text-[#F8FAFC]">{error || "Product not found"}</h3>
+        <h3 className="mt-4 text-lg font-semibold text-foreground">{error || "Product not found"}</h3>
         <Button onClick={() => router.push("/merchant/products")} className="mt-4">
           Back to Products
         </Button>
@@ -175,7 +175,7 @@ export default function ProductDetailView() {
 
   return (
     <div className="space-y-6">
-      <button onClick={() => router.back()} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-[#F8FAFC]">
+      <button onClick={() => router.back()} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
         <ArrowLeft size={15} /> Back
       </button>
 
@@ -184,19 +184,19 @@ export default function ProductDetailView() {
         description={product.category?.name ?? "Uncategorized"}
         actions={
           <div className="flex items-center gap-2">
-            <button onClick={() => router.push(`/merchant/products/${product.id}/edit`)} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC]">
+            <button onClick={() => router.push(`/merchant/products/${product.id}/edit`)} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
               <Pencil size={14} /> Edit
             </button>
-            <button onClick={handleDuplicate} disabled={actionLoading} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-cyan-400 disabled:opacity-30">
+            <button onClick={handleDuplicate} disabled={actionLoading} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-cyan-400 disabled:opacity-30">
               <Copy size={14} /> Duplicate
             </button>
             {product.status !== "archived" ? (
-              <button onClick={handleArchive} disabled={actionLoading} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-amber-400 disabled:opacity-30">
+              <button onClick={handleArchive} disabled={actionLoading} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-amber-400 disabled:opacity-30">
                 {actionLoading ? <Loader2 size={14} className="animate-spin" /> : <Archive size={14} />}
                 Archive
               </button>
             ) : (
-              <button onClick={handleRestore} disabled={actionLoading} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-[#1E293B] hover:text-emerald-400 disabled:opacity-30">
+              <button onClick={handleRestore} disabled={actionLoading} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-emerald-400 disabled:opacity-30">
                 <RotateCcw size={14} /> Restore
               </button>
             )}
@@ -234,7 +234,7 @@ export default function ProductDetailView() {
             {product.shortDescription && (
               <p className="mb-3 text-sm text-muted-foreground italic">{product.shortDescription}</p>
             )}
-            <p className="text-sm text-[#F8FAFC] leading-relaxed whitespace-pre-wrap">{product.description || "No description provided."}</p>
+            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{product.description || "No description provided."}</p>
           </div>
 
           {/* Variants */}
@@ -255,7 +255,7 @@ export default function ProductDetailView() {
                 </thead>
                 <tbody className="divide-y divide-border/60">
                   {product.variants.map((v) => (
-                    <tr key={v.id} className="text-[#F8FAFC]">
+                    <tr key={v.id} className="text-foreground">
                       <td className="py-2.5 font-mono text-xs">{v.sku}</td>
                       <td className="py-2.5 font-medium">${v.price.toFixed(2)}</td>
                       <td className="py-2.5 text-muted-foreground">{v.comparePrice ? `$${v.comparePrice.toFixed(2)}` : "—"}</td>
@@ -287,7 +287,7 @@ export default function ProductDetailView() {
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Price</dt>
-                <dd className="font-medium text-[#F8FAFC]">${defaultVariant?.price.toFixed(2) ?? "0.00"}</dd>
+                <dd className="font-medium text-foreground">${defaultVariant?.price.toFixed(2) ?? "0.00"}</dd>
               </div>
               {defaultVariant?.comparePrice && (
                 <div className="flex justify-between">
@@ -318,19 +318,19 @@ export default function ProductDetailView() {
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Slug</dt>
-                <dd className="font-mono text-xs text-[#F8FAFC]">/{product.slug}</dd>
+                <dd className="font-mono text-xs text-foreground">/{product.slug}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Category</dt>
-                <dd className="text-[#F8FAFC]">{product.category?.name ?? "None"}</dd>
+                <dd className="text-foreground">{product.category?.name ?? "None"}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Created</dt>
-                <dd className="text-[#F8FAFC]">{new Date(product.createdAt).toLocaleDateString()}</dd>
+                <dd className="text-foreground">{new Date(product.createdAt).toLocaleDateString()}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Updated</dt>
-                <dd className="text-[#F8FAFC]">{new Date(product.updatedAt).toLocaleDateString()}</dd>
+                <dd className="text-foreground">{new Date(product.updatedAt).toLocaleDateString()}</dd>
               </div>
             </dl>
           </div>
@@ -343,13 +343,13 @@ export default function ProductDetailView() {
                 {product.seoTitle && (
                   <div>
                     <dt className="text-muted-foreground text-xs">Title</dt>
-                    <dd className="text-[#F8FAFC]">{product.seoTitle}</dd>
+                    <dd className="text-foreground">{product.seoTitle}</dd>
                   </div>
                 )}
                 {product.seoDescription && (
                   <div>
                     <dt className="text-muted-foreground text-xs">Description</dt>
-                    <dd className="text-[#F8FAFC] text-xs">{product.seoDescription}</dd>
+                    <dd className="text-foreground text-xs">{product.seoDescription}</dd>
                   </div>
                 )}
               </dl>

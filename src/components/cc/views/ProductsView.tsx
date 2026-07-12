@@ -239,7 +239,7 @@ export default function ProductsView() {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-rose-500/30 bg-rose-500/10 px-6 py-16 text-center">
         <AlertCircle size={32} className="text-rose-400" />
-        <h3 className="mt-4 text-lg font-semibold text-[#F8FAFC]">
+        <h3 className="mt-4 text-lg font-semibold text-foreground">
           Failed to load products
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">{error}</p>
@@ -348,7 +348,7 @@ export default function ProductsView() {
                     )}
                   </div>
                   <div>
-                    <p className="font-medium text-[#F8FAFC]">{p.name}</p>
+                    <p className="font-medium text-foreground">{p.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {p.category?.name ?? "Uncategorized"} ·{" "}
                       {p.variants?.length ?? 0} variant
@@ -370,7 +370,7 @@ export default function ProductsView() {
               const compare =
                 v?.comparePrice != null ? Number(v.comparePrice) : null;
               return (
-                <div className="font-medium text-[#F8FAFC]">
+                <div className="font-medium text-foreground">
                   ${price.toFixed(2)}
                   {compare != null && compare > price && (
                     <span className="ml-1.5 text-xs text-muted-foreground line-through">

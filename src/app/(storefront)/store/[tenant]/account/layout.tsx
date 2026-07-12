@@ -58,7 +58,7 @@ export default function AccountLayout({ children, params }: { children: React.Re
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      <h1 className="mb-6 text-2xl font-bold text-[#F8FAFC]">My Account</h1>
+      <h1 className="mb-6 text-2xl font-bold text-foreground">My Account</h1>
       <div className="grid gap-8 lg:grid-cols-[220px_1fr]">
         <nav className="space-y-1">
           {nav.map((item) => (
@@ -68,7 +68,7 @@ export default function AccountLayout({ children, params }: { children: React.Re
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
                 isActive(item.href)
                   ? "bg-[#7C3AED]/10 text-[#7C3AED]"
-                  : "text-muted-foreground hover:bg-card hover:text-[#F8FAFC]"
+                  : "text-muted-foreground hover:bg-card hover:text-foreground"
               }`}
             >
               <item.icon size={16} />

@@ -26,27 +26,27 @@ export default function StoreFooter({ tenant, storeName, logo, primaryColor, des
                   <Zap size={16} className="text-white" fill="white" />
                 </div>
               )}
-              <span className="text-sm font-bold text-[#F8FAFC]">{storeName}</span>
+              <span className="text-sm font-bold text-foreground">{storeName}</span>
             </div>
             {description && <p className="mt-3 text-sm text-muted-foreground">{description}</p>}
             <p className="mt-3 text-sm text-muted-foreground">Powered by CloudCommerce</p>
           </div>
           <div>
-            <h4 className="mb-3 text-sm font-semibold text-[#F8FAFC]">Shop</h4>
+            <h4 className="mb-3 text-sm font-semibold text-foreground">Shop</h4>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <Link href={`${base}/products`} className="block transition-colors hover:text-[#F8FAFC]">All Products</Link>
-              <Link href={`${base}/categories`} className="block transition-colors hover:text-[#F8FAFC]">Categories</Link>
+              <Link href={`${base}/products`} className="block transition-colors hover:text-foreground">All Products</Link>
+              <Link href={`${base}/categories`} className="block transition-colors hover:text-foreground">Categories</Link>
             </div>
           </div>
           <div>
-            <h4 className="mb-3 text-sm font-semibold text-[#F8FAFC]">Account</h4>
+            <h4 className="mb-3 text-sm font-semibold text-foreground">Account</h4>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <Link href={`${base}/cart`} className="block transition-colors hover:text-[#F8FAFC]">Cart</Link>
-              <Link href={`${base}/account/orders`} className="block transition-colors hover:text-[#F8FAFC]">Orders</Link>
+              <Link href={`${base}/cart`} className="block transition-colors hover:text-foreground">Cart</Link>
+              <Link href={`${base}/account/orders`} className="block transition-colors hover:text-foreground">Orders</Link>
             </div>
           </div>
           <div>
-            <h4 className="mb-3 text-sm font-semibold text-[#F8FAFC]">Support</h4>
+            <h4 className="mb-3 text-sm font-semibold text-foreground">Support</h4>
             <div className="space-y-2 text-sm text-muted-foreground">
               <p>contact@{tenant}.com</p>
             </div>

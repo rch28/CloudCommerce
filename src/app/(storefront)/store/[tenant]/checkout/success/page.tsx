@@ -103,7 +103,7 @@ export default function CheckoutSuccessPage({ params }: { params: Promise<{ tena
   if (error || !order) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-24 text-center">
-        <h1 className="text-2xl font-bold text-[#F8FAFC] mb-4">Order Status</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-4">Order Status</h1>
         <p className="text-muted-foreground mb-6">{error || "Order not found"}</p>
         <div className="flex flex-wrap justify-center gap-4">
           <Button asChild size="xl">
@@ -111,7 +111,7 @@ export default function CheckoutSuccessPage({ params }: { params: Promise<{ tena
               View Orders
             </Link>
           </Button>
-          <Link href={`${base}/products`} className="rounded-lg border border-border px-6 py-3 text-sm font-medium text-[#F8FAFC] hover:bg-card transition-colors">
+          <Link href={`${base}/products`} className="rounded-lg border border-border px-6 py-3 text-sm font-medium text-foreground hover:bg-card transition-colors">
             Continue Shopping
           </Link>
         </div>
@@ -129,9 +129,9 @@ export default function CheckoutSuccessPage({ params }: { params: Promise<{ tena
     <div className="mx-auto max-w-2xl px-4 py-12">
       <div className="text-center mb-8">
         <CheckCircle size={64} className="mx-auto text-emerald-500 mb-4" />
-        <h1 className="text-3xl font-bold text-[#F8FAFC]">Payment Successful!</h1>
+        <h1 className="text-3xl font-bold text-foreground">Payment Successful!</h1>
         <p className="mt-2 text-muted-foreground">
-          Your order <span className="font-mono text-[#F8FAFC]">#{order.number}</span> has been placed.
+          Your order <span className="font-mono text-foreground">#{order.number}</span> has been placed.
         </p>
         <div className="mt-2">
           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadge}`}>
@@ -142,11 +142,11 @@ export default function CheckoutSuccessPage({ params }: { params: Promise<{ tena
 
       <div className="space-y-4">
         <div className="rounded-xl border border-border bg-card p-4">
-          <h3 className="mb-3 text-sm font-medium text-[#F8FAFC]">Items ({order.items.length})</h3>
+          <h3 className="mb-3 text-sm font-medium text-foreground">Items ({order.items.length})</h3>
           <div className="divide-y divide-border">
             {order.items.map((item) => (
               <div key={item.id} className="flex items-center gap-3 py-2 text-sm">
-                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#18181B]">
+                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                   {item.image ? (
                     <img src={item.image} alt={item.productName} className="h-full w-full object-cover" />
                   ) : (
@@ -156,11 +156,11 @@ export default function CheckoutSuccessPage({ params }: { params: Promise<{ tena
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-[#F8FAFC]">{item.productName}</p>
+                  <p className="truncate font-medium text-foreground">{item.productName}</p>
                   <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[#F8FAFC]">${(item.price * item.quantity).toFixed(2)}</p>
+                  <p className="text-foreground">${(item.price * item.quantity).toFixed(2)}</p>
                   <p className="text-xs text-muted-foreground">x{item.quantity}</p>
                 </div>
               </div>
@@ -169,7 +169,7 @@ export default function CheckoutSuccessPage({ params }: { params: Promise<{ tena
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4">
-          <h3 className="mb-3 text-sm font-medium text-[#F8FAFC]">Order Summary</h3>
+          <h3 className="mb-3 text-sm font-medium text-foreground">Order Summary</h3>
           <div className="space-y-1.5 text-sm">
             <div className="flex justify-between text-muted-foreground">
               <span>Subtotal</span>
@@ -183,7 +183,7 @@ export default function CheckoutSuccessPage({ params }: { params: Promise<{ tena
               <span>Tax (8%)</span>
               <span>${order.tax.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-[#F8FAFC]">
+            <div className="flex justify-between border-t border-border pt-2 text-lg font-bold text-foreground">
               <span>Total</span>
               <span>${order.total.toFixed(2)}</span>
             </div>
@@ -192,9 +192,9 @@ export default function CheckoutSuccessPage({ params }: { params: Promise<{ tena
 
         {order.address && (
           <div className="rounded-xl border border-border bg-card p-4">
-            <h3 className="mb-3 text-sm font-medium text-[#F8FAFC]">Shipping Address</h3>
+            <h3 className="mb-3 text-sm font-medium text-foreground">Shipping Address</h3>
             <div className="text-sm text-muted-foreground space-y-0.5">
-              <p className="font-medium text-[#F8FAFC]">{order.address.label}</p>
+              <p className="font-medium text-foreground">{order.address.label}</p>
               <p>{order.address.line1}</p>
               {order.address.line2 && <p>{order.address.line2}</p>}
               <p>{order.address.city}, {order.address.state} {order.address.zip}</p>
@@ -209,7 +209,7 @@ export default function CheckoutSuccessPage({ params }: { params: Promise<{ tena
             View Orders
           </Link>
         </Button>
-        <Link href={`${base}/products`} className="rounded-lg border border-border px-6 py-3 text-sm font-medium text-[#F8FAFC] hover:bg-card transition-colors">
+        <Link href={`${base}/products`} className="rounded-lg border border-border px-6 py-3 text-sm font-medium text-foreground hover:bg-card transition-colors">
           Continue Shopping
         </Link>
       </div>

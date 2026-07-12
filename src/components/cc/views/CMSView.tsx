@@ -92,13 +92,13 @@ function ConfirmDialog({ open, onOpenChange, title, description, onConfirm, conf
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => onOpenChange(false)}>
-      <div className="w-full max-w-sm rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-semibold text-[#F8FAFC]">{title}</h3>
-        <p className="mt-2 text-sm text-slate-400">{description}</p>
+      <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+        <p className="mt-2 text-sm text-muted-foreground">{description}</p>
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={() => onOpenChange(false)}
-            className="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-400 transition-colors hover:bg-slate-800 hover:text-[#F8FAFC]"
+            className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             Cancel
           </button>
@@ -370,8 +370,8 @@ export default function CMSView() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#F8FAFC]">Content Management</h1>
-        <p className="mt-1 text-sm text-slate-400">Manage pages, banners, and content blocks.</p>
+        <h1 className="text-2xl font-bold text-foreground">Content Management</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Manage pages, banners, and content blocks.</p>
       </div>
 
       {error && (
@@ -402,7 +402,7 @@ export default function CMSView() {
                   const p = item as unknown as PageItem;
                   return (
                     <div>
-                      <p className="font-medium text-[#F8FAFC]">{p.title}</p>
+                      <p className="font-medium text-foreground">{p.title}</p>
                       <p className="text-xs text-slate-500">/{p.slug}</p>
                     </div>
                   );
@@ -414,7 +414,7 @@ export default function CMSView() {
                 render: (item: Record<string, unknown>) => {
                   const p = item as unknown as PageItem;
                   return (
-                    <span className="rounded-md bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-300 capitalize">
+                    <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground capitalize">
                       {p.type}
                     </span>
                   );
@@ -434,7 +434,7 @@ export default function CMSView() {
                 label: "Sections",
                 render: (item: Record<string, unknown>) => {
                   const p = item as unknown as PageItem;
-                  return <span className="text-sm text-slate-400">{p.sections?.length ?? 0}</span>;
+                  return <span className="text-sm text-muted-foreground">{p.sections?.length ?? 0}</span>;
                 },
               },
               {
@@ -443,7 +443,7 @@ export default function CMSView() {
                 sortable: true,
                 render: (item: Record<string, unknown>) => {
                   const p = item as unknown as PageItem;
-                  return <span className="text-sm text-slate-400">{new Date(p.updatedAt).toLocaleDateString()}</span>;
+                  return <span className="text-sm text-muted-foreground">{new Date(p.updatedAt).toLocaleDateString()}</span>;
                 },
               },
               {
@@ -496,7 +496,7 @@ export default function CMSView() {
                         <Megaphone size={15} className="text-white" />
                       </div>
                       <div>
-                        <p className="font-medium text-[#F8FAFC]">{b.title}</p>
+                        <p className="font-medium text-foreground">{b.title}</p>
                         {b.subtitle && <p className="text-xs text-slate-500">{b.subtitle}</p>}
                       </div>
                     </div>
@@ -509,7 +509,7 @@ export default function CMSView() {
                 render: (item: Record<string, unknown>) => {
                   const b = item as unknown as BannerItem;
                   return (
-                    <span className="rounded-md bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-300 capitalize">
+                    <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground capitalize">
                       {b.position}
                     </span>
                   );
@@ -520,7 +520,7 @@ export default function CMSView() {
                 label: "Type",
                 render: (item: Record<string, unknown>) => {
                   const b = item as unknown as BannerItem;
-                  return <span className="text-sm text-slate-400 capitalize">{b.type}</span>;
+                  return <span className="text-sm text-muted-foreground capitalize">{b.type}</span>;
                 },
               },
               {
@@ -536,7 +536,7 @@ export default function CMSView() {
                 label: "Order",
                 render: (item: Record<string, unknown>) => {
                   const b = item as unknown as BannerItem;
-                  return <span className="text-sm text-slate-400">{b.sortOrder}</span>;
+                  return <span className="text-sm text-muted-foreground">{b.sortOrder}</span>;
                 },
               },
               {
@@ -582,8 +582,8 @@ export default function CMSView() {
 
           <div className="space-y-6 py-4">
             {/* Metadata */}
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-              <h4 className="mb-4 text-sm font-semibold text-[#F8FAFC]">Page Details</h4>
+            <div className="rounded-xl border border-border bg-muted/50 p-5">
+              <h4 className="mb-4 text-sm font-semibold text-foreground">Page Details</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label variant="muted" size="sm">Title</Label>
@@ -651,23 +651,23 @@ export default function CMSView() {
             </div>
 
             {/* Page Builder */}
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+            <div className="rounded-xl border border-border bg-muted/50 p-5">
               <div className="mb-4 flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-[#F8FAFC]">Sections ({pageSections.length})</h4>
+                <h4 className="text-sm font-semibold text-foreground">Sections ({pageSections.length})</h4>
               </div>
 
               {pageSections.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-slate-700 p-8 text-center">
+                <div className="rounded-lg border border-dashed border-border p-8 text-center">
                   <Layout size={32} className="mx-auto text-slate-600" />
                   <p className="mt-2 text-sm text-slate-500">No sections yet. Add your first content block below.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {pageSections.map((section, index) => (
-                    <div key={section.id} className="rounded-xl border border-slate-700/50 bg-slate-800/30">
-                      <div className="flex items-center justify-between border-b border-slate-700/50 px-4 py-2">
+                    <div key={section.id} className="rounded-xl border border-border/50 bg-muted/30">
+                      <div className="flex items-center justify-between border-b border-border/50 px-4 py-2">
                         <div className="flex items-center gap-2">
-                          <span className="rounded bg-slate-700 px-2 py-0.5 text-xs font-medium text-slate-300 capitalize">
+                          <span className="rounded bg-slate-700 px-2 py-0.5 text-xs font-medium text-muted-foreground capitalize">
                             {section.type.replace("_", " ")}
                           </span>
                           <span className="text-xs text-slate-500">#{index + 1}</span>
@@ -676,14 +676,14 @@ export default function CMSView() {
                           <button
                             onClick={() => moveSection(index, "up")}
                             disabled={index === 0}
-                            className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-700 hover:text-[#F8FAFC] disabled:opacity-30"
+                            className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-700 hover:text-foreground disabled:opacity-30"
                           >
                             <MoveUp size={14} />
                           </button>
                           <button
                             onClick={() => moveSection(index, "down")}
                             disabled={index === pageSections.length - 1}
-                            className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-700 hover:text-[#F8FAFC] disabled:opacity-30"
+                            className="rounded p-1 text-slate-500 transition-colors hover:bg-slate-700 hover:text-foreground disabled:opacity-30"
                           >
                             <MoveDown size={14} />
                           </button>
@@ -715,7 +715,7 @@ export default function CMSView() {
                   <select
                     value=""
                     onChange={(e) => { if (e.target.value) { addSection(e.target.value); e.target.value = ""; } }}
-                    className="w-full rounded-lg border border-dashed border-slate-700 bg-transparent px-4 py-2.5 text-sm text-slate-400 transition-colors hover:border-slate-600 hover:text-[#F8FAFC] appearance-none cursor-pointer"
+                    className="w-full rounded-lg border border-dashed border-border bg-transparent px-4 py-2.5 text-sm text-muted-foreground transition-colors hover:border-slate-600 hover:text-foreground appearance-none cursor-pointer"
                   >
                     <option value="" disabled>+ Add Section</option>
                     {BLOCK_TYPES.map((bt) => (
@@ -728,7 +728,7 @@ export default function CMSView() {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 border-t border-slate-800 pt-4">
+          <div className="flex items-center justify-end gap-3 border-t border-border pt-4">
             <Button variant="outline" onClick={() => { setPageOpen(false); resetPageForm(); }}>
               Cancel
             </Button>
@@ -870,7 +870,7 @@ export default function CMSView() {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 border-t border-slate-800 pt-4">
+          <div className="flex items-center justify-end gap-3 border-t border-border pt-4">
             <Button variant="outline" onClick={() => { setBannerOpen(false); resetBannerForm(); }}>
               Cancel
             </Button>

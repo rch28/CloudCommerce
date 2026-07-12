@@ -36,7 +36,7 @@ export default function ProductGridRenderer({ content, brandColor, tenant }: Pro
     <section className="border-b border-border">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         {title && (
-          <h2 className="mb-8 text-2xl font-bold text-[#F8FAFC]">{title}</h2>
+          <h2 className="mb-8 text-2xl font-bold text-foreground">{title}</h2>
         )}
         {loading ? (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">

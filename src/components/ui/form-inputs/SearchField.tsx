@@ -36,7 +36,7 @@ const SearchField = ({
         }}
         onKeyDown={onKeyDown}
         placeholder={placeholder}
-        className={`w-full rounded-lg border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-[#F8FAFC] outline-none ring-0 hover:ring-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0  placeholder:text-muted-foreground  ${inputClassName}`}
+        className={`w-full rounded-lg border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground outline-none ring-0 hover:ring-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0  placeholder:text-muted-foreground  ${inputClassName}`}
       />
       {searchQuery?.length > 1 && (
         <button

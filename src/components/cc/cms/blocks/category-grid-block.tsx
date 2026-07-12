@@ -11,8 +11,8 @@ interface CategoryGridBlockProps {
 export default function CategoryGridBlock({ content, onChange }: CategoryGridBlockProps) {
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
-        <div className="mb-4 flex items-center gap-2 text-sm text-slate-400">
+      <div className="rounded-xl border border-border bg-muted/50 p-6">
+        <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
           <Tag size={16} /> Category Grid Section
         </div>
         <div className="space-y-3">
@@ -44,9 +44,9 @@ export default function CategoryGridBlock({ content, onChange }: CategoryGridBlo
           </div>
         </div>
       </div>
-      <div className="rounded-xl border border-slate-800 bg-slate-900/30 p-4">
+      <div className="rounded-xl border border-border bg-muted/30 p-4">
         <p className="mb-2 text-xs font-medium text-slate-500">Preview</p>
-        <div className="rounded-lg bg-slate-800/50 p-4 text-center text-sm text-slate-400">
+        <div className="rounded-lg bg-muted/50 p-4 text-center text-sm text-muted-foreground">
           Category grid will render here with {(content.limit as number) || 6} categories
         </div>
       </div>

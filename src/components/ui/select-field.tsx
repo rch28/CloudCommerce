@@ -16,11 +16,11 @@ interface SelectFieldProps extends Omit<
 
 const sizeClasses: Record<NonNullable<SelectFieldProps["size"]>, string> = {
   default:
-    "w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#7C3AED]",
+    "w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-[#7C3AED]",
   compact:
-    "rounded-lg border border-border bg-card px-3 py-2.5 text-xs text-[#F8FAFC] outline-none focus:border-[#7C3AED]",
-  sm: "h-8 w-full rounded-md border border-border bg-card px-2 text-xs text-[#F8FAFC] outline-none",
-  md: "h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-[#F8FAFC] outline-none",
+    "rounded-lg border border-border bg-card px-3 py-2.5 text-xs text-foreground outline-none focus:border-[#7C3AED]",
+  sm: "h-8 w-full rounded-md border border-border bg-card px-2 text-xs text-foreground outline-none",
+  md: "h-10 w-full rounded-md border border-border bg-card px-3 text-sm text-foreground outline-none",
 };
 
 const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(

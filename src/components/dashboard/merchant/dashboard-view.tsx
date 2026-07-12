@@ -133,7 +133,7 @@ export default function MerchantDashboardView() {
               <XAxis dataKey="month" stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis stroke="#A1A1AA" fontSize={12} tickFormatter={(v) => `$${v / 1000}k`} tickLine={false} axisLine={false} />
               <Tooltip
-                contentStyle={{ background: "#18181B", border: "1px solid #27272A", borderRadius: 8, color: "#F8FAFC" }}
+                contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--foreground)" }}
                 cursor={{ stroke: "#27272A" }}
               />
               <Area type="monotone" dataKey="revenue" stroke="#7C3AED" strokeWidth={2.5} fill="url(#merchantRev)" />
@@ -148,7 +148,7 @@ export default function MerchantDashboardView() {
               <XAxis dataKey="day" stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis stroke="#A1A1AA" fontSize={12} tickLine={false} axisLine={false} />
               <Tooltip
-                contentStyle={{ background: "#18181B", border: "1px solid #27272A", borderRadius: 8, color: "#F8FAFC" }}
+                contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--foreground)" }}
                 cursor={{ fill: "#7C3AED11" }}
               />
               <Bar dataKey="orders" fill="#7C3AED" radius={[6, 6, 0, 0]} barSize={32} />

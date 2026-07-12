@@ -116,7 +116,7 @@ export default function DataTable({
               setSearchQuery={setSearch}
               setPage={setPage}
               className="max-w-xs"
-              inputClassName="bg-card text-[#F8FAFC] placeholder-muted-foreground focus:border-[#7C3AED]"
+              inputClassName="bg-card text-foreground placeholder-muted-foreground focus:border-[#7C3AED]"
             />
           )}
           {filterable && filters && onFilterChange && (
@@ -132,7 +132,7 @@ export default function DataTable({
                   className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                     activeFilter === f.value
                       ? "bg-[#7C3AED] text-white"
-                      : "border border-border bg-background text-muted-foreground hover:text-[#F8FAFC]"
+                      : "border border-border bg-background text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {f.label}
@@ -155,7 +155,7 @@ export default function DataTable({
                   {columns.map((col) => (
                     <th
                       key={col.key}
-                      className={`px-5 py-3.5 font-medium ${col.sortable ? "cursor-pointer select-none hover:text-[#F8FAFC]" : ""}`}
+                      className={`px-5 py-3.5 font-medium ${col.sortable ? "cursor-pointer select-none hover:text-foreground" : ""}`}
                       onClick={() => col.sortable && handleSort(col.key)}
                     >
                       <span className="inline-flex items-center gap-1">
@@ -176,7 +176,7 @@ export default function DataTable({
                 {displayData.map((item: Record<string, unknown>, i: number) => (
                   <tr
                     key={(item.id as string) || String(i)}
-                    className="transition-colors hover:bg-[#1E293B]"
+                    className="transition-colors hover:bg-accent"
                   >
                     {columns.map((col: Column) => (
                       <td key={col.key} className="px-5 py-4">
@@ -203,7 +203,7 @@ export default function DataTable({
                       ? serverPagination.onPageChange(np)
                       : setPage(np);
                   }}
-                  className="rounded-lg p-1.5 transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC] disabled:opacity-40"
+                  className="rounded-lg p-1.5 transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
                 >
                   <ChevronLeft size={16} />
                 </button>
@@ -222,7 +222,7 @@ export default function DataTable({
                       className={`min-w-[28px] rounded-lg px-2 py-1 text-sm font-medium transition-colors ${
                         p === activePage
                           ? "bg-[#7C3AED] text-white"
-                          : "hover:bg-[#1E293B] hover:text-[#F8FAFC]"
+                          : "hover:bg-accent hover:text-foreground"
                       }`}
                     >
                       {p}
@@ -237,7 +237,7 @@ export default function DataTable({
                       ? serverPagination.onPageChange(np)
                       : setPage(np);
                   }}
-                  className="rounded-lg p-1.5 transition-colors hover:bg-[#1E293B] hover:text-[#F8FAFC] disabled:opacity-40"
+                  className="rounded-lg p-1.5 transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
                 >
                   <ChevronRight size={16} />
                 </button>

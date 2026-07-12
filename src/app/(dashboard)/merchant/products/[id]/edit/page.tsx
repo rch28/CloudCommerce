@@ -86,7 +86,7 @@ export default function ProductEditPage() {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-rose-500/30 bg-rose-500/10 px-6 py-24 text-center">
         <AlertCircle size={32} className="text-rose-400" />
-        <h3 className="mt-4 text-lg font-semibold text-[#F8FAFC]">{error || "Product not found"}</h3>
+        <h3 className="mt-4 text-lg font-semibold text-foreground">{error || "Product not found"}</h3>
         <Button onClick={() => router.push("/merchant/products")} className="mt-4">
           Back to Products
         </Button>
@@ -96,7 +96,7 @@ export default function ProductEditPage() {
 
   return (
     <div className="space-y-6">
-      <button onClick={() => router.back()} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-[#F8FAFC]">
+      <button onClick={() => router.back()} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
         <ArrowLeft size={15} /> Back
       </button>
 

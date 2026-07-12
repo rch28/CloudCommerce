@@ -20,7 +20,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-950">
+      <div className="flex h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" />
       </div>
     );
@@ -53,7 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <AuthProvider>
       <AppProvider>
         <AuthGuard>
-          <div className="flex h-screen overflow-hidden bg-slate-950 font-sans text-[#F8FAFC]">
+          <div className="flex h-screen overflow-hidden bg-background font-sans text-foreground">
             <Sidebar
               open={sidebarOpen}
               onClose={() => setSidebarOpen(false)}

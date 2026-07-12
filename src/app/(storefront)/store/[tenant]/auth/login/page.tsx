@@ -45,13 +45,13 @@ export default function CustomerLoginPage({ params }: { params: Promise<{ tenant
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#09090B] p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-lg shadow-violet-900/40">
             <Zap size={22} className="text-white" fill="white" />
           </div>
-          <h1 className="mt-4 text-xl font-bold text-[#F8FAFC]">Sign in</h1>
+          <h1 className="mt-4 text-xl font-bold text-foreground">Sign in</h1>
           <p className="mt-1 text-sm text-muted-foreground">Access your account to manage orders and addresses.</p>
         </div>
 

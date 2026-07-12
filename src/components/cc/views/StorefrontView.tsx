@@ -60,7 +60,7 @@ export default function StorefrontView() {
             soundwave.cloudcommerce.com
           </span>
           <h2 className="mt-4 text-3xl font-bold text-white">Premium Sound, Reimagined</h2>
-          <p className="mt-2 text-slate-300">Shop the latest audio gear with real-time stock and fast checkout.</p>
+          <p className="mt-2 text-muted-foreground">Shop the latest audio gear with real-time stock and fast checkout.</p>
         </div>
         <div className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 rounded-full bg-violet-600/30 blur-3xl" />
         <button
@@ -76,8 +76,8 @@ export default function StorefrontView() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {live.map((p) => (
-          <div key={p.id} className="group overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 transition-all hover:-translate-y-1 hover:border-violet-700/50">
-            <div className="aspect-square overflow-hidden bg-slate-950">
+          <div key={p.id} className="group overflow-hidden rounded-xl border border-border bg-muted/50 transition-all hover:-translate-y-1 hover:border-violet-700/50">
+            <div className="aspect-square overflow-hidden bg-background">
               <img src={p.image} alt={p.name} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
             </div>
             <div className="p-4">
@@ -100,10 +100,10 @@ export default function StorefrontView() {
         ))}
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8">
+      <div className="rounded-2xl border border-border bg-muted/50 p-6 sm:p-8">
         <div className="mx-auto max-w-md text-center">
           <h3 className="text-xl font-bold text-white">Get early access & deals</h3>
-          <p className="mt-1 text-sm text-slate-400">Join the SoundWave list for drops and exclusive offers.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Join the SoundWave list for drops and exclusive offers.</p>
           {subscribed ? (
             <div className="mt-5 flex items-center justify-center gap-2 rounded-lg bg-emerald-500/10 py-3 text-emerald-400">
               <Check size={18} /> You&apos;re subscribed!
@@ -116,16 +116,16 @@ export default function StorefrontView() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email address"
-                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-600"
+                className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-white placeholder-muted-foreground outline-none focus:border-violet-600"
               />
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Phone number (optional)"
-                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-violet-600"
+                className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-white placeholder-muted-foreground outline-none focus:border-violet-600"
               />
-              <label className="flex items-start gap-2 text-xs text-slate-400">
+              <label className="flex items-start gap-2 text-xs text-muted-foreground">
                 <input type="checkbox" checked={sms} onChange={(e) => setSms(e.target.checked)} className="mt-0.5 accent-violet-600" />
                 <span>Text me updates. Msg &amp; data rates may apply. Reply STOP to unsubscribe.</span>
               </label>
@@ -139,31 +139,31 @@ export default function StorefrontView() {
 
       {open && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/60" onClick={() => setOpen(false)}>
-          <div className="flex h-full w-full max-w-md flex-col border-l border-slate-800 bg-slate-950" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+          <div className="flex h-full w-full max-w-md flex-col border-l border-border bg-background" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <h3 className="font-semibold text-white">Your Cart</h3>
-              <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-white"><X size={20} /></button>
+              <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-white"><X size={20} /></button>
             </div>
             <div className="flex-1 space-y-3 overflow-y-auto p-5">
               {cart.length === 0 && <p className="py-10 text-center text-slate-500">Your cart is empty.</p>}
               {cart.map((i) => (
-                <div key={i.id} className="flex items-center gap-3 rounded-lg border border-slate-800 p-3">
+                <div key={i.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
                   <img src={i.image} alt="" className="h-14 w-14 rounded-lg object-cover" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-white">{i.name}</p>
                     <p className="text-sm text-violet-400">${i.price.toFixed(2)}</p>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <button onClick={() => setQty(i.id, -1)} className="rounded border border-slate-800 p-1 text-slate-300"><Minus size={13} /></button>
+                    <button onClick={() => setQty(i.id, -1)} className="rounded border border-border p-1 text-muted-foreground"><Minus size={13} /></button>
                     <span className="w-5 text-center text-sm text-white">{i.qty}</span>
-                    <button onClick={() => setQty(i.id, 1)} className="rounded border border-slate-800 p-1 text-slate-300"><Plus size={13} /></button>
+                    <button onClick={() => setQty(i.id, 1)} className="rounded border border-border p-1 text-muted-foreground"><Plus size={13} /></button>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="border-t border-slate-800 p-5">
+            <div className="border-t border-border p-5">
               <div className="mb-3 flex justify-between text-white">
-                <span className="text-slate-400">Total</span>
+                <span className="text-muted-foreground">Total</span>
                 <span className="text-lg font-bold">${total.toFixed(2)}</span>
               </div>
               <Button disabled={!cart.length} className="w-full" variant="gradient" size="xl">

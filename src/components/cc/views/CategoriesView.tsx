@@ -287,7 +287,7 @@ export default function CategoriesView() {
                     )}
                   </div>
                   <div>
-                    <p className="font-medium text-[#F8FAFC]">{c.name}</p>
+                    <p className="font-medium text-foreground">{c.name}</p>
                     <p className="text-xs text-muted-foreground">/{c.slug}</p>
                   </div>
                 </div>
