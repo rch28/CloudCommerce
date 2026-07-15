@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getSessionUser();
     const sessionId = request.cookies.get("cc_cart_session")?.value;
-    const tenantId = request.headers.get("x-tenant-id") || "t-1";
+    const tenantId = request.headers.get("x-tenant-id");
 
     let customerId: string | null = null;
 
@@ -17,6 +17,10 @@ export async function POST(request: NextRequest) {
         where: { email_tenantId: { email: session.email, tenantId: session.tenantId! } },
       });
       if (customer) customerId = customer.id;
+    }
+
+    if (!tenantId) {
+      return NextResponse.json({ error: "Missing x-tenant-id header" }, { status: 400 });
     }
 
     if (!customerId && !sessionId) {

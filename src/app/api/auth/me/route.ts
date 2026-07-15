@@ -11,7 +11,7 @@ export async function GET() {
 
     const session = await prisma.session.findUnique({
       where: { token },
-      include: { user: { select: { id: true, email: true, name: true, role: true } } },
+      include: { user: { select: { id: true, email: true, name: true, role: true, tenantId: true } } },
     });
 
     if (!session || session.expiresAt < new Date()) {

@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     await setSessionCookie(token);
 
     return NextResponse.json({
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      user: { id: user.id, email: user.email, name: user.name, role: user.role, tenantId: user.tenantId },
     });
   } catch (error) {
     console.error("[auth/login] error:", error);

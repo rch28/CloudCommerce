@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getSessionUser();
     const sessionId = request.cookies.get("cc_cart_session")?.value;
-    const tenantId = request.headers.get("x-tenant-id") || "t-1";
+    const tenantId = request.headers.get("x-tenant-id");
 
     let customerId: string | null = null;
 
@@ -16,6 +16,10 @@ export async function GET(request: NextRequest) {
         where: { email_tenantId: { email: session.email, tenantId: session.tenantId! } },
       });
       if (customer) customerId = customer.id;
+    }
+
+    if (!tenantId) {
+      return NextResponse.json({ count: 0 });
     }
 
     if (!customerId && !sessionId) {
