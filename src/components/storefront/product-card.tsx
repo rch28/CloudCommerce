@@ -73,9 +73,9 @@ export default function ProductCard({ id, name, slug, price, image, stock, sold,
         <div className="mt-3 flex items-center justify-between">
           <span className="text-lg font-bold text-foreground">${Number(price).toFixed(2)}</span>
           <Button
-            onClick={() => {
+            onClick={async () => {
               if (!outOfStock) {
-                addItem({
+                await addItem({
                   variantId: variantId || `var-${id}`,
                   productId: id, productName: name, slug, image, price, sku: `SKU-${id}`, quantity: 1,
                 });

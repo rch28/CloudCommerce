@@ -9,7 +9,8 @@ const api = axios.create({
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401) {
+    const url = error.config?.url ?? "";
+    if (error.response?.status === 401 && !url.startsWith("/cart") && !url.startsWith("/account/profile")) {
       window.location.href = "/";
     }
     return Promise.reject(error);

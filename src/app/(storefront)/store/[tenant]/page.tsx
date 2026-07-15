@@ -3,6 +3,7 @@ import { ArrowRight, Zap, Shield, Truck } from "lucide-react";
 import { productRepo } from "@/lib/services/products";
 import { getSettingsBySlug } from "@/lib/services/settings";
 import ProductCard from "@/components/storefront/product-card";
+import { TenantIdSetter } from "@/components/storefront/tenant-id-setter";
 
 export function generateStaticParams() {
   return [];
@@ -22,6 +23,7 @@ export default async function StoreHomePage({ params }: { params: Promise<{ tena
 
   return (
     <div>
+      <TenantIdSetter tenantId={tenantId} />
       <section className="relative overflow-hidden border-b border-border">
         <div className="absolute inset-0 bg-gradient-to-br" style={{ background: `linear-gradient(135deg, ${brandColor}33, transparent)` }} />
         <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:py-32">

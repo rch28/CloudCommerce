@@ -40,6 +40,12 @@ interface CartContextType {
 const GUEST_STORAGE_KEY = "cc_storefront_cart";
 const SESSION_COOKIE = "cc_cart_session";
 
+let _tenantIdOverride: string | null = null;
+
+export function setTenantId(id: string) {
+  _tenantIdOverride = id;
+}
+
 const CartContext = createContext<CartContextType | null>(null);
 
 function generateId(): string {
@@ -80,6 +86,7 @@ function ensureSessionCookie(): string {
 }
 
 function getTenantFromPath(): string | null {
+  if (_tenantIdOverride) return _tenantIdOverride;
   if (typeof window === "undefined") return null;
   const match = window.location.pathname.match(/\/store\/([^/]+)/);
   return match ? match[1] : null;
@@ -104,6 +111,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     initialLoadDone.current = true;
 
     async function init() {
+      ensureSessionCookie();
+
+      setItems(loadGuestCart());
+
       try {
         await accountApi.getProfile();
         setIsAuthenticated(true);
@@ -123,14 +134,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
             return;
           }
         }
-        setItems([]);
-        setLoading(false);
-        return;
-      } catch {}
-
-      setIsAuthenticated(false);
-      ensureSessionCookie();
-      setItems(loadGuestCart());
+      } catch {
+        setIsAuthenticated(false);
+      }
       setLoading(false);
     }
 
@@ -138,10 +144,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!loading) {
       saveGuestCart(items);
     }
-  }, [items, loading, isAuthenticated]);
+  }, [items, loading]);
 
   async function mergeGuestItems(guestItems: CartItem[], tenantId: string) {
     try {
@@ -164,22 +170,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   const addItem = useCallback(async (item: CartItem) => {
-    if (isAuthenticated) {
-      const tenantId = getTenantFromPath();
-      if (!tenantId) return;
-      try {
-        await cartApi.addItem({
-          tenantId,
-          variantId: item.variantId,
-          quantity: item.quantity,
-          price: item.price,
-        });
-        const data = await cartApi.get(tenantId);
-        setItems(data.items || []);
-      } catch {}
-      return;
-    }
-
     setItems((prev) => {
       const existing = prev.find((i) => i.variantId === item.variantId);
       if (existing) {
@@ -191,6 +181,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, item];
     });
+
+    const tenantId = getTenantFromPath();
+    if (isAuthenticated && tenantId) {
+      try {
+        await cartApi.addItem({
+          tenantId,
+          variantId: item.variantId,
+          quantity: item.quantity,
+          price: item.price,
+        });
+        const data = await cartApi.get(tenantId);
+        if (data.items?.length) {
+          setItems(data.items);
+        }
+      } catch {}
+    }
   }, [isAuthenticated]);
 
   const updateQuantity = useCallback(async (variantId: string, quantity: number) => {
@@ -199,46 +205,46 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (isAuthenticated) {
-      const tenantId = getTenantFromPath();
-      if (!tenantId) return;
-      try {
-        await cartApi.updateItem(variantId, { quantity, tenantId });
-        const data = await cartApi.get(tenantId);
-        setItems(data.items || []);
-      } catch {}
-      return;
-    }
-
     setItems((prev) =>
       prev.map((i) => (i.variantId === variantId ? { ...i, quantity } : i)),
     );
+
+    const tenantId = getTenantFromPath();
+    if (isAuthenticated && tenantId) {
+      try {
+        await cartApi.updateItem(variantId, { quantity, tenantId });
+        const data = await cartApi.get(tenantId);
+        if (data.items?.length) {
+          setItems(data.items);
+        }
+      } catch {}
+    }
   }, [isAuthenticated]);
 
   const removeItem = useCallback(async (variantId: string) => {
-    if (isAuthenticated) {
-      const tenantId = getTenantFromPath();
-      if (!tenantId) return;
+    setItems((prev) => prev.filter((i) => i.variantId !== variantId));
+
+    const tenantId = getTenantFromPath();
+    if (isAuthenticated && tenantId) {
       try {
         await cartApi.removeItem(variantId, tenantId);
         const data = await cartApi.get(tenantId);
-        setItems(data.items || []);
+        if (data.items?.length) {
+          setItems(data.items);
+        }
       } catch {}
-      return;
     }
-
-    setItems((prev) => prev.filter((i) => i.variantId !== variantId));
   }, [isAuthenticated]);
 
   const clearCart = useCallback(async () => {
-    if (isAuthenticated) {
-      const tenantId = getTenantFromPath();
-      if (!tenantId) return;
+    setItems([]);
+
+    const tenantId = getTenantFromPath();
+    if (isAuthenticated && tenantId) {
       try {
         await cartApi.clear(tenantId);
       } catch {}
     }
-    setItems([]);
   }, [isAuthenticated]);
 
   const mergeAfterLogin = useCallback(async () => {

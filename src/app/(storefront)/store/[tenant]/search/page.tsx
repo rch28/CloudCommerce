@@ -4,6 +4,7 @@ import { searchService } from "@/lib/services/search";
 import { getSettingsBySlug } from "@/lib/services/settings";
 import ProductCard from "@/components/storefront/product-card";
 import EmptyState from "@/components/dashboard/empty-state";
+import { TenantIdSetter } from "@/components/storefront/tenant-id-setter";
 
 export function generateStaticParams() {
   return [];
@@ -30,6 +31,8 @@ export default async function SearchPage({
 }) {
   const { tenant } = await params;
   const sp = await searchParams;
+  const store = await getSettingsBySlug(tenant).catch(() => null);
+  const tenantId = store?.tenantId || tenant;
   const query = (sp.q || "").trim();
   const page = Math.max(1, Number(sp.page) || 1);
 
@@ -46,6 +49,7 @@ export default async function SearchPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <TenantIdSetter tenantId={tenantId} />
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">
           Search results for &ldquo;{query}&rdquo;

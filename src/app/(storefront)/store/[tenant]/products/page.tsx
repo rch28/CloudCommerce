@@ -6,6 +6,7 @@ import { getSettingsBySlug } from "@/lib/services/settings";
 import ProductCard from "@/components/storefront/product-card";
 import ProductFilters from "@/components/storefront/product-filters";
 import EmptyState from "@/components/dashboard/empty-state";
+import { TenantIdSetter } from "@/components/storefront/tenant-id-setter";
 
 export function generateStaticParams() {
   return [];
@@ -63,6 +64,7 @@ export default async function ProductsPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <TenantIdSetter tenantId={tenantId} />
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Products</h1>
         <p className="mt-1 text-muted-foreground">{productsResult.total} product{productsResult.total !== 1 ? "s" : ""} available</p>
