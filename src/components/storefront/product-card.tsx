@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, Star, Heart } from "lucide-react";
+import { ShoppingCart, Star, Heart, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/hooks/useWishlist";
+import { toast } from "sonner";
 
 interface ProductCardProps {
   id: string;
@@ -47,7 +48,7 @@ export default function ProductCard({ id, name, slug, price, image, stock, sold,
           )}
           {variantId && (
             <button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleItem(variantId); }}
+              onClick={async (e) => { e.preventDefault(); e.stopPropagation(); const ok = await toggleItem(variantId); toast.success(ok ? (isInWishlist(variantId) ? "Removed from wishlist" : "Added to wishlist") : "Wishlist update failed", { duration: 2000 }); }}
               className={`absolute top-2 right-2 p-1.5 rounded-full bg-black/40 backdrop-blur-sm transition-colors ${
                 isInWishlist(variantId) ? "text-rose-500" : "text-white/70 hover:text-rose-400"
               }`}
@@ -73,10 +74,13 @@ export default function ProductCard({ id, name, slug, price, image, stock, sold,
           <span className="text-lg font-bold text-foreground">${Number(price).toFixed(2)}</span>
           <Button
             onClick={() => {
-              if (!outOfStock) addItem({
-                variantId: variantId || `var-${id}`,
-                productId: id, productName: name, slug, image, price, sku: `SKU-${id}`, quantity: 1,
-              });
+              if (!outOfStock) {
+                addItem({
+                  variantId: variantId || `var-${id}`,
+                  productId: id, productName: name, slug, image, price, sku: `SKU-${id}`, quantity: 1,
+                });
+                toast.success("Added to cart", { duration: 2000 });
+              }
             }}
             disabled={outOfStock}
             size="sm"

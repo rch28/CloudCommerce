@@ -1,6 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cmsApi } from "@/services/cms.service";
+import { useAuth } from "@/contexts/AuthContext";
+import { settingsApi } from "@/services/settings.service";
 import {
   FileText, Plus, Trash2, MoveUp, MoveDown, Eye,
   Layout, Image, Type as TypeIcon, Grid, Tag, Megaphone, MousePointerClick,
@@ -125,6 +127,8 @@ export default function CMSView() {
   const [bannerOpen, setBannerOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<BannerItem | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ type: "page" | "banner"; id: string } | null>(null);
+  const [storeSlug, setStoreSlug] = useState<string | null>(null);
+  const { session } = useAuth();
 
   // Page form state
   const [pageForm, setPageForm] = useState({
@@ -157,6 +161,12 @@ export default function CMSView() {
             const data = await cmsApi.listBanners();
             if (!cancelled) setBanners((data as any).items ?? []);
           } catch { if (!cancelled) setError("Failed to load banners"); }
+        })(),
+        (async () => {
+          try {
+            const data = await settingsApi.get();
+            if (!cancelled) setStoreSlug((data as any).slug ?? null);
+          } catch { /* store slug not critical */ }
         })(),
       ]);
       if (!cancelled) setLoading(false);
@@ -360,7 +370,8 @@ export default function CMSView() {
 
   // ── Preview ───────────────────────────────────────────
   const openPreview = (slug: string) => {
-    window.open(`/store/t-1/pages/${slug}?preview=true`, "_blank");
+    const tenant = storeSlug || session?.subdomain || "t-1";
+    window.open(`/store/${tenant}/pages/${slug}?preview=true`, "_blank");
   };
 
   // ── Loading / Error ────────────────────────────────────

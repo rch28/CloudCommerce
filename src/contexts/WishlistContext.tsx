@@ -71,6 +71,12 @@ function ensureSessionCookie(): string {
   return sid;
 }
 
+function getTenantFromPath(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  const match = window.location.pathname.match(/\/store\/([^/]+)/);
+  return match ? match[1] : undefined;
+}
+
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +86,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const fetchWishlist = useCallback(async () => {
     try {
-      const data = await wishlistApi.get();
+      const tenantId = getTenantFromPath();
+      const data = await wishlistApi.get(tenantId);
       setItems(data.items || []);
     } catch {
       setItems([]);
@@ -97,8 +104,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const addItem = useCallback(async (variantId: string) => {
     setLoading(true);
+    const tenantId = getTenantFromPath();
     try {
-      await wishlistApi.add(variantId);
+      await wishlistApi.add(variantId, tenantId);
       await fetchWishlist();
       return true;
     } catch {
@@ -109,8 +117,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const removeItem = useCallback(async (variantId: string) => {
     setItems((prev) => prev.filter((i) => i.variantId !== variantId));
+    const tenantId = getTenantFromPath();
     try {
-      await wishlistApi.remove(variantId);
+      await wishlistApi.remove(variantId, tenantId);
       return true;
     } catch {
       await fetchWishlist();
@@ -131,8 +140,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   }, [isInWishlist, addItem, removeItem]);
 
   const moveToCart = useCallback(async (wishlistItemId: string, quantity = 1) => {
+    const tenantId = getTenantFromPath();
     try {
-      await wishlistApi.moveToCart({ wishlistItemId, quantity });
+      await wishlistApi.moveToCart({ wishlistItemId, quantity }, tenantId);
       setItems((prev) => prev.filter((i) => i.id !== wishlistItemId));
       return true;
     } catch {
@@ -141,8 +151,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const generateShareLink = useCallback(async () => {
+    const tenantId = getTenantFromPath();
     try {
-      const data = await wishlistApi.share();
+      const data = await wishlistApi.share(tenantId);
       return data.shareToken as string;
     } catch {
       return null;

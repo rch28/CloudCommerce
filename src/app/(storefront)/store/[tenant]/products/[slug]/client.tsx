@@ -12,7 +12,7 @@ interface Variant {
 }
 
 interface ProductData {
-  id: string; name: string; slug: string; description: string; images: string[]; sold?: number;
+  id: string; name: string; slug: string; description: string; images: { url: string }[]; sold?: number;
   category?: { name: string } | null;
   variants: Variant[];
 }
@@ -47,7 +47,7 @@ export default function ProductDetailClient({ tenant, product, inventoryMap }: {
   const available = inv ? inv.quantity - inv.reserved : selectedVariant.quantity;
   const status = inventoryStatus(available);
   const outOfStock = available <= 0;
-  const images = product.images?.length ? product.images : ["", "", ""];
+  const images = product.images?.length ? product.images : [{ url: "" }, { url: "" }, { url: "" }];
 
   function handleAdd() {
     addItem({
@@ -55,7 +55,7 @@ export default function ProductDetailClient({ tenant, product, inventoryMap }: {
       productId: product.id,
       productName: product.name,
       slug: product.slug,
-      image: images[0] || "",
+      image: images[0]?.url || "",
       price: selectedVariant.price,
       sku: selectedVariant.sku,
       quantity,
@@ -78,9 +78,9 @@ export default function ProductDetailClient({ tenant, product, inventoryMap }: {
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="space-y-3">
           <div className="relative aspect-square overflow-hidden rounded-xl bg-muted">
-            {images[selectedImage] ? (
+            {images[selectedImage]?.url ? (
               <Image
-                src={images[selectedImage]}
+                src={images[selectedImage].url}
                 alt={product.name}
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -95,8 +95,8 @@ export default function ProductDetailClient({ tenant, product, inventoryMap }: {
             <div className="flex gap-2">
               {images.map((img, i) => (
                 <button key={i} onClick={() => setSelectedImage(i)} className={`relative h-16 w-16 overflow-hidden rounded-lg border bg-muted ${i === selectedImage ? "border-[#7C3AED]" : "border-border"}`}>
-                  {img ? (
-                    <Image src={img} alt="" fill sizes="64px" className="object-cover" />
+                  {img.url ? (
+                    <Image src={img.url} alt="" fill sizes="64px" className="object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-[10px] text-muted-foreground">N/A</div>
                   )}

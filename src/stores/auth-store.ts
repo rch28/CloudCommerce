@@ -12,6 +12,7 @@ export interface Session {
   name: string
   email: string
   role: Role
+  tenantId?: string
   storeName?: string
   subdomain?: string
   plan?: Plan
@@ -56,6 +57,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             name: data.user.name,
             email: data.user.email,
             role: data.user.role as Role,
+            tenantId: data.user.tenantId,
           },
         })
       } else {
@@ -75,6 +77,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       name: data.user.name,
       email: data.user.email,
       role: data.user.role as Role,
+      tenantId: data.user.tenantId,
     }
     set({ session })
     return session
@@ -87,6 +90,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       name: result.user.name,
       email: result.user.email,
       role: result.user.role as Role,
+      tenantId: result.user.tenantId,
     }
     set({ session })
     return session
@@ -120,6 +124,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             name: data.user.name,
             email: data.user.email,
             role: data.user.role as Role,
+            tenantId: data.user.tenantId,
           },
         })
       } else {

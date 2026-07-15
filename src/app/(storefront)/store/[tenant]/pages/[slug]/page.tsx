@@ -9,12 +9,11 @@ export function generateStaticParams() {
 
 export default async function PagePage({ params }: { params: Promise<{ tenant: string; slug: string }> }) {
   const { tenant, slug } = await params;
-  const searchParams = await Promise.resolve({});
 
-  const [page, store] = await Promise.all([
-    getPageBySlug(slug, tenant).catch(() => null),
-    getSettingsBySlug(tenant).catch(() => null),
-  ]);
+  const store = await getSettingsBySlug(tenant).catch(() => null);
+
+  const tenantId = store?.tenantId ?? tenant;
+  const page = await getPageBySlug(slug, tenantId).catch(() => null);
 
   if (!page) notFound();
 
