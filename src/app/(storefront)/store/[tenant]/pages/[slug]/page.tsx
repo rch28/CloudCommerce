@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getPageBySlug } from "@/lib/services/cms";
 import { getSettingsBySlug } from "@/lib/services/settings";
 import PageRenderer from "@/components/storefront/page-renderer";
+import { TenantIdSetter } from "@/components/storefront/tenant-id-setter";
 
 export function generateStaticParams() {
   return [];
@@ -23,6 +24,7 @@ export default async function PagePage({ params }: { params: Promise<{ tenant: s
 
   return (
     <div>
+      <TenantIdSetter tenantId={tenantId} />
       {p.metaTitle && (
         <div className="sr-only">
           <title>{p.metaTitle}</title>

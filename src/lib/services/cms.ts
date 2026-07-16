@@ -21,6 +21,44 @@ const mockPages: Record<string, unknown>[] = [];
 const mockSections: Record<string, unknown>[] = [];
 const mockBanners: Record<string, unknown>[] = [];
 
+function ensureMockPages(tenantId: string) {
+  if (mockPages.length > 0) return;
+  const pageId = `page-home-${tenantId}`;
+  mockPages.push({
+    id: pageId, tenantId, title: "Home", slug: "home", type: "home", status: "published",
+    metaTitle: "Welcome", metaDescription: null, isHomePage: true,
+    publishedAt: new Date(), createdAt: new Date(), updatedAt: new Date(),
+  });
+  mockPages.push({
+    id: `page-about-${tenantId}`, tenantId, title: "About Us", slug: "about", type: "about", status: "published",
+    metaTitle: "About Our Store", metaDescription: null, isHomePage: false,
+    publishedAt: new Date(), createdAt: new Date(), updatedAt: new Date(),
+  });
+  mockPages.push({
+    id: `page-contact-${tenantId}`, tenantId, title: "Contact", slug: "contact", type: "landing", status: "published",
+    metaTitle: "Contact Us", metaDescription: null, isHomePage: false,
+    publishedAt: new Date(), createdAt: new Date(), updatedAt: new Date(),
+  });
+
+  mockSections.push(
+    { id: `sec-hero-${tenantId}`, pageId, tenantId, type: "hero", sortOrder: 0, isVisible: true,
+      content: { title: "Welcome to Our Store", subtitle: "Discover amazing products curated just for you.", ctaText: "Shop Now", ctaLink: `/store/${tenantId}/products`, alignment: "center" },
+      styles: null, createdAt: new Date(), updatedAt: new Date() },
+    { id: `sec-text-${tenantId}`, pageId, tenantId, type: "text", sortOrder: 1, isVisible: true,
+      content: { body: "<h2>Why Shop With Us?</h2><p>We offer the best products at the best prices, with fast shipping and excellent customer service.</p>" },
+      styles: null, createdAt: new Date(), updatedAt: new Date() },
+    { id: `sec-about-hero-${tenantId}`, pageId: `page-about-${tenantId}`, tenantId, type: "hero", sortOrder: 0, isVisible: true,
+      content: { title: "About Us", subtitle: "Learn more about our story and mission.", ctaText: "", ctaLink: "", alignment: "center" },
+      styles: null, createdAt: new Date(), updatedAt: new Date() },
+    { id: `sec-about-text-${tenantId}`, pageId: `page-about-${tenantId}`, tenantId, type: "text", sortOrder: 1, isVisible: true,
+      content: { body: "<h2>Our Story</h2><p>We started with a simple mission: to provide quality products at affordable prices. Today, we serve thousands of happy customers worldwide.</p>" },
+      styles: null, createdAt: new Date(), updatedAt: new Date() },
+    { id: `sec-contact-text-${tenantId}`, pageId: `page-contact-${tenantId}`, tenantId, type: "text", sortOrder: 0, isVisible: true,
+      content: { body: "<h2>Get in Touch</h2><p>Have a question or feedback? We'd love to hear from you. Reach out to our support team and we'll get back to you within 24 hours.</p><p>Email: support@example.com<br>Phone: +1 (555) 123-4567</p>" },
+      styles: null, createdAt: new Date(), updatedAt: new Date() },
+  );
+}
+
 // ── Pages ──────────────────────────────────────────────
 
 export async function getPages(tenantId: string, params: PaginateParams = {}): Promise<PaginatedResult<unknown>> {
@@ -43,6 +81,7 @@ export async function getPages(tenantId: string, params: PaginateParams = {}): P
     ]);
     return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
   }
+  ensureMockPages(tenantId);
   let items = mockPages.filter((p: Record<string, unknown>) => p.tenantId === tenantId);
   if (params.search) items = items.filter((p: Record<string, unknown>) => String(p.title).toLowerCase().includes(params.search!.toLowerCase()));
   if (params.status) items = items.filter((p: Record<string, unknown>) => p.status === params.status);
@@ -56,6 +95,7 @@ export async function getPage(id: string): Promise<Record<string, unknown> | nul
   if (process.env.DATABASE_URL) {
     return (prisma as any).page.findUnique({ where: { id }, include: { sections: { orderBy: { sortOrder: "asc" } } } });
   }
+  ensureMockPages("t-1");
   const page = mockPages.find((p: Record<string, unknown>) => p.id === id);
   if (!page) return null;
   return { ...page, sections: mockSections.filter((s: Record<string, unknown>) => s.pageId === id).sort((a: Record<string, unknown>, b: Record<string, unknown>) => Number(a.sortOrder) - Number(b.sortOrder)) };
@@ -68,6 +108,7 @@ export async function getPageBySlug(slug: string, tenantId: string): Promise<Rec
       include: { sections: { where: { isVisible: true }, orderBy: { sortOrder: "asc" } } },
     });
   }
+  ensureMockPages(tenantId);
   const page = mockPages.find((p: Record<string, unknown>) => p.slug === slug && p.tenantId === tenantId);
   if (!page) return null;
   return { ...page, sections: mockSections.filter((s: Record<string, unknown>) => s.pageId === page.id && s.isVisible).sort((a: Record<string, unknown>, b: Record<string, unknown>) => Number(a.sortOrder) - Number(b.sortOrder)) };
