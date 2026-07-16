@@ -11,6 +11,7 @@ import {
 import { calculatePricing, type PricingResult } from "@/lib/services/pricing";
 import { cartApi } from "@/services/cart.service";
 import { accountApi } from "@/services/account.service";
+import { getTenantFromPath, setTenantId } from "@/lib/tenant-id";
 
 export interface CartItem {
   variantId: string;
@@ -39,12 +40,6 @@ interface CartContextType {
 
 const GUEST_STORAGE_KEY = "cc_storefront_cart";
 const SESSION_COOKIE = "cc_cart_session";
-
-let _tenantIdOverride: string | null = null;
-
-export function setTenantId(id: string) {
-  _tenantIdOverride = id;
-}
 
 const CartContext = createContext<CartContextType | null>(null);
 
@@ -83,13 +78,6 @@ function ensureSessionCookie(): string {
     setCookie(SESSION_COOKIE, sid);
   }
   return sid;
-}
-
-function getTenantFromPath(): string | null {
-  if (_tenantIdOverride) return _tenantIdOverride;
-  if (typeof window === "undefined") return null;
-  const match = window.location.pathname.match(/\/store\/([^/]+)/);
-  return match ? match[1] : null;
 }
 
 function cartItemsToPricing(items: CartItem[]) {

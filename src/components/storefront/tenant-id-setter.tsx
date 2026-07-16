@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { setTenantId } from "@/contexts/CartContext";
+import { setTenantId } from "@/lib/tenant-id";
 
 export function TenantIdSetter({ tenantId }: { tenantId: string }) {
   useEffect(() => {

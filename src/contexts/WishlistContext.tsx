@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { wishlistApi } from "@/services/wishlist.service";
+import { getTenantFromPath } from "@/lib/tenant-id";
 
 export interface WishlistItem {
   id: string;
@@ -69,12 +70,6 @@ function ensureSessionCookie(): string {
     setCookie(SESSION_COOKIE, sid);
   }
   return sid;
-}
-
-function getTenantFromPath(): string | undefined {
-  if (typeof window === "undefined") return undefined;
-  const match = window.location.pathname.match(/\/store\/([^/]+)/);
-  return match ? match[1] : undefined;
 }
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
