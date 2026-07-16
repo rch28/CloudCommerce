@@ -375,7 +375,7 @@ export default function CMSView() {
   };
 
   // ── Loading / Error ────────────────────────────────────
-  if (loading) return <LoadingSkeleton variant="page" />;
+  if (loading) return <LoadingSkeleton variant="tabbed-page" />;
 
   // ── Render ────────────────────────────────────────────
   return (

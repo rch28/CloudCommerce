@@ -102,150 +102,156 @@ export default function DataTable({
     setPage(1);
   }
 
+  const showToolbar = searchable || filterable || !!actions;
+
   if (loading) {
     return <LoadingSkeleton variant="table-page" />;
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card">
-      <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
-          {searchable && (
-            <SearchField
-              searchQuery={search}
-              setSearchQuery={setSearch}
-              setPage={setPage}
-              className="max-w-xs"
-              inputClassName="bg-card text-foreground placeholder-muted-foreground focus:border-[#7C3AED]"
-            />
-          )}
-          {filterable && filters && onFilterChange && (
-            <div className="flex flex-wrap gap-1.5">
-              {filters.map((f: { label: string; value: string }) => (
-                <button
-                  key={f.value}
-                  onClick={() => {
-                    onFilterChange(f.value);
-                    serverPagination?.onPageChange(1);
-                    setPage(1);
-                  }}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                    activeFilter === f.value
-                      ? "bg-[#7C3AED] text-white"
-                      : "border border-border bg-background text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
-      </div>
-
-      {displayData.length === 0 && !loading ? (
-        <EmptyState title={emptyTitle} description={emptyDescription} />
-      ) : (
-        <>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  {columns.map((col) => (
-                    <th
-                      key={col.key}
-                      className={`px-5 py-3.5 font-medium ${col.sortable ? "cursor-pointer select-none hover:text-foreground" : ""}`}
-                      onClick={() => col.sortable && handleSort(col.key)}
-                    >
-                      <span className="inline-flex items-center gap-1">
-                        {col.label}
-                        {col.sortable &&
-                          sortKey === col.key &&
-                          (sortOrder === "asc" ? (
-                            <ChevronUp size={13} />
-                          ) : (
-                            <ChevronDown size={13} />
-                          ))}
-                      </span>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {displayData.map((item: Record<string, unknown>, i: number) => (
-                  <tr
-                    key={(item.id as string) || String(i)}
-                    className="transition-colors hover:bg-accent"
+    <div className="space-y-5">
+      {showToolbar && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+            {searchable && (
+              <SearchField
+                searchQuery={search}
+                setSearchQuery={setSearch}
+                setPage={setPage}
+                className="max-w-xs"
+                inputClassName="bg-card text-foreground placeholder-muted-foreground focus:border-[#7C3AED]"
+              />
+            )}
+            {filterable && filters && onFilterChange && (
+              <div className="flex flex-wrap gap-1.5">
+                {filters.map((f: { label: string; value: string }) => (
+                  <button
+                    key={f.value}
+                    onClick={() => {
+                      onFilterChange(f.value);
+                      serverPagination?.onPageChange(1);
+                      setPage(1);
+                    }}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                      activeFilter === f.value
+                        ? "bg-[#7C3AED] text-white"
+                        : "border border-border bg-background text-muted-foreground hover:text-foreground"
+                    }`}
                   >
-                    {columns.map((col: Column) => (
-                      <td key={col.key} className="px-5 py-4">
-                        {col.render(item)}
-                      </td>
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {actions && <div className="flex items-center gap-2">{actions}</div>}
+        </div>
+      )}
+
+      <div className="rounded-xl border border-border bg-card">
+        {displayData.length === 0 && !loading ? (
+          <EmptyState title={emptyTitle} description={emptyDescription} />
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
+                  <tr>
+                    {columns.map((col) => (
+                      <th
+                        key={col.key}
+                        className={`px-5 py-3.5 font-medium ${col.sortable ? "cursor-pointer select-none hover:text-foreground" : ""}`}
+                        onClick={() => col.sortable && handleSort(col.key)}
+                      >
+                        <span className="inline-flex items-center gap-1">
+                          {col.label}
+                          {col.sortable &&
+                            sortKey === col.key &&
+                            (sortOrder === "asc" ? (
+                              <ChevronUp size={13} />
+                            ) : (
+                              <ChevronDown size={13} />
+                            ))}
+                        </span>
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-border px-5 py-3 text-sm text-muted-foreground">
-              <span>
-                Page {activePage} of {totalPages} ({totalCount} total)
-              </span>
-              <div className="flex items-center gap-1">
-                <button
-                  disabled={activePage <= 1}
-                  onClick={() => {
-                    const np = activePage - 1;
-                    serverPagination
-                      ? serverPagination.onPageChange(np)
-                      : setPage(np);
-                  }}
-                  className="rounded-lg p-1.5 transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                  const start = Math.max(1, activePage - 2);
-                  const p = start + i;
-                  if (p > totalPages) return null;
-                  return (
-                    <button
-                      key={p}
-                      onClick={() => {
-                        serverPagination
-                          ? serverPagination.onPageChange(p)
-                          : setPage(p);
-                      }}
-                      className={`min-w-[28px] rounded-lg px-2 py-1 text-sm font-medium transition-colors ${
-                        p === activePage
-                          ? "bg-[#7C3AED] text-white"
-                          : "hover:bg-accent hover:text-foreground"
-                      }`}
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {displayData.map((item: Record<string, unknown>, i: number) => (
+                    <tr
+                      key={(item.id as string) || String(i)}
+                      className="transition-colors hover:bg-accent"
                     >
-                      {p}
-                    </button>
-                  );
-                })}
-                <button
-                  disabled={activePage >= totalPages}
-                  onClick={() => {
-                    const np = activePage + 1;
-                    serverPagination
-                      ? serverPagination.onPageChange(np)
-                      : setPage(np);
-                  }}
-                  className="rounded-lg p-1.5 transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
+                      {columns.map((col: Column) => (
+                        <td key={col.key} className="px-5 py-4">
+                          {col.render(item)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
-        </>
-      )}
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-border px-5 py-3 text-sm text-muted-foreground">
+                <span>
+                  Page {activePage} of {totalPages} ({totalCount} total)
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    disabled={activePage <= 1}
+                    onClick={() => {
+                      const np = activePage - 1;
+                      serverPagination
+                        ? serverPagination.onPageChange(np)
+                        : setPage(np);
+                    }}
+                    className="rounded-lg p-1.5 transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    const start = Math.max(1, activePage - 2);
+                    const p = start + i;
+                    if (p > totalPages) return null;
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => {
+                          serverPagination
+                            ? serverPagination.onPageChange(p)
+                            : setPage(p);
+                        }}
+                        className={`min-w-[28px] rounded-lg px-2 py-1 text-sm font-medium transition-colors ${
+                          p === activePage
+                            ? "bg-[#7C3AED] text-white"
+                            : "hover:bg-accent hover:text-foreground"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  })}
+                  <button
+                    disabled={activePage >= totalPages}
+                    onClick={() => {
+                      const np = activePage + 1;
+                      serverPagination
+                        ? serverPagination.onPageChange(np)
+                        : setPage(np);
+                    }}
+                    className="rounded-lg p-1.5 transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
