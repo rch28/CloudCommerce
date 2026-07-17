@@ -13,7 +13,7 @@ function Skeleton({
   return (
     <div
       className={cn(
-        "rounded-md bg-muted",
+        "rounded-md bg-muted-foreground/15",
         animated && "animate-pulse",
         className
       )}
