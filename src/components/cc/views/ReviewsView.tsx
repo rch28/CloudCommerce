@@ -7,6 +7,7 @@ import { Star, Filter, MoreHorizontal } from "lucide-react";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SelectField } from "@/components/ui/select-field";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface ReviewItem {
   id: string; rating: number; title: string | null; body: string | null; status: string;
@@ -24,6 +25,7 @@ export default function ReviewsView() {
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -35,7 +37,7 @@ export default function ReviewsView() {
       setLoading(true);
       const params: Record<string, string> = { page: String(page), pageSize: String(pageSize) };
       if (statusFilter !== "all") params.status = statusFilter;
-      if (search) params.search = search;
+      if (debouncedSearch) params.search = debouncedSearch;
 
       try {
         const data = await reviewsApi.list(params);
@@ -52,7 +54,7 @@ export default function ReviewsView() {
       if (!cancelled) setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [page, statusFilter, search]);
+  }, [page, statusFilter, debouncedSearch]);
 
   const totalPages = Math.ceil(total / pageSize);
 

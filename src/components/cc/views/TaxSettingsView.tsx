@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface TaxZone {
   id: string;
@@ -58,6 +59,7 @@ export default function TaxSettingsView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
 
   const [zoneDialog, setZoneDialog] = useState(false);
   const [editingZone, setEditingZone] = useState<Partial<TaxZone> | null>(null);
@@ -71,13 +73,13 @@ export default function TaxSettingsView() {
   const fetchZones = useCallback(async () => {
     try {
       const params: Record<string, string> = { pageSize: "100" };
-      if (search) params.search = search;
+      if (debouncedSearch) params.search = debouncedSearch;
       const data = await taxApi.listZones(params);
       setZones((data as any).items ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load tax zones");
     }
-  }, [search]);
+  }, [debouncedSearch]);
 
   const fetchRates = useCallback(async () => {
     try {

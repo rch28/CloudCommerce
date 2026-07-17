@@ -14,6 +14,7 @@ import ConfirmDeleteDialog from "@/components/dashboard/confirm-delete-dialog";
 import BulkActionBar from "@/components/dashboard/bulk-action-bar";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import { SelectField } from "@/components/ui/select-field";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface Category {
   id: string;
@@ -31,6 +32,7 @@ export default function CategoriesView() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [page, setPage] = useState(1);
@@ -82,13 +84,11 @@ export default function CategoriesView() {
   const filtered = categories.filter((c) => {
     if (statusFilter !== "all" && c.status !== statusFilter) return false;
     if (
-      searchQuery &&
-      !c.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !c.slug.toLowerCase().includes(searchQuery.toLowerCase())
+      debouncedSearch &&
+      !c.name.toLowerCase().includes(debouncedSearch.toLowerCase()) &&
+      !c.slug.toLowerCase().includes(debouncedSearch.toLowerCase())
     )
       return false;
-    // The category filter is applied server‑side via the `categoryId` query parameter.
-    // Hence we only filter by status and search term on the client.
     return true;
   });
 

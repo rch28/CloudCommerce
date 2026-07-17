@@ -6,6 +6,7 @@ import SearchField from "@/components/ui/form-inputs/SearchField";
 import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import EmptyState from "@/components/dashboard/empty-state";
 import { customersApi } from "@/services/customers.service";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface CustomerRow {
   id: string;
@@ -24,6 +25,7 @@ export default function CustomersView() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [loading, setLoading] = useState(true);
 
   const totalPages = Math.ceil(total / LIMIT);
@@ -32,7 +34,7 @@ export default function CustomersView() {
     setLoading(true);
     try {
       const params: Record<string, string> = { page: String(page), limit: String(LIMIT) };
-      if (search) params.search = search;
+      if (debouncedSearch) params.search = debouncedSearch;
       const data = await customersApi.list(params);
       setCustomers(data.customers ?? []);
       setTotal(data.total ?? 0);
@@ -42,7 +44,7 @@ export default function CustomersView() {
     } finally {
       setLoading(false);
     }
-  }, [page, search]);
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
     fetchCustomers();
@@ -50,7 +52,7 @@ export default function CustomersView() {
 
   useEffect(() => {
     setPage(1);
-  }, [search]);
+  }, [debouncedSearch]);
 
   return (
     <div className="space-y-6">

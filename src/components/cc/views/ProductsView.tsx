@@ -23,6 +23,7 @@ import ConfirmDeleteDialog from "@/components/dashboard/confirm-delete-dialog";
 import BulkActionBar from "@/components/dashboard/bulk-action-bar";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import { SelectField } from "@/components/ui/select-field";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface ProductData {
   id: string;
@@ -58,6 +59,7 @@ export default function ProductsView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [page, setPage] = useState(1);
@@ -99,7 +101,7 @@ export default function ProductsView() {
       setError(null);
       try {
         const params: Record<string, string> = {};
-        if (searchQuery) params.q = searchQuery;
+        if (debouncedSearch) params.q = debouncedSearch;
         if (categoryFilter !== "all") params.categoryId = categoryFilter;
         if (statusFilter !== "all") params.status = statusFilter;
         params.page = String(page);
@@ -128,7 +130,7 @@ export default function ProductsView() {
     return () => {
       cancelled = true;
     };
-  }, [searchQuery, categoryFilter, statusFilter, page]);
+  }, [debouncedSearch, categoryFilter, statusFilter, page]);
 
   const toggleSelect = (id: string) => {
     setSelected((prev) => {

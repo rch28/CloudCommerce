@@ -7,6 +7,7 @@ import { promotionsApi } from "@/services/promotions.service";
 import { Skeleton } from "@/components/ui/skeleton";
 import ActionButtons from "@/components/ui/action-buttons";
 import SearchField from "@/components/ui/form-inputs/SearchField";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const TABS = ["Coupons", "Promotions", "Usage Analytics"] as const;
 
@@ -32,6 +33,7 @@ export default function PromotionsView() {
   const [promotions, setPromotions] = useState<PromotionItem[]>([]);
   const [usageStats, setUsageStats] = useState<UsageStats | null>(null);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export default function PromotionsView() {
       await Promise.all([
         (async () => {
           try {
-            const data = await promotionsApi.listCoupons({ search, pageSize: "100" });
+            const data = await promotionsApi.listCoupons({ search: debouncedSearch, pageSize: "100" });
             if (!cancelled) setCoupons((data as any).items);
           } catch { /* ignore */ }
         })(),
@@ -61,7 +63,7 @@ export default function PromotionsView() {
       if (!cancelled) setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [search]);
+  }, [debouncedSearch]);
 
   const typeIcon = (type: string) => {
     switch (type) {

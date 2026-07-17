@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface InventoryItem {
   id: string;
@@ -58,6 +59,7 @@ export default function InventoryView() {
     "all",
   );
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
   const [adjustOpen, setAdjustOpen] = useState<string | null>(null);
   const [adjustChange, setAdjustChange] = useState(1);
@@ -90,12 +92,11 @@ export default function InventoryView() {
   };
 
   useEffect(() => {
-    fetchItems(filter, searchQuery);
-  }, [filter]);
+    fetchItems(filter, debouncedSearch);
+  }, [filter, debouncedSearch]);
 
   const onSearchChange = (val: string) => {
     setSearchQuery(val);
-    fetchItems(filter, val);
   };
 
   const handleAdjust = async () => {

@@ -10,6 +10,7 @@ import {
 import EmptyState from "@/components/dashboard/empty-state";
 import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import SearchField from "../ui/form-inputs/SearchField";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export interface Column {
   key: string;
@@ -57,14 +58,15 @@ export default function DataTable({
   serverPagination,
 }: DataTableProps) {
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
     let result = [...data];
-    if (search && searchKeys) {
-      const q = search.toLowerCase();
+    if (debouncedSearch && searchKeys) {
+      const q = debouncedSearch.toLowerCase();
       result = result.filter((item: Record<string, unknown>) =>
         searchKeys.some((key: string) =>
           String(item[key] ?? "")
@@ -82,7 +84,7 @@ export default function DataTable({
       });
     }
     return result;
-  }, [data, search, sortKey, sortOrder, searchKeys, serverPagination]);
+  }, [data, debouncedSearch, sortKey, sortOrder, searchKeys, serverPagination]);
 
   const totalPages =
     serverPagination?.totalPages ?? Math.ceil(filtered.length / pageSize);

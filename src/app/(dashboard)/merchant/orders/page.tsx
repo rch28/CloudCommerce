@@ -9,6 +9,7 @@ import SearchField from "@/components/ui/form-inputs/SearchField";
 import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import EmptyState from "@/components/dashboard/empty-state";
 import { ordersApi } from "@/services/orders.service";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const STATUS_FILTERS = [
   { label: "All", value: "all" },
@@ -40,6 +41,7 @@ export default function MerchantOrdersPage() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
   const [loading, setLoading] = useState(true);
 
   const totalPages = Math.ceil(total / LIMIT);
@@ -53,7 +55,7 @@ export default function MerchantOrdersPage() {
         limit: String(LIMIT),
         status: statusFilter,
       };
-      if (search) params.search = search;
+      if (debouncedSearch) params.search = debouncedSearch;
 
       const data = await ordersApi.list(params);
       setOrders(data.orders ?? []);
@@ -64,7 +66,7 @@ export default function MerchantOrdersPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter, search]);
+  }, [page, statusFilter, debouncedSearch]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -74,7 +76,7 @@ export default function MerchantOrdersPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
-  }, [statusFilter, search]);
+  }, [statusFilter, debouncedSearch]);
 
   return (
     <div className="space-y-6">
