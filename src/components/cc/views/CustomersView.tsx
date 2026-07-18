@@ -6,7 +6,7 @@ import SearchField from "@/components/ui/form-inputs/SearchField";
 import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import EmptyState from "@/components/dashboard/empty-state";
 import { customersApi } from "@/services/customers.service";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useSearch } from "@/hooks/useSearch";
 
 interface CustomerRow {
   id: string;
@@ -24,8 +24,7 @@ export default function CustomersView() {
   const [customers, setCustomers] = useState<CustomerRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 300);
+  const { search, setSearch, debouncedSearch } = useSearch();
   const [loading, setLoading] = useState(true);
 
   const totalPages = Math.ceil(total / LIMIT);

@@ -10,12 +10,13 @@ import {
 import EmptyState from "@/components/dashboard/empty-state";
 import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import SearchField from "../ui/form-inputs/SearchField";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useSearch } from "@/hooks/useSearch";
 
 export interface Column {
   key: string;
   label: string;
   sortable?: boolean;
+  sortValue?: (item: Record<string, unknown>) => string | number;
   render: (item: Record<string, unknown>) => ReactNode;
 }
 
@@ -57,8 +58,7 @@ export default function DataTable({
   actions,
   serverPagination,
 }: DataTableProps) {
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 300);
+  const { search, setSearch, debouncedSearch } = useSearch();
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
@@ -75,11 +75,17 @@ export default function DataTable({
         ),
       );
     }
-    if (sortKey && !serverPagination) {
+    if (sortKey) {
+      const col = columns.find((c) => c.key === sortKey);
       result.sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
-        const aVal = String(a[sortKey] ?? "");
-        const bVal = String(b[sortKey] ?? "");
-        const cmp = aVal.localeCompare(bVal, undefined, { numeric: true });
+        const rawA = col?.sortValue ? col.sortValue(a) : a[sortKey];
+        const rawB = col?.sortValue ? col.sortValue(b) : b[sortKey];
+        const aVal = rawA ?? "";
+        const bVal = rawB ?? "";
+        const cmp =
+          typeof aVal === "number" && typeof bVal === "number"
+            ? aVal - bVal
+            : String(aVal).localeCompare(String(bVal), undefined, { numeric: true });
         return sortOrder === "asc" ? cmp : -cmp;
       });
     }
@@ -90,7 +96,7 @@ export default function DataTable({
     serverPagination?.totalPages ?? Math.ceil(filtered.length / pageSize);
   const activePage = serverPagination?.page ?? page;
   const displayData = serverPagination
-    ? data
+    ? filtered
     : filtered.slice((page - 1) * pageSize, page * pageSize);
   const totalCount = serverPagination?.total ?? filtered.length;
 

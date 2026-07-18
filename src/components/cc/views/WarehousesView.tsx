@@ -552,6 +552,10 @@ export default function WarehousesView() {
                   key: "product",
                   label: "Product / SKU",
                   sortable: true,
+                  sortValue: (item) => {
+                    const i = item as unknown as InvItem;
+                    return i.variant.product.name;
+                  },
                   render: (item: Record<string, unknown>) => {
                     const i = item as unknown as InvItem;
                     return (

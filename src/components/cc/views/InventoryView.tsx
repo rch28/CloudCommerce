@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useSearch } from "@/hooks/useSearch";
 
 interface InventoryItem {
   id: string;
@@ -58,8 +58,7 @@ export default function InventoryView() {
   const [filter, setFilter] = useState<"all" | "low_stock" | "out_of_stock">(
     "all",
   );
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearch = useDebounce(searchQuery, 300);
+  const { search: searchQuery, setSearch: setSearchQuery, debouncedSearch } = useSearch();
 
   const [adjustOpen, setAdjustOpen] = useState<string | null>(null);
   const [adjustChange, setAdjustChange] = useState(1);
@@ -216,6 +215,10 @@ export default function InventoryView() {
             key: "product",
             label: "Product / Variant",
             sortable: true,
+            sortValue: (item) => {
+              const i = item as unknown as InventoryItem;
+              return i.variant.product.name;
+            },
             render: (item: Record<string, unknown>) => {
               const i = item as unknown as InventoryItem;
               return (
@@ -239,6 +242,10 @@ export default function InventoryView() {
               key: "stock",
               label: "On Hand",
               sortable: true,
+              sortValue: (item) => {
+                const i = item as unknown as InventoryItem;
+                return i.quantity;
+              },
               render: (item: Record<string, unknown>) => {
                 const i = item as unknown as InventoryItem;
                 return (

@@ -23,7 +23,7 @@ import ConfirmDeleteDialog from "@/components/dashboard/confirm-delete-dialog";
 import BulkActionBar from "@/components/dashboard/bulk-action-bar";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import { SelectField } from "@/components/ui/select-field";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useSearch } from "@/hooks/useSearch";
 
 interface ProductData {
   id: string;
@@ -58,8 +58,7 @@ export default function ProductsView() {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearch = useDebounce(searchQuery, 300);
+  const { search: searchQuery, setSearch: setSearchQuery, debouncedSearch } = useSearch();
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [page, setPage] = useState(1);
@@ -365,6 +364,11 @@ export default function ProductsView() {
             key: "price",
             label: "Price",
             sortable: true,
+            sortValue: (item) => {
+              const p = item as unknown as ProductData;
+              const v = p.variants?.find((x) => x.isDefault) ?? p.variants?.[0];
+              return Number(v?.price ?? 0);
+            },
             render: (item: Record<string, unknown>) => {
               const p = item as unknown as ProductData;
               const v = p.variants?.find((x) => x.isDefault) ?? p.variants?.[0];
@@ -387,6 +391,10 @@ export default function ProductsView() {
             key: "quantity",
             label: "Stock",
             sortable: true,
+            sortValue: (item) => {
+              const p = item as unknown as ProductData;
+              return p.variants?.reduce((s, v) => s + v.quantity, 0) ?? 0;
+            },
             render: (item: Record<string, unknown>) => {
               const p = item as unknown as ProductData;
               const qty = p.variants?.reduce((s, v) => s + v.quantity, 0) ?? 0;

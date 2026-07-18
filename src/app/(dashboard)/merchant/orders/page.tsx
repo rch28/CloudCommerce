@@ -9,7 +9,7 @@ import SearchField from "@/components/ui/form-inputs/SearchField";
 import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import EmptyState from "@/components/dashboard/empty-state";
 import { ordersApi } from "@/services/orders.service";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useSearch } from "@/hooks/useSearch";
 
 const STATUS_FILTERS = [
   { label: "All", value: "all" },
@@ -40,8 +40,7 @@ export default function MerchantOrdersPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 300);
+  const { search, setSearch, debouncedSearch } = useSearch();
   const [loading, setLoading] = useState(true);
 
   const totalPages = Math.ceil(total / LIMIT);

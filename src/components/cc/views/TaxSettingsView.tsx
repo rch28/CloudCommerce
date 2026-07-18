@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useSearch } from "@/hooks/useSearch";
 
 interface TaxZone {
   id: string;
@@ -58,8 +58,7 @@ export default function TaxSettingsView() {
   const [rates, setRates] = useState<TaxRate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 300);
+  const { search, setSearch, debouncedSearch } = useSearch();
 
   const [zoneDialog, setZoneDialog] = useState(false);
   const [editingZone, setEditingZone] = useState<Partial<TaxZone> | null>(null);

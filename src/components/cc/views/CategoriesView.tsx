@@ -14,7 +14,7 @@ import ConfirmDeleteDialog from "@/components/dashboard/confirm-delete-dialog";
 import BulkActionBar from "@/components/dashboard/bulk-action-bar";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import { SelectField } from "@/components/ui/select-field";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useSearch } from "@/hooks/useSearch";
 
 interface Category {
   id: string;
@@ -31,8 +31,7 @@ interface Category {
 export default function CategoriesView() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearch = useDebounce(searchQuery, 300);
+  const { search: searchQuery, setSearch: setSearchQuery, debouncedSearch } = useSearch();
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [page, setPage] = useState(1);

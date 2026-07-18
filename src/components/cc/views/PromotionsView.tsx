@@ -7,7 +7,7 @@ import { promotionsApi } from "@/services/promotions.service";
 import { Skeleton } from "@/components/ui/skeleton";
 import ActionButtons from "@/components/ui/action-buttons";
 import SearchField from "@/components/ui/form-inputs/SearchField";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useSearch } from "@/hooks/useSearch";
 
 const TABS = ["Coupons", "Promotions", "Usage Analytics"] as const;
 
@@ -32,8 +32,7 @@ export default function PromotionsView() {
   const [coupons, setCoupons] = useState<CouponItem[]>([]);
   const [promotions, setPromotions] = useState<PromotionItem[]>([]);
   const [usageStats, setUsageStats] = useState<UsageStats | null>(null);
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 300);
+  const { search, setSearch, debouncedSearch } = useSearch();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

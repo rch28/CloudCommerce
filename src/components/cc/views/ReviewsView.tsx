@@ -7,7 +7,7 @@ import { Star, Filter, MoreHorizontal } from "lucide-react";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SelectField } from "@/components/ui/select-field";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useSearch } from "@/hooks/useSearch";
 
 interface ReviewItem {
   id: string; rating: number; title: string | null; body: string | null; status: string;
@@ -24,8 +24,7 @@ export default function ReviewsView() {
   const router = useRouter();
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 300);
+  const { search, setSearch, debouncedSearch } = useSearch();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);

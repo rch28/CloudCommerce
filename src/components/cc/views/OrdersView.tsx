@@ -5,10 +5,11 @@ import { TabFilter } from "@/components/ui/tab-filter";
 import Badge from "../Badge";
 import { orders as allOrders } from "@/data/mock";
 import SearchField from "@/components/ui/form-inputs/SearchField";
+import { useSearch } from "@/hooks/useSearch";
 
 export default function OrdersView() {
   const [status, setStatus] = useState("all");
-  const [search, setSearch] = useState("");
+  const { search, setSearch, debouncedSearch } = useSearch();
   const statuses = [
     { label: "All", value: "all" },
     { label: "Paid", value: "paid" },
@@ -21,8 +22,8 @@ export default function OrdersView() {
   const filtered = allOrders.filter(
     (o) =>
       (status === "all" || o.status === status) &&
-      (o.customer.toLowerCase().includes(search.toLowerCase()) ||
-        o.id.toLowerCase().includes(search.toLowerCase()))
+      (o.customer.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        o.id.toLowerCase().includes(debouncedSearch.toLowerCase()))
   );
 
   return (
