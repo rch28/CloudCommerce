@@ -41,9 +41,7 @@ class PostgresSearchAdapter implements SearchAdapter {
     const where: Record<string, unknown> = { deletedAt: null };
 
     if (q) {
-      const tsquery = q.split(/\s+/).filter(Boolean).map((w) => `${w}:*`).join(" & ");
       where.OR = [
-        { searchVector: { search: tsquery } },
         { name: { contains: q, mode: "insensitive" } },
         { description: { contains: q, mode: "insensitive" } },
         { shortDescription: { contains: q, mode: "insensitive" } },
@@ -59,7 +57,7 @@ class PostgresSearchAdapter implements SearchAdapter {
 
     const orderBy = params.sort
       ? { [params.sort]: params.order || "desc" }
-      : q ? { _relevance: { fields: ["name", "description"], search: q, sort: "desc" } } : { createdAt: "desc" as const };
+      : { createdAt: "desc" as const };
 
     const searchFn = async () => {
       const [items, total] = await Promise.all([
