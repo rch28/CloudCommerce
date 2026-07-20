@@ -1,7 +1,6 @@
 "use client";
 import { useState, useMemo, type ReactNode } from "react";
 import {
-  Search,
   ChevronUp,
   ChevronDown,
   ChevronLeft,
@@ -90,7 +89,7 @@ export default function DataTable({
       });
     }
     return result;
-  }, [data, debouncedSearch, sortKey, sortOrder, searchKeys, serverPagination]);
+  }, [data, debouncedSearch, sortKey, sortOrder, searchKeys, serverPagination, columns]);
 
   const totalPages =
     serverPagination?.totalPages ?? Math.ceil(filtered.length / pageSize);
@@ -212,9 +211,11 @@ export default function DataTable({
                     disabled={activePage <= 1}
                     onClick={() => {
                       const np = activePage - 1;
-                      serverPagination
-                        ? serverPagination.onPageChange(np)
-                        : setPage(np);
+                      if (serverPagination) {
+                        serverPagination.onPageChange(np);
+                      } else {
+                        setPage(np);
+                      }
                     }}
                     className="rounded-lg p-1.5 transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
                   >
