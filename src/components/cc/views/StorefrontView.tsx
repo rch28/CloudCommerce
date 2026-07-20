@@ -84,9 +84,9 @@ export default function StorefrontView() {
               <div className="flex items-center gap-1 text-xs text-amber-400">
                 <Star size={12} fill="currentColor" /> 4.{(p.sold % 9)} · {p.sold} sold
               </div>
-              <h4 className="mt-1 truncate font-medium text-white">{p.name}</h4>
+              <h4 className="mt-1 truncate font-medium text-foreground">{p.name}</h4>
               <div className="mt-3 flex items-center justify-between">
-                <span className="text-lg font-bold text-white">${p.price.toFixed(2)}</span>
+                <span className="text-lg font-bold text-foreground">${p.price.toFixed(2)}</span>
                 <Button
                   disabled={p.stock === 0}
                   onClick={() => add(p)}
@@ -102,7 +102,7 @@ export default function StorefrontView() {
 
       <div className="rounded-2xl border border-border bg-muted/50 p-6 sm:p-8">
         <div className="mx-auto max-w-md text-center">
-          <h3 className="text-xl font-bold text-white">Get early access & deals</h3>
+          <h3 className="text-xl font-bold text-foreground">Get early access & deals</h3>
           <p className="mt-1 text-sm text-muted-foreground">Join the SoundWave list for drops and exclusive offers.</p>
           {subscribed ? (
             <div className="mt-5 flex items-center justify-center gap-2 rounded-lg bg-emerald-500/10 py-3 text-emerald-400">
@@ -116,14 +116,14 @@ export default function StorefrontView() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email address"
-                className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-white placeholder-muted-foreground outline-none focus:border-violet-600"
+                className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground outline-none focus:border-violet-600"
               />
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Phone number (optional)"
-                className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-white placeholder-muted-foreground outline-none focus:border-violet-600"
+                className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground outline-none focus:border-violet-600"
               />
               <label className="flex items-start gap-2 text-xs text-muted-foreground">
                 <input type="checkbox" checked={sms} onChange={(e) => setSms(e.target.checked)} className="mt-0.5 accent-violet-600" />
@@ -141,8 +141,8 @@ export default function StorefrontView() {
         <div className="fixed inset-0 z-50 flex justify-end bg-black/60" onClick={() => setOpen(false)}>
           <div className="flex h-full w-full max-w-md flex-col border-l border-border bg-background" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <h3 className="font-semibold text-white">Your Cart</h3>
-              <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-white"><X size={20} /></button>
+              <h3 className="font-semibold text-foreground">Your Cart</h3>
+              <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground"><X size={20} /></button>
             </div>
             <div className="flex-1 space-y-3 overflow-y-auto p-5">
               {cart.length === 0 && <p className="py-10 text-center text-slate-500">Your cart is empty.</p>}
@@ -150,19 +150,19 @@ export default function StorefrontView() {
                 <div key={i.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
                   <img src={i.image} alt="" className="h-14 w-14 rounded-lg object-cover" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-white">{i.name}</p>
+                    <p className="truncate text-sm font-medium text-foreground">{i.name}</p>
                     <p className="text-sm text-violet-400">${i.price.toFixed(2)}</p>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <button onClick={() => setQty(i.id, -1)} className="rounded border border-border p-1 text-muted-foreground"><Minus size={13} /></button>
-                    <span className="w-5 text-center text-sm text-white">{i.qty}</span>
+                    <span className="w-5 text-center text-sm text-foreground">{i.qty}</span>
                     <button onClick={() => setQty(i.id, 1)} className="rounded border border-border p-1 text-muted-foreground"><Plus size={13} /></button>
                   </div>
                 </div>
               ))}
             </div>
             <div className="border-t border-border p-5">
-              <div className="mb-3 flex justify-between text-white">
+              <div className="mb-3 flex justify-between text-foreground">
                 <span className="text-muted-foreground">Total</span>
                 <span className="text-lg font-bold">${total.toFixed(2)}</span>
               </div>
