@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Tag, Percent, Truck } from "lucide-react";
+import { Plus, Tag, Percent, Truck, ChevronUp, ChevronDown } from "lucide-react";
 import { promotionsApi } from "@/services/promotions.service";
 import { Skeleton } from "@/components/ui/skeleton";
 import ActionButtons from "@/components/ui/action-buttons";
@@ -34,6 +34,61 @@ export default function PromotionsView() {
   const [usageStats, setUsageStats] = useState<UsageStats | null>(null);
   const { search, setSearch, debouncedSearch } = useSearch();
   const [loading, setLoading] = useState(true);
+  const [couponSortKey, setCouponSortKey] = useState<string | null>(null);
+  const [couponSortOrder, setCouponSortOrder] = useState<"asc" | "desc">("asc");
+  const [promotionSortKey, setPromotionSortKey] = useState<string | null>(null);
+  const [promotionSortOrder, setPromotionSortOrder] = useState<"asc" | "desc">("asc");
+
+  function handleCouponSort(key: string) {
+    if (couponSortKey === key) {
+      setCouponSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+    } else {
+      setCouponSortKey(key);
+      setCouponSortOrder("asc");
+    }
+  }
+
+  function handlePromotionSort(key: string) {
+    if (promotionSortKey === key) {
+      setPromotionSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+    } else {
+      setPromotionSortKey(key);
+      setPromotionSortOrder("asc");
+    }
+  }
+
+  const sortedCoupons = useMemo(() => {
+    if (!couponSortKey) return coupons;
+    return [...coupons].sort((a, b) => {
+      const aVal = a[couponSortKey as keyof CouponItem];
+      const bVal = b[couponSortKey as keyof CouponItem];
+      const cmp =
+        typeof aVal === "number" && typeof bVal === "number"
+          ? aVal - bVal
+          : String(aVal ?? "").localeCompare(String(bVal ?? ""), undefined, { numeric: true });
+      return couponSortOrder === "asc" ? cmp : -cmp;
+    });
+  }, [coupons, couponSortKey, couponSortOrder]);
+
+  const sortedPromotions = useMemo(() => {
+    if (!promotionSortKey) return promotions;
+    return [...promotions].sort((a, b) => {
+      let aVal: unknown;
+      let bVal: unknown;
+      if (promotionSortKey === "_count") {
+        aVal = a._count.usages;
+        bVal = b._count.usages;
+      } else {
+        aVal = a[promotionSortKey as keyof PromotionItem];
+        bVal = b[promotionSortKey as keyof PromotionItem];
+      }
+      const cmp =
+        typeof aVal === "number" && typeof bVal === "number"
+          ? aVal - bVal
+          : String(aVal ?? "").localeCompare(String(bVal ?? ""), undefined, { numeric: true });
+      return promotionSortOrder === "asc" ? cmp : -cmp;
+    });
+  }, [promotions, promotionSortKey, promotionSortOrder]);
 
   useEffect(() => {
     let cancelled = false;
@@ -165,19 +220,31 @@ export default function PromotionsView() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/50 border-b">
-                  <th className="text-left px-4 py-3 font-medium">Code</th>
-                  <th className="text-left px-4 py-3 font-medium">Type</th>
-                  <th className="text-left px-4 py-3 font-medium">Value</th>
-                  <th className="text-left px-4 py-3 font-medium">Uses</th>
-                  <th className="text-left px-4 py-3 font-medium">Status</th>
-                  <th className="text-left px-4 py-3 font-medium">Expires</th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleCouponSort("code")}>
+                    <span className="inline-flex items-center gap-1">Code {couponSortKey === "code" && (couponSortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleCouponSort("type")}>
+                    <span className="inline-flex items-center gap-1">Type {couponSortKey === "type" && (couponSortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleCouponSort("value")}>
+                    <span className="inline-flex items-center gap-1">Value {couponSortKey === "value" && (couponSortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleCouponSort("currentUses")}>
+                    <span className="inline-flex items-center gap-1">Uses {couponSortKey === "currentUses" && (couponSortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleCouponSort("isActive")}>
+                    <span className="inline-flex items-center gap-1">Status {couponSortKey === "isActive" && (couponSortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleCouponSort("expiresAt")}>
+                    <span className="inline-flex items-center gap-1">Expires {couponSortKey === "expiresAt" && (couponSortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
                   <th className="w-10 px-4 py-3" />
                 </tr>
               </thead>
               <tbody>
-                {coupons.length === 0 ? (
+                {sortedCoupons.length === 0 ? (
                   <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">No coupons yet</td></tr>
-                ) : coupons.map((c) => (
+                ) : sortedCoupons.map((c) => (
                   <tr
                     key={c.id}
                     className="border-b last:border-0 hover:bg-muted/30 cursor-pointer"
@@ -221,23 +288,35 @@ export default function PromotionsView() {
       )}
 
       {activeTab === "Promotions" && (
-        <div className="border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-muted/50 border-b">
-                <th className="text-left px-4 py-3 font-medium">Name</th>
-                <th className="text-left px-4 py-3 font-medium">Type</th>
-                <th className="text-left px-4 py-3 font-medium">Discount</th>
-                <th className="text-left px-4 py-3 font-medium">Uses</th>
-                <th className="text-left px-4 py-3 font-medium">Status</th>
-                <th className="text-left px-4 py-3 font-medium">Expires</th>
-                <th className="w-10 px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {promotions.length === 0 ? (
+          <div className="border rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/50 border-b">
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handlePromotionSort("name")}>
+                    <span className="inline-flex items-center gap-1">Name {promotionSortKey === "name" && (promotionSortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handlePromotionSort("type")}>
+                    <span className="inline-flex items-center gap-1">Type {promotionSortKey === "type" && (promotionSortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handlePromotionSort("discountValue")}>
+                    <span className="inline-flex items-center gap-1">Discount {promotionSortKey === "discountValue" && (promotionSortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handlePromotionSort("_count")}>
+                    <span className="inline-flex items-center gap-1">Uses {promotionSortKey === "_count" && (promotionSortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handlePromotionSort("isActive")}>
+                    <span className="inline-flex items-center gap-1">Status {promotionSortKey === "isActive" && (promotionSortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handlePromotionSort("expiresAt")}>
+                    <span className="inline-flex items-center gap-1">Expires {promotionSortKey === "expiresAt" && (promotionSortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="w-10 px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody>
+                {sortedPromotions.length === 0 ? (
                   <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">No promotions yet</td></tr>
-              ) : promotions.map((p) => (
+              ) : sortedPromotions.map((p) => (
                 <tr
                   key={p.id}
                   className="border-b last:border-0 hover:bg-muted/30 cursor-pointer"

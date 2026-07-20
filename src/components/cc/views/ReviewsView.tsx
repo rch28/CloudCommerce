@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { reviewsApi } from "@/services/reviews.service";
 import { useRouter } from "next/navigation";
-import { Star, Filter, MoreHorizontal } from "lucide-react";
+import { Star, Filter, MoreHorizontal, ChevronUp, ChevronDown } from "lucide-react";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SelectField } from "@/components/ui/select-field";
@@ -54,6 +54,41 @@ export default function ReviewsView() {
     })();
     return () => { cancelled = true; };
   }, [page, statusFilter, debouncedSearch]);
+
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  function handleSort(key: string) {
+    if (sortKey === key) {
+      setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  }
+
+  const sortedReviews = useMemo(() => {
+    if (!sortKey) return reviews;
+    return [...reviews].sort((a, b) => {
+      let aVal: unknown;
+      let bVal: unknown;
+      if (sortKey === "customer") {
+        aVal = a.customer?.name ?? "";
+        bVal = b.customer?.name ?? "";
+      } else if (sortKey === "product") {
+        aVal = a.product?.name ?? "";
+        bVal = b.product?.name ?? "";
+      } else {
+        aVal = a[sortKey as keyof ReviewItem];
+        bVal = b[sortKey as keyof ReviewItem];
+      }
+      const cmp =
+        typeof aVal === "number" && typeof bVal === "number"
+          ? aVal - bVal
+          : String(aVal ?? "").localeCompare(String(bVal ?? ""), undefined, { numeric: true });
+      return sortOrder === "asc" ? cmp : -cmp;
+    });
+  }, [reviews, sortKey, sortOrder]);
 
   const totalPages = Math.ceil(total / pageSize);
 
@@ -139,19 +174,31 @@ export default function ReviewsView() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-muted/50 border-b">
-              <th className="text-left px-4 py-3 font-medium">Product</th>
-              <th className="text-left px-4 py-3 font-medium">Customer</th>
-              <th className="text-left px-4 py-3 font-medium">Rating</th>
-              <th className="text-left px-4 py-3 font-medium">Review</th>
-              <th className="text-left px-4 py-3 font-medium">Status</th>
-              <th className="text-left px-4 py-3 font-medium">Date</th>
+              <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("product")}>
+                <span className="inline-flex items-center gap-1">Product {sortKey === "product" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+              </th>
+              <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("customer")}>
+                <span className="inline-flex items-center gap-1">Customer {sortKey === "customer" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+              </th>
+              <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("rating")}>
+                <span className="inline-flex items-center gap-1">Rating {sortKey === "rating" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+              </th>
+              <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("title")}>
+                <span className="inline-flex items-center gap-1">Review {sortKey === "title" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+              </th>
+              <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("status")}>
+                <span className="inline-flex items-center gap-1">Status {sortKey === "status" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+              </th>
+              <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("createdAt")}>
+                <span className="inline-flex items-center gap-1">Date {sortKey === "createdAt" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+              </th>
               <th className="w-10 px-4 py-3" />
             </tr>
           </thead>
           <tbody>
-            {reviews.length === 0 ? (
+            {sortedReviews.length === 0 ? (
               <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">No reviews yet</td></tr>
-            ) : reviews.map((r) => (
+            ) : sortedReviews.map((r) => (
               <tr
                 key={r.id}
                 className="border-b last:border-0 hover:bg-muted/30 cursor-pointer"

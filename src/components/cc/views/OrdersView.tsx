@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { Download } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Download, ChevronUp, ChevronDown } from "lucide-react";
 import { TabFilter } from "@/components/ui/tab-filter";
 import Badge from "../Badge";
 import { orders as allOrders } from "@/data/mock";
@@ -9,7 +9,18 @@ import { useSearch } from "@/hooks/useSearch";
 
 export default function OrdersView() {
   const [status, setStatus] = useState("all");
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const { search, setSearch, debouncedSearch } = useSearch();
+
+  function handleSort(key: string) {
+    if (sortKey === key) {
+      setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  }
   const statuses = [
     { label: "All", value: "all" },
     { label: "Paid", value: "paid" },
@@ -25,6 +36,19 @@ export default function OrdersView() {
       (o.customer.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         o.id.toLowerCase().includes(debouncedSearch.toLowerCase()))
   );
+
+  const sortedFiltered = useMemo(() => {
+    if (!sortKey) return filtered;
+    return [...filtered].sort((a, b) => {
+      const aVal = a[sortKey as keyof typeof filtered[number]];
+      const bVal = b[sortKey as keyof typeof filtered[number]];
+      const cmp =
+        typeof aVal === "number" && typeof bVal === "number"
+          ? aVal - bVal
+          : String(aVal ?? "").localeCompare(String(bVal ?? ""), undefined, { numeric: true });
+      return sortOrder === "asc" ? cmp : -cmp;
+    });
+  }, [filtered, sortKey, sortOrder]);
 
   return (
     <div className="space-y-5">
@@ -51,16 +75,28 @@ export default function OrdersView() {
           <table className="w-full text-left text-sm">
             <thead className="border-b border-border text-xs uppercase tracking-wide text-slate-500">
               <tr>
-                <th className="px-5 py-3.5">Order</th>
-                <th className="px-5 py-3.5">Customer</th>
-                <th className="px-5 py-3.5">Items</th>
-                <th className="px-5 py-3.5">Date</th>
-                <th className="px-5 py-3.5">Status</th>
-                <th className="px-5 py-3.5 text-right">Total</th>
+                <th className="px-5 py-3.5 cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("id")}>
+                  <span className="inline-flex items-center gap-1">Order {sortKey === "id" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                </th>
+                <th className="px-5 py-3.5 cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("customer")}>
+                  <span className="inline-flex items-center gap-1">Customer {sortKey === "customer" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                </th>
+                <th className="px-5 py-3.5 cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("items")}>
+                  <span className="inline-flex items-center gap-1">Items {sortKey === "items" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                </th>
+                <th className="px-5 py-3.5 cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("date")}>
+                  <span className="inline-flex items-center gap-1">Date {sortKey === "date" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                </th>
+                <th className="px-5 py-3.5 cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("status")}>
+                  <span className="inline-flex items-center gap-1">Status {sortKey === "status" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                </th>
+                <th className="px-5 py-3.5 text-right cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("total")}>
+                  <span className="inline-flex items-center gap-1 justify-end">Total {sortKey === "total" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/70">
-              {filtered.map((o) => (
+              {sortedFiltered.map((o) => (
                 <tr key={o.id} className="hover:bg-accent/40">
                   <td className="px-5 py-4 font-medium text-violet-400">{o.id}</td>
                   <td className="px-5 py-4">

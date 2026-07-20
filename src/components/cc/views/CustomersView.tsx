@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Mail } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Mail } from "lucide-react";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import EmptyState from "@/components/dashboard/empty-state";
@@ -24,10 +24,34 @@ export default function CustomersView() {
   const [customers, setCustomers] = useState<CustomerRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const { search, setSearch, debouncedSearch } = useSearch();
   const [loading, setLoading] = useState(true);
 
   const totalPages = Math.ceil(total / LIMIT);
+
+  function handleSort(key: string) {
+    if (sortKey === key) {
+      setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  }
+
+  const sortedCustomers = useMemo(() => {
+    if (!sortKey) return customers;
+    return [...customers].sort((a, b) => {
+      const aVal = a[sortKey as keyof CustomerRow];
+      const bVal = b[sortKey as keyof CustomerRow];
+      const cmp =
+        typeof aVal === "number" && typeof bVal === "number"
+          ? aVal - bVal
+          : String(aVal ?? "").localeCompare(String(bVal ?? ""), undefined, { numeric: true });
+      return sortOrder === "asc" ? cmp : -cmp;
+    });
+  }, [customers, sortKey, sortOrder]);
 
   const fetchCustomers = useCallback(async () => {
     setLoading(true);
@@ -72,15 +96,23 @@ export default function CustomersView() {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
                 <tr>
-                  <th className="px-5 py-3.5 font-medium">Customer</th>
-                  <th className="px-5 py-3.5 font-medium">Orders</th>
-                  <th className="px-5 py-3.5 font-medium">Total Spent</th>
-                  <th className="px-5 py-3.5 font-medium">Joined</th>
+                  <th className="px-5 py-3.5 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("name")}>
+                    <span className="inline-flex items-center gap-1">Customer {sortKey === "name" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="px-5 py-3.5 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("orderCount")}>
+                    <span className="inline-flex items-center gap-1">Orders {sortKey === "orderCount" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="px-5 py-3.5 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("totalSpent")}>
+                    <span className="inline-flex items-center gap-1">Total Spent {sortKey === "totalSpent" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="px-5 py-3.5 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("joined")}>
+                    <span className="inline-flex items-center gap-1">Joined {sortKey === "joined" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
                   <th className="px-5 py-3.5 text-right font-medium">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {customers.map((c) => (
+                {sortedCustomers.map((c) => (
                   <tr key={c.id} className="transition-colors hover:bg-muted/30">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">

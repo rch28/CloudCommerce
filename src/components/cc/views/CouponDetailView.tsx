@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { promotionsApi } from "@/services/promotions.service";
 
@@ -32,6 +33,30 @@ export default function CouponDetailView({ mode = "coupon" }: Props) {
   const [usages, setUsages] = useState<UsageRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  function handleSort(key: string) {
+    if (sortKey === key) {
+      setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  }
+
+  const sortedUsages = useMemo(() => {
+    if (!sortKey) return usages;
+    return [...usages].sort((a, b) => {
+      const aVal = a[sortKey as keyof UsageRecord];
+      const bVal = b[sortKey as keyof UsageRecord];
+      const cmp =
+        typeof aVal === "number" && typeof bVal === "number"
+          ? aVal - bVal
+          : String(aVal ?? "").localeCompare(String(bVal ?? ""), undefined, { numeric: true });
+      return sortOrder === "asc" ? cmp : -cmp;
+    });
+  }, [usages, sortKey, sortOrder]);
 
   useEffect(() => {
     let cancelled = false;
@@ -197,16 +222,24 @@ export default function CouponDetailView({ mode = "coupon" }: Props) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/50 border-b">
-                  <th className="text-left px-4 py-3 font-medium">Order</th>
-                  <th className="text-left px-4 py-3 font-medium">Discount</th>
-                  <th className="text-left px-4 py-3 font-medium">Type</th>
-                  <th className="text-left px-4 py-3 font-medium">Date</th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("orderId")}>
+                    <span className="inline-flex items-center gap-1">Order {sortKey === "orderId" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("discountAmount")}>
+                    <span className="inline-flex items-center gap-1">Discount {sortKey === "discountAmount" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("discountType")}>
+                    <span className="inline-flex items-center gap-1">Type {sortKey === "discountType" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("createdAt")}>
+                    <span className="inline-flex items-center gap-1">Date {sortKey === "createdAt" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {usages.length === 0 ? (
+                {sortedUsages.length === 0 ? (
                   <tr><td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">No usage yet</td></tr>
-                ) : usages.map((u) => (
+                ) : sortedUsages.map((u) => (
                   <tr key={u.id} className="border-b last:border-0">
                     <td className="px-4 py-3 font-mono text-xs">{u.orderId.slice(0, 8)}...</td>
                     <td className="px-4 py-3">${Number(u.discountAmount).toFixed(2)}</td>

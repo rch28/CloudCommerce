@@ -1,5 +1,6 @@
 "use client";
-import { Building2, DollarSign, TrendingUp, Globe } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Building2, DollarSign, TrendingUp, Globe, ChevronUp, ChevronDown } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -20,6 +21,31 @@ const planColor: Record<string, string> = {
 };
 
 export default function AdminView() {
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  function handleSort(key: string) {
+    if (sortKey === key) {
+      setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  }
+
+  const sortedMerchants = useMemo(() => {
+    if (!sortKey) return merchants;
+    return [...merchants].sort((a, b) => {
+      const aVal = a[sortKey as keyof typeof merchants[number]];
+      const bVal = b[sortKey as keyof typeof merchants[number]];
+      const cmp =
+        typeof aVal === "number" && typeof bVal === "number"
+          ? aVal - bVal
+          : String(aVal ?? "").localeCompare(String(bVal ?? ""), undefined, { numeric: true });
+      return sortOrder === "asc" ? cmp : -cmp;
+    });
+  }, [merchants, sortKey, sortOrder]);
+
   const chartData = merchants.map((m) => ({ name: m.name.split(" ")[0], revenue: m.revenue }));
   const totalRev = merchants.reduce((s, m) => s + m.revenue, 0);
 
@@ -54,16 +80,28 @@ export default function AdminView() {
           <table className="w-full text-left text-sm">
             <thead className="border-b border-border text-xs uppercase tracking-wide text-slate-500">
               <tr>
-                <th className="px-5 py-3.5">Merchant</th>
-                <th className="px-5 py-3.5">Domain</th>
-                <th className="px-5 py-3.5">Plan</th>
-                <th className="px-5 py-3.5">Orders</th>
-                <th className="px-5 py-3.5">Status</th>
-                <th className="px-5 py-3.5 text-right">Revenue</th>
+                <th className="px-5 py-3.5 cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("name")}>
+                  <span className="inline-flex items-center gap-1">Merchant {sortKey === "name" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                </th>
+                <th className="px-5 py-3.5 cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("subdomain")}>
+                  <span className="inline-flex items-center gap-1">Domain {sortKey === "subdomain" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                </th>
+                <th className="px-5 py-3.5 cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("plan")}>
+                  <span className="inline-flex items-center gap-1">Plan {sortKey === "plan" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                </th>
+                <th className="px-5 py-3.5 cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("orders")}>
+                  <span className="inline-flex items-center gap-1">Orders {sortKey === "orders" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                </th>
+                <th className="px-5 py-3.5 cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("status")}>
+                  <span className="inline-flex items-center gap-1">Status {sortKey === "status" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                </th>
+                <th className="px-5 py-3.5 text-right cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("revenue")}>
+                  <span className="inline-flex items-center gap-1 justify-end">Revenue {sortKey === "revenue" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/70">
-              {merchants.map((m) => (
+              {sortedMerchants.map((m) => (
                 <tr key={m.id} className="hover:bg-accent/40">
                   <td className="px-5 py-4 font-medium text-white">{m.name}</td>
                   <td className="px-5 py-4 text-muted-foreground">{m.subdomain}.cloudcommerce.com</td>

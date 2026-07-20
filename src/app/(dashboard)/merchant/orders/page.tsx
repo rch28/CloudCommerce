@@ -1,9 +1,8 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import PageHeader from "@/components/dashboard/page-header";
 import Badge from "@/components/cc/Badge";
-import { ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
 import { TabFilter } from "@/components/ui/tab-filter";
 import SearchField from "@/components/ui/form-inputs/SearchField";
 import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
@@ -41,9 +40,33 @@ export default function MerchantOrdersPage() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
   const { search, setSearch, debouncedSearch } = useSearch();
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [loading, setLoading] = useState(true);
 
   const totalPages = Math.ceil(total / LIMIT);
+
+  function handleSort(key: string) {
+    if (sortKey === key) {
+      setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  }
+
+  const sortedOrders = useMemo(() => {
+    if (!sortKey) return orders;
+    return [...orders].sort((a, b) => {
+      const aVal = a[sortKey as keyof OrderRow];
+      const bVal = b[sortKey as keyof OrderRow];
+      const cmp =
+        typeof aVal === "number" && typeof bVal === "number"
+          ? aVal - bVal
+          : String(aVal ?? "").localeCompare(String(bVal ?? ""), undefined, { numeric: true });
+      return sortOrder === "asc" ? cmp : -cmp;
+    });
+  }, [orders, sortKey, sortOrder]);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -101,19 +124,31 @@ export default function MerchantOrdersPage() {
       ) : (
         <div className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="px-5 py-3.5 font-medium">Order</th>
-                  <th className="px-5 py-3.5 font-medium">Customer</th>
-                  <th className="px-5 py-3.5 font-medium">Items</th>
-                  <th className="px-5 py-3.5 font-medium">Date</th>
-                  <th className="px-5 py-3.5 font-medium">Status</th>
-                  <th className="px-5 py-3.5 text-right font-medium">Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {orders.map((o) => (
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
+                  <tr>
+                    <th className="px-5 py-3.5 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("number")}>
+                      <span className="inline-flex items-center gap-1">Order {sortKey === "number" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                    </th>
+                    <th className="px-5 py-3.5 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("customerName")}>
+                      <span className="inline-flex items-center gap-1">Customer {sortKey === "customerName" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                    </th>
+                    <th className="px-5 py-3.5 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("itemCount")}>
+                      <span className="inline-flex items-center gap-1">Items {sortKey === "itemCount" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                    </th>
+                    <th className="px-5 py-3.5 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("createdAt")}>
+                      <span className="inline-flex items-center gap-1">Date {sortKey === "createdAt" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                    </th>
+                    <th className="px-5 py-3.5 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("status")}>
+                      <span className="inline-flex items-center gap-1">Status {sortKey === "status" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                    </th>
+                    <th className="px-5 py-3.5 text-right font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("total")}>
+                      <span className="inline-flex items-center gap-1 justify-end">Total {sortKey === "total" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {sortedOrders.map((o) => (
                   <tr
                     key={o.id}
                     className="transition-colors hover:bg-accent cursor-pointer"

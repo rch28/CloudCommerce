@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { CreditCard, Check, ArrowUpRight, Loader2, AlertCircle, Download, Receipt } from "lucide-react";
+import { CreditCard, Check, ArrowUpRight, Loader2, AlertCircle, Download, Receipt, ChevronUp, ChevronDown } from "lucide-react";
 import LoadingSkeleton from "@/components/dashboard/loading-skeleton";
 import { billingApi } from "@/services/billing.service";
 import { PLANS, type PlanFeatures } from "@/lib/features";
@@ -34,6 +34,30 @@ export default function BillingView() {
   const [loading, setLoading] = useState(true);
   const [changing, setChanging] = useState(false);
   const [error, setError] = useState("");
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  function handleSort(key: string) {
+    if (sortKey === key) {
+      setSortOrder((o) => (o === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  }
+
+  const sortedPayments = useMemo(() => {
+    if (!sortKey) return payments;
+    return [...payments].sort((a, b) => {
+      const aVal = a[sortKey as keyof PaymentData];
+      const bVal = b[sortKey as keyof PaymentData];
+      const cmp =
+        typeof aVal === "number" && typeof bVal === "number"
+          ? aVal - bVal
+          : String(aVal ?? "").localeCompare(String(bVal ?? ""), undefined, { numeric: true });
+      return sortOrder === "asc" ? cmp : -cmp;
+    });
+  }, [payments, sortKey, sortOrder]);
 
   useEffect(() => {
     async function loadBilling() {
@@ -191,16 +215,26 @@ export default function BillingView() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-muted-foreground">
-                  <th className="pb-3 pr-4 font-medium">Date</th>
-                  <th className="pb-3 pr-4 font-medium">Description</th>
-                  <th className="pb-3 pr-4 font-medium">Amount</th>
-                  <th className="pb-3 pr-4 font-medium">Status</th>
-                  <th className="pb-3 font-medium">Provider</th>
+                  <th className="pb-3 pr-4 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("createdAt")}>
+                    <span className="inline-flex items-center gap-1">Date {sortKey === "createdAt" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="pb-3 pr-4 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("description")}>
+                    <span className="inline-flex items-center gap-1">Description {sortKey === "description" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="pb-3 pr-4 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("amount")}>
+                    <span className="inline-flex items-center gap-1">Amount {sortKey === "amount" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="pb-3 pr-4 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("status")}>
+                    <span className="inline-flex items-center gap-1">Status {sortKey === "status" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
+                  <th className="pb-3 font-medium cursor-pointer select-none hover:text-foreground" onClick={() => handleSort("provider")}>
+                    <span className="inline-flex items-center gap-1">Provider {sortKey === "provider" && (sortOrder === "asc" ? <ChevronUp size={13} /> : <ChevronDown size={13} />)}</span>
+                  </th>
                   <th className="pb-3 font-medium">Invoice</th>
                 </tr>
               </thead>
               <tbody>
-                {payments.map((p) => (
+                {sortedPayments.map((p) => (
                   <tr key={p.id} className="border-b border-border/50 text-foreground">
                     <td className="py-3 pr-4">{new Date(p.createdAt).toLocaleDateString()}</td>
                     <td className="py-3 pr-4 text-muted-foreground">{p.description || "Subscription payment"}</td>
