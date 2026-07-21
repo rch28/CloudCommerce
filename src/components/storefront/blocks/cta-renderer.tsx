@@ -13,7 +13,10 @@ export default function CtaRenderer({ content, brandColor }: CtaRendererProps) {
   const title = content.title as string | undefined;
   const description = content.description as string | undefined;
   const buttonText = content.buttonText as string | undefined;
-  const buttonLink = content.buttonLink as string | undefined;
+  const rawButtonLink = content.buttonLink as string | undefined;
+  const buttonLink = rawButtonLink?.startsWith("/") && !rawButtonLink.startsWith("/store/")
+    ? `/store/${tenant}${rawButtonLink}`
+    : rawButtonLink;
 
   return (
     <section className="border-b border-border">

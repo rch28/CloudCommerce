@@ -726,6 +726,20 @@ async function main() {
       },
     }));
 
+  // Sections seeded before the block-format change used legacy types
+  // ("features", "content") and keys ("heading"/"subheading") — replace them.
+  const hasLegacySections = async (pageId: string) => {
+    const sections = await prisma.pageSection.findMany({ where: { pageId } });
+    return sections.some(
+      (s) =>
+        ["features", "content"].includes(s.type) ||
+        (s.content != null && typeof s.content === "object" && "heading" in (s.content as Record<string, unknown>)),
+    );
+  };
+
+  if (await hasLegacySections(homePage.id)) {
+    await prisma.pageSection.deleteMany({ where: { pageId: homePage.id } });
+  }
   if ((await prisma.pageSection.count({ where: { pageId: homePage.id } })) === 0) {
     await prisma.pageSection.createMany({
       data: [
@@ -785,6 +799,9 @@ async function main() {
       },
     }));
 
+  if (await hasLegacySections(aboutPage.id)) {
+    await prisma.pageSection.deleteMany({ where: { pageId: aboutPage.id } });
+  }
   if ((await prisma.pageSection.count({ where: { pageId: aboutPage.id } })) === 0) {
     await prisma.pageSection.createMany({
       data: [

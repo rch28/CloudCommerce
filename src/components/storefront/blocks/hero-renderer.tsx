@@ -13,7 +13,10 @@ export default function HeroRenderer({ content, styles, brandColor, tenant }: He
   const title = content.title as string | undefined;
   const subtitle = content.subtitle as string | undefined;
   const ctaText = content.ctaText as string | undefined;
-  const ctaLink = content.ctaLink as string | undefined;
+  const rawCtaLink = content.ctaLink as string | undefined;
+  const ctaLink = rawCtaLink?.startsWith("/") && !rawCtaLink.startsWith("/store/")
+    ? `/store/${tenant}${rawCtaLink}`
+    : rawCtaLink;
   const bgImage = content.backgroundImage as string | undefined;
   const alignClass = alignment === "center" ? "text-center items-center" : alignment === "right" ? "text-right items-end" : "text-left items-start";
 

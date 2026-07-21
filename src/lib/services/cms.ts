@@ -1,6 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { pageSchema, bannerSchema, type PageInput, type BannerInput } from "@/lib/schemas/cms";
+import { normalizeSection } from "@/lib/cms-normalize";
+
+function normalizePage<T extends Record<string, unknown> | null>(page: T): T {
+  if (!page || !Array.isArray((page as Record<string, unknown>).sections)) return page;
+  const sections = ((page as Record<string, unknown>).sections as { type: string; content: Record<string, unknown> | null }[]).map(normalizeSection);
+  return { ...(page as Record<string, unknown>), sections } as T;
+}
 
 interface PaginateParams {
   page?: number;
@@ -79,7 +86,7 @@ export async function getPages(tenantId: string, params: PaginateParams = {}): P
       }),
       (prisma as any).page.count({ where }),
     ]);
-    return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
+    return { items: items.map((p: Record<string, unknown>) => normalizePage(p)), total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
   }
   ensureMockPages(tenantId);
   let items = mockPages.filter((p: Record<string, unknown>) => p.tenantId === tenantId);
@@ -93,7 +100,8 @@ export async function getPages(tenantId: string, params: PaginateParams = {}): P
 
 export async function getPage(id: string): Promise<Record<string, unknown> | null> {
   if (process.env.DATABASE_URL) {
-    return (prisma as any).page.findUnique({ where: { id }, include: { sections: { orderBy: { sortOrder: "asc" } } } });
+    const page = await (prisma as any).page.findUnique({ where: { id }, include: { sections: { orderBy: { sortOrder: "asc" } } } });
+    return normalizePage(page);
   }
   ensureMockPages("t-1");
   const page = mockPages.find((p: Record<string, unknown>) => p.id === id);
@@ -103,10 +111,11 @@ export async function getPage(id: string): Promise<Record<string, unknown> | nul
 
 export async function getPageBySlug(slug: string, tenantId: string): Promise<Record<string, unknown> | null> {
   if (process.env.DATABASE_URL) {
-    return (prisma as any).page.findUnique({
+    const page = await (prisma as any).page.findUnique({
       where: { slug_tenantId: { slug, tenantId } },
       include: { sections: { where: { isVisible: true }, orderBy: { sortOrder: "asc" } } },
     });
+    return normalizePage(page);
   }
   ensureMockPages(tenantId);
   const page = mockPages.find((p: Record<string, unknown>) => p.slug === slug && p.tenantId === tenantId);
