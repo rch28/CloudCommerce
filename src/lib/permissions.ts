@@ -11,7 +11,7 @@ const rolePermissions: Record<Role, Permission[]> = {
 export function mapRole(role?: string): Role {
   switch (role) {
     case "admin": return "owner";
-    case "merchant": return "staff";
+    case "merchant": return "owner";
     default: return "customer";
   }
 }
